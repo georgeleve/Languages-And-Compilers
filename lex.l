@@ -9,9 +9,14 @@ int total = 0;
 
 %%
 
-("if")|("else")|("while")|("for")|("function")|("return")|("break")|("continue")|("and")|("not")|("or")|("local")|("true")|("false")|("nil") { total++; fprintf(yyout, "line:     #%d   %s KEYWORD   %s <- enumerated\n\n",total, yytext, yytext); }
+("if")|("else")|("while")|("for")|("function")|("return")|("break")|("continue")|("and")|("not")|("or")|("local")|("true")|("false")|("nil") { total++; fprintf(yyout, "line:     #%d   %s KEYWORD   %s <- enumerated\n\n", total, yytext, yytext); }
 
-"="|"+"|"-"|"*"|"/"|"%"|"<="|">="|"++"|"--"|!="|"=="|"<"|">"  { total++; fprintf(yyout, "line:     #%d   %s OPERATOR   %s <- enumerated\n\n",total, yytext, yytext); }
+"="|"+"|"-"|"*"|"/"|"%"|"<="|">="|"++"|"--"|"!="|"=="|"<"|">"  { total++; fprintf(yyout, "line:     #%d   %s OPERATOR   %s <- enumerated\n\n", total, yytext, yytext); }
+
+
+
+
+
 
 
 
@@ -54,6 +59,7 @@ int total = 0;
 . {fprintf(yyout,"",yytext);}
 
 [\t\n]+
+
 
 %%
 
