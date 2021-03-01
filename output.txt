@@ -1,0 +1,33 @@
+--------------------   Lexical Analysis   --------------------line: #1   "{" PUNCTUATION LEFT_BRACE <- enumerated
+
+
+line: #2  ""+"" OPERATOR  PLUS <- enumerated
+
+
+line: #3   "}" PUNCTUATION RIGHT_BRACE <- enumerated
+
+
+line: #4  "if" KEYWORD  IF <- enumerated
+line: #5   "(" PUNCTUATION RIGHT_BRACE <- enumerated
+line: #6   ")" PUNCTUATION LEFT_BRACE <- enumerated
+
+
+line: #7  "--" OPERATOR  MINUS_MINUS <- enumerated
+
+
+line: #8  "-" OPERATOR  MINUS <- enumerated
+
+
+line: #9  "/" OPERATOR  DIVISION <- enumerated
+
+
+line: #10  "++" OPERATOR  PLUS_PLUS <- enumerated
+               line: #11  "for" KEYWORD  FOR <- enumerated
+          line: #12   "{" PUNCTUATION LEFT_BRACE <- enumerated
+      line: #13   "}" PUNCTUATION RIGHT_BRACE <- enumerated
+
+   
+line: #14  "while" KEYWORD  WHILE <- enumerated
+
+
+ Total Tokens = 14
