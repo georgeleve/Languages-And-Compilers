@@ -7,6 +7,6 @@ Creating a C compiler in C++ for CS340 course at University of Crete.
 
 How to run it:
 
-flex lex.l
-gcc lex.yy.c
-./a.out
+1st command: flex lex.l
+2nd command: gcc lex.yy.c
+3rd command: ./a.out
