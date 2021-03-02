@@ -17,7 +17,6 @@ comment "//".*
 %%
 
 
-
 "if"        { total++; fprintf(yyout, "line: #%d  \"%s\" KEYWORD  IF <- enumerated\n", total, yytext);       }
 "else"      { total++; fprintf(yyout, "line: #%d  \"%s\" KEYWORD  ELSE <- enumerated\n", total, yytext);     }
 "while"     { total++; fprintf(yyout, "line: #%d  \"%s\" KEYWORD  WHILE <- enumerated\n", total, yytext);    }
@@ -77,8 +76,10 @@ int main(int argc, char** argv) {
     else
         yyin = stdin; /* na tsekaro pote teleionei */
     
-    yyout = fopen("output.txt", "w");
     
+    yyout = fopen(argv[2], "w");
+
+
     fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n");
     yylex();
 	fprintf(yyout, "\n\n Total Tokens = %d",total);

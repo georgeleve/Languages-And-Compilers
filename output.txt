@@ -29,6 +29,11 @@ line: #10  "++" OPERATOR  PLUS_PLUS <- enumerated
 
    
 line: #14  "while" KEYWORD  WHILE <- enumerated
+  sahfdafh geline: #15  "or" KEYWORD  OR <- enumerated
+ge leve was here  347287  13441 14213
+
+line: #16  "/" OPERATOR  DIVISION <- enumerated
+line: #17  "*" OPERATOR  MUL <- enumerated
 
 
- Total Tokens = 14
+ Total Tokens = 17
