@@ -1,4 +1,5 @@
---------------------   Lexical Analysis   --------------------line: #1   "{" PUNCTUATION LEFT_BRACE <- enumerated
+--------------------   Lexical Analysis   --------------------
+line: #1   "{" PUNCTUATION LEFT_BRACE <- enumerated
 
 
 line: #2  ""+"" OPERATOR  PLUS <- enumerated

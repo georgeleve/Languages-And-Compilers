@@ -17,6 +17,7 @@ comment "//".*
 %%
 
 
+
 "if"        { total++; fprintf(yyout, "line: #%d  \"%s\" KEYWORD  IF <- enumerated\n", total, yytext);       }
 "else"      { total++; fprintf(yyout, "line: #%d  \"%s\" KEYWORD  ELSE <- enumerated\n", total, yytext);     }
 "while"     { total++; fprintf(yyout, "line: #%d  \"%s\" KEYWORD  WHILE <- enumerated\n", total, yytext);    }
@@ -60,15 +61,24 @@ comment "//".*
 "::"    { total++; fprintf(yyout, "line: #%d   \"%s\" PUNCTUATION DOUBLEMPLAMPLA <- enumerated\n" , total, yytext); }
 "."     { total++; fprintf(yyout, "line: #%d   \"%s\" PUNCTUATION DOT <- enumerated\n" , total, yytext);            }
 ".."    { total++; fprintf(yyout, "line: #%d   \"%s\" PUNCTUATION DOUBLEDOT <- enumerated\n" , total, yytext);      }
-"/*"	{ total++; fprintf(yyout, "line: #%d   \"%s\" COMMENT\n\n" , total, yytext);                                }
+
+[ \t]*; /*ignore wite spaces */
+
 
 %%
 
-main() {
-    extern FILE *yyin, *yyout;
+int main(int argc, char** argv) {
+    if(argc > 1){
+        if(!(yyin = fopen(argv[1], "r"))) {
+            fprintf(stderr, "Cannot read file: %s\n", argv[1]);
+            return 1;
+        }
+    }
+    else
+        yyin = stdin; /* na tsekaro pote teleionei */
     
-    yyin = fopen("input.txt", "r");
-    yyout = fopen("Output.txt", "w");
+    yyout = fopen("output.txt", "w");
+    
     fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n");
     yylex();
 	fprintf(yyout, "\n\n Total Tokens = %d",total);
