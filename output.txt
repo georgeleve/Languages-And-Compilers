@@ -1,39 +1,20 @@
 --------------------   Lexical Analysis   --------------------
-line: #1   "{" PUNCTUATION LEFT_BRACE <- enumerated
+0: #1  "if" KEYWORD  IF <- enumerated
+2: #2  ""+"" OPERATOR  PLUS <- enumerated
+4: #3   "}" PUNCTUATION RIGHT_BRACE <- enumerated
+6: #4  "if" KEYWORD  IF <- enumerated
+6: #5   "(" PUNCTUATION RIGHT_BRACE <- enumerated
+6: #6   ")" PUNCTUATION LEFT_BRACE <- enumerated
+8: #7  "--" OPERATOR  MINUS_MINUS <- enumerated
+10: #8  "-" OPERATOR  MINUS <- enumerated
+12: #9  "/" OPERATOR  DIVISION <- enumerated
+14: #10  "++" OPERATOR  PLUS_PLUS <- enumerated
+               14: #11  "for" KEYWORD  FOR <- enumerated
+          14: #12   "{" PUNCTUATION LEFT_BRACE <- enumerated
+      14: #13   "}" PUNCTUATION RIGHT_BRACE <- enumerated
+   16: #14  "while" KEYWORD  WHILE <- enumerated
+  sahfdafh ge16: #15  "or" KEYWORD  OR <- enumerated
+ge leve was here  347287  13441 1421318: #16  "/" OPERATOR  DIVISION <- enumerated
+18: #17  "*" OPERATOR  MUL <- enumerated
 
-
-line: #2  ""+"" OPERATOR  PLUS <- enumerated
-
-
-line: #3   "}" PUNCTUATION RIGHT_BRACE <- enumerated
-
-
-line: #4  "if" KEYWORD  IF <- enumerated
-line: #5   "(" PUNCTUATION RIGHT_BRACE <- enumerated
-line: #6   ")" PUNCTUATION LEFT_BRACE <- enumerated
-
-
-line: #7  "--" OPERATOR  MINUS_MINUS <- enumerated
-
-
-line: #8  "-" OPERATOR  MINUS <- enumerated
-
-
-line: #9  "/" OPERATOR  DIVISION <- enumerated
-
-
-line: #10  "++" OPERATOR  PLUS_PLUS <- enumerated
-               line: #11  "for" KEYWORD  FOR <- enumerated
-          line: #12   "{" PUNCTUATION LEFT_BRACE <- enumerated
-      line: #13   "}" PUNCTUATION RIGHT_BRACE <- enumerated
-
-   
-line: #14  "while" KEYWORD  WHILE <- enumerated
-  sahfdafh geline: #15  "or" KEYWORD  OR <- enumerated
-ge leve was here  347287  13441 14213
-
-line: #16  "/" OPERATOR  DIVISION <- enumerated
-line: #17  "*" OPERATOR  MUL <- enumerated
-
-
- Total Tokens = 17
+Total Tokens = 17
