@@ -18,6 +18,12 @@ comment "//".*
 %%
 
 \n  no_of_lines++; 
+
+[0-9]+    { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext);       }
+"-"[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext);       }
+[0-9]*"."[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext);   } 
+[-][0-9]*"."[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext);} 
+
 "if"        { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  IF <- enumerated\n", no_of_lines, total, yytext);       }
 "else"      { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  ELSE <- enumerated\n", no_of_lines, total, yytext);     }
 "while"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  WHILE <- enumerated\n", no_of_lines, total, yytext);    }
@@ -64,12 +70,12 @@ comment "//".*
 
 "/*"    { total++; fprintf(yyout, "\"%d - " , no_of_lines);       }
 "*/"    { total++; fprintf(yyout, "%d\": #%d  COMMENT BLOCK_COMMENT <- enumerated\n" , no_of_lines, total);      }
-"//"    { total++; fprintf(yyout, "%d: #%d   \"\" COMMENT LINE_COMMENT <- enumerated\n" , no_of_lines, total);      }
 
 {id} { total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", no_of_lines, total, yytext, yytext);  }
 {string} { total++; fprintf(yyout, "%d: #%d  %s STRING %s <-char*\n", no_of_lines, total, yytext, yytext);  }
+{comment} { total++; fprintf(yyout, "%d: #%d   \"\" COMMENT LINE_COMMENT <- enumerated\n" , no_of_lines, total);      }
 
-[ \t]*; /*ignore wite spaces */
+[\t\n]+   /*ignore wite spaces and newlines */
 
 
 %%
@@ -85,7 +91,7 @@ int main(int argc, char** argv) {
     
     yyout = fopen(argv[2], "w");
 
-    fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n");
+    fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n\n");
     yylex();
 	fprintf(yyout, "\nTotal Tokens = %d", total);
     return 0;

@@ -1,28 +1,24 @@
-if
+this_is_an_id
 
-+
 
-}
-
-if()
-
---
-
--
-
-this_is_my_id
-
-"this_is_my_string"
+"this_is_a_string"   -55
 
 //
-
-++               for          {      }
-   
-while  
-
-"sahfdafh"
 
 
 /*
 
+
+
+
 */
+
+54.323
+
+2
+
+
+
++-++--        -4324.65
+if{}else;
+function

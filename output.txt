@@ -1,21 +1,22 @@
 --------------------   Lexical Analysis   --------------------
-1: #1  "if" KEYWORD  IF <- enumerated
-3: #2  ""+"" OPERATOR  PLUS <- enumerated
-5: #3   "}" PUNCTUATION RIGHT_BRACE <- enumerated
-7: #4  "if" KEYWORD  IF <- enumerated
-7: #5   "(" PUNCTUATION RIGHT_BRACE <- enumerated
-7: #6   ")" PUNCTUATION LEFT_BRACE <- enumerated
-9: #7  "--" OPERATOR  MINUS_MINUS <- enumerated
-11: #8  "-" OPERATOR  MINUS <- enumerated
-13: #9  "this_is_my_id" ID "this_is_my_id" <-char*
-15: #10  "this_is_my_string" STRING "this_is_my_string" <-char*
-17: #11   "" COMMENT LINE_COMMENT <- enumerated
-19: #12  "++" OPERATOR  PLUS_PLUS <- enumerated
-               19: #13  "for" KEYWORD  FOR <- enumerated
-          19: #14   "{" PUNCTUATION LEFT_BRACE <- enumerated
-      19: #15   "}" PUNCTUATION RIGHT_BRACE <- enumerated
-   21: #16  "while" KEYWORD  WHILE <- enumerated
-  23: #17  "sahfdafh" STRING "sahfdafh" <-char*
-"26 - 28": #19  COMMENT BLOCK_COMMENT <- enumerated
+
+1: #1  "this_is_an_id" ID "this_is_an_id" <-char*
+4: #2  "this_is_a_string" STRING "this_is_a_string" <-char*
+   4: #3  "-55" CONST_INT -55 <-integer
+6: #4   "" COMMENT LINE_COMMENT <- enumerated
+"9 - 14": #6  COMMENT BLOCK_COMMENT <- enumerated
+16: #7  "54.323" CONST_REAL 54.323 <-real
+18: #8  "2" CONST_INT 2 <-integer
+22: #9  ""+"" OPERATOR  PLUS <- enumerated
+22: #10  "-" OPERATOR  MINUS <- enumerated
+22: #11  "++" OPERATOR  PLUS_PLUS <- enumerated
+22: #12  "--" OPERATOR  MINUS_MINUS <- enumerated
+        22: #13  "-4324.65" CONST_REAL -4324.65 <-real
+23: #14  "if" KEYWORD  IF <- enumerated
+23: #15   "{" PUNCTUATION LEFT_BRACE <- enumerated
+23: #16   "}" PUNCTUATION RIGHT_BRACE <- enumerated
+23: #17  "else" KEYWORD  ELSE <- enumerated
+23: #18   ";" PUNCTUATION SEMICOLON <- enumerated
+24: #19  "function" KEYWORD  FUNCTION <- enumerated
 
 Total Tokens = 19
