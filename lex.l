@@ -1,7 +1,7 @@
 %{
 
 int total = 0;
-int no_of_lines = 0;
+int no_of_lines = 1;
 
 %}
 
@@ -14,7 +14,6 @@ int no_of_lines = 0;
 id [a-zA-Z][a-zA-Z_0-9]*
 string \"[^\n"]*\"
 comment "//".*
-
 
 %%
 
@@ -62,6 +61,13 @@ comment "//".*
 "::"    { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOUBLEMPLAMPLA <- enumerated\n" , no_of_lines, total, yytext); }
 "."     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOT <- enumerated\n" , no_of_lines, total, yytext);            }
 ".."    { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOUBLEDOT <- enumerated\n" , no_of_lines, total, yytext);      }
+
+"/*"    { total++; fprintf(yyout, "\"%d - " , no_of_lines);       }
+"*/"    { total++; fprintf(yyout, "%d\": #%d  COMMENT BLOCK_COMMENT <- enumerated\n" , no_of_lines, total);      }
+"//"    { total++; fprintf(yyout, "%d: #%d   \"\" COMMENT LINE_COMMENT <- enumerated\n" , no_of_lines, total);      }
+
+{id} { total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", no_of_lines, total, yytext, yytext);  }
+{string} { total++; fprintf(yyout, "%d: #%d  %s STRING %s <-char*\n", no_of_lines, total, yytext, yytext);  }
 
 [ \t]*; /*ignore wite spaces */
 
