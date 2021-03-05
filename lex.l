@@ -1,12 +1,14 @@
 %{
-
+#include <stdlib.h>
+#include <stdio.h>
 int total = 0;
 int no_of_lines = 1;
 
+// #define YY_DECL int alpha_yylex (void* yval);  na to kano uncomment kapoia stigmh
 %}
 
 /* Flex options */
-%option noyywrap /* read only one input file */
+%option noyywrap
 %option yylineno
 
 /* Flex macros */
@@ -85,6 +87,7 @@ comment "//".*
 
 [\t]+   /*ignore wite spaces and newlines */
 [[:space:]]+; /* Ignore whitespace */
+[ \t]* /* ignores whitespaces */;
 
 %%
 
@@ -104,7 +107,7 @@ int main(int argc, char** argv) {
 
     fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n\n");
     yylex();
+    /* alpha_yylex(); */
 	/* fprintf(yyout, "\nTotal Tokens = %d", total); */
     return 0;
 }
-
