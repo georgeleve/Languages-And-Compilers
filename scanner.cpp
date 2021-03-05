@@ -1,6 +1,6 @@
-#line 2 "scanner.c"
+#line 2 "scanner.cpp"
 
-#line 4 "scanner.c"
+#line 4 "scanner.cpp"
 
 #define  YY_INT_ALIGNED short int
 
@@ -596,17 +596,23 @@ int yy_flex_debug = 0;
 char *yytext;
 #line 1 "lex.l"
 #line 2 "lex.l"
+
+#include <bits/stdc++.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "header_file.h"
+using namespace std;
+
+alpha_token_t Initialize(unsigned int numline,unsigned int numToken,char* content , char* type );
+vector <alpha_token_t> token;
 int total = 0;
 int no_of_lines = 1;
-
-// #define YY_DECL int alpha_yylex (void* yval);  na to kano uncomment kapoia stigmh
-#line 606 "scanner.c"
+#define YY_DECL int alpha_yylex(void* yval);     // na to kano uncomment kapoia stigmh
+#line 612 "scanner.cpp"
 /* Flex options */
 /* Flex macros */
 
-#line 610 "scanner.c"
+#line 616 "scanner.cpp"
 
 #define INITIAL 0
 #define C_COMMENT 1
@@ -827,10 +833,10 @@ YY_DECL
 		}
 
 	{
-#line 21 "lex.l"
+#line 27 "lex.l"
 
 
-#line 834 "scanner.c"
+#line 840 "scanner.cpp"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -901,307 +907,307 @@ do_action:	/* This label is used only to access EOF actions. */
 case 1:
 /* rule 1 can match eol */
 YY_RULE_SETUP
-#line 23 "lex.l"
+#line 29 "lex.l"
 no_of_lines++; 
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 25 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext);       }
+#line 31 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext); }
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 26 "lex.l"
+#line 32 "lex.l"
 { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext);       }
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 27 "lex.l"
+#line 33 "lex.l"
 { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext);   } 
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 28 "lex.l"
+#line 34 "lex.l"
 { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext);}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 29 "lex.l"
+#line 35 "lex.l"
 { total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);          }
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 30 "lex.l"
+#line 36 "lex.l"
 { total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);                         }
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 33 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  IF <-enumerated\n", no_of_lines, total, yytext);       }
+#line 38 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD IF <-enumerated\n", no_of_lines, total, yytext); token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));}
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 34 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  ELSE <-enumerated\n", no_of_lines, total, yytext);     }
+#line 39 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD ELSE <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));  }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 35 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  WHILE <-enumerated\n", no_of_lines, total, yytext);    }
+#line 40 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD WHILE <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));   }
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 36 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  FOR <-enumerated\n", no_of_lines, total, yytext);      }
+#line 41 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FOR <-enumerated\n", no_of_lines, total, yytext);   token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));    }
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 37 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  FUNCTION <-enumerated\n", no_of_lines, total, yytext); }
+#line 42 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FUNCTION <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD")); }
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 38 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  RETURN <-enumerated\n", no_of_lines, total, yytext);   }
+#line 43 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD RETURN <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));  }
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 39 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  BREAK <-enumerated\n", no_of_lines, total, yytext);    }
+#line 44 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD BREAK <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));   }
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 40 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD CONTINUE <-enumerated\n", no_of_lines, total, yytext);  }
+#line 45 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD CONTINUE <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD")); }
 	YY_BREAK
 case 16:
 YY_RULE_SETUP
-#line 41 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  AND <-enumerated\n", no_of_lines, total, yytext);      }
+#line 46 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD AND <-enumerated\n", no_of_lines, total, yytext);   token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));    }
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 42 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  NOT <-enumerated\n", no_of_lines, total, yytext);      }
+#line 47 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD NOT <-enumerated\n", no_of_lines, total, yytext);    token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));   }
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 43 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  OR <-enumerated\n", no_of_lines, total, yytext);       }
+#line 48 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD OR <-enumerated\n", no_of_lines, total, yytext);    token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));    }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 44 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  LOCAL <-enumerated\n", no_of_lines, total, yytext);    }
+#line 49 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD LOCAL <-enumerated\n", no_of_lines, total, yytext);    }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 45 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  TRUE <-enumerated\n", no_of_lines, total, yytext);     }
+#line 50 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD TRUE <-enumerated\n", no_of_lines, total, yytext);     }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 46 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  FALSE <-enumerated\n", no_of_lines, total, yytext);    }
+#line 51 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FALSE <-enumerated\n", no_of_lines, total, yytext);    }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 47 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD NIL <-enumerated\n", no_of_lines, total, yytext);       }
+#line 52 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD NIL <-enumerated\n", no_of_lines, total, yytext);      }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 49 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  EQUAL <-enumerated\n", no_of_lines, total, yytext);          } 
+#line 54 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  EQUAL <-enumerated\n", no_of_lines, total, yytext);         } 
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 50 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"\"%s\"\" OPERATOR  PLUS <-enumerated\n", no_of_lines, total, yytext);       }
+#line 55 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"\"%s\"\" OPERATOR  PLUS <-enumerated\n", no_of_lines, total, yytext);      }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 51 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  MINUS <-enumerated\n", no_of_lines, total, yytext);          } 
+#line 56 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MINUS <-enumerated\n", no_of_lines, total, yytext);          } 
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 52 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  MUL <-enumerated\n", no_of_lines, total, yytext);            } 
+#line 57 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MULTIPLICATION <-enumerated\n", no_of_lines, total, yytext);  } 
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 53 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  DIVISION <-enumerated\n", no_of_lines, total, yytext);       } 
+#line 58 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR DIVISION <-enumerated\n", no_of_lines, total, yytext);       } 
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 54 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  PERCENTAGE <-enumerated\n", no_of_lines, total, yytext);     } 
+#line 59 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR PERCENTAGE <-enumerated\n", no_of_lines, total, yytext);     } 
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 55 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  EQUAL_EQUAL <-enumerated\n", no_of_lines, total, yytext);    }
+#line 60 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR EQUAL_EQUAL <-enumerated\n", no_of_lines, total, yytext);    }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 56 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  NOTEQUAL <-enumerated\n", no_of_lines, total, yytext);       } 
+#line 61 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR NOTEQUAL <-enumerated\n", no_of_lines, total, yytext);       } 
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 57 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  PLUS_PLUS <-enumerated\n", no_of_lines, total, yytext);      } 
+#line 62 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR PLUS_PLUS <-enumerated\n", no_of_lines, total, yytext);      } 
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 58 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  MINUS_MINUS <-enumerated\n", no_of_lines, total, yytext);    } 
+#line 63 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MINUS_MINUS <-enumerated\n", no_of_lines, total, yytext);    } 
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 59 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  GREATER <-enumerated\n", no_of_lines, total, yytext);        } 
+#line 64 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR GREATER <-enumerated\n", no_of_lines, total, yytext);        } 
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 60 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  LESS_THAN <-enumerated\n", no_of_lines, total, yytext);      } 
+#line 65 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR LESS_THAN <-enumerated\n", no_of_lines, total, yytext);      } 
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 61 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  GREATER_EQUAL <-enumerated\n", no_of_lines, total, yytext);  } 
+#line 66 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR GREATER_EQUAL <-enumerated\n", no_of_lines, total, yytext);  } 
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 62 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  LESS_EQUAL <-enumerated\n", no_of_lines, total, yytext);     } 
+#line 67 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR LESS_EQUAL <-enumerated\n", no_of_lines, total, yytext);     } 
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 64 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
+#line 69 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 65 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
+#line 70 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 66 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
+#line 71 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 67 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
+#line 72 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 68 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
+#line 73 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 69 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
+#line 74 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 70 "lex.l"
+#line 75 "lex.l"
 { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION SEMICOLON <-enumerated\n" , no_of_lines, total, yytext);      }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 71 "lex.l"
+#line 76 "lex.l"
 { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION COMMA <-enumerated\n" , no_of_lines, total, yytext);          }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 72 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION MPLAMPLA <-enumerated\n" , no_of_lines, total, yytext);       }
+#line 77 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION COLON <-enumerated\n" , no_of_lines, total, yytext);          }
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 73 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOUBLEMPLAMPLA <-enumerated\n" , no_of_lines, total, yytext); }
+#line 78 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOUBLE_COLON <-enumerated\n" , no_of_lines, total, yytext);   }
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 74 "lex.l"
+#line 79 "lex.l"
 { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOT <-enumerated\n" , no_of_lines, total, yytext);            }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 75 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOUBLEDOT <-enumerated\n" , no_of_lines, total, yytext);      }
+#line 80 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOUBLE_DOT <-enumerated\n" , no_of_lines, total, yytext);      }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 77 "lex.l"
+#line 82 "lex.l"
 { total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", no_of_lines, total, yytext, yytext);  }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 78 "lex.l"
+#line 83 "lex.l"
 { total++; fprintf(yyout, "%d: #%d  %s STRING %s <-char*\n", no_of_lines, total, yytext, yytext);  }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 79 "lex.l"
+#line 84 "lex.l"
 { total++; fprintf(yyout, "%d: #%d   \"\" COMMENT LINE_COMMENT <-enumerated\n" , no_of_lines, total);      }
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 81 "lex.l"
+#line 86 "lex.l"
 { BEGIN(C_COMMENT); }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 82 "lex.l"
-{ BEGIN(INITIAL); }
+#line 87 "lex.l"
+{ BEGIN(INITIAL);   }
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 83 "lex.l"
+#line 88 "lex.l"
 { }
 	YY_BREAK
 case 55:
 /* rule 55 can match eol */
 YY_RULE_SETUP
-#line 84 "lex.l"
+#line 89 "lex.l"
 { }
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 86 "lex.l"
+#line 91 "lex.l"
 { printf("%s", yytext); }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 88 "lex.l"
+#line 93 "lex.l"
 /*ignore wite spaces and newlines */
 	YY_BREAK
 case 58:
 /* rule 58 can match eol */
 YY_RULE_SETUP
-#line 89 "lex.l"
+#line 94 "lex.l"
 /* Ignore whitespace */
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 90 "lex.l"
+#line 95 "lex.l"
 /* ignores whitespaces */;
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 92 "lex.l"
+#line 97 "lex.l"
 ECHO;
 	YY_BREAK
-#line 1205 "scanner.c"
+#line 1211 "scanner.cpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(C_COMMENT):
 	yyterminate();
@@ -2221,10 +2227,20 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 92 "lex.l"
+#line 97 "lex.l"
 
 
-/* Na ftiaxo tis diafores metaxi id kai identifier */
+alpha_token_t Initialize(unsigned int numline,unsigned int numToken,char* content , char* type ) {
+    alpha_token_t a;
+    a.numline = numline;
+    a.numToken = numToken;
+    a.content = content;
+    a.type = type;
+    return a;
+}
+
+/* Na ftiaxo tis diafores metaxi id kai identifier , na mporoume na teliosoyme otan diabazoyme apo to std in.
+na ftiaxoume to struct kai oti allo xreiazetai*/
 int main(int argc, char** argv) {
     if(argc > 1){
         if(!(yyin = fopen(argv[1], "r"))) {
@@ -2234,13 +2250,13 @@ int main(int argc, char** argv) {
         yyout = fopen(argv[2], "w");
     }
     else {
-        yyin = stdin; /* na tsekaro pote teleionei kai epishs na leitoyrgei otan den dino output file */
+        yyin = stdin; /* na tsekaro pote teleionei kai epishs na leitoyrgei otan den dino output file px na ta ektiponei sto std out */
         yyout = stdout;
     }
 
     fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n\n");
     yylex();
-    /* alpha_yylex(); */
-	/* fprintf(yyout, "\nTotal Tokens = %d", total); */
+    alpha_yylex((void*) &token); 
+	fprintf(yyout, "\nTotal Tokens = %d", total); 
     return 0;
 }

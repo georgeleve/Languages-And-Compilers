@@ -6,11 +6,9 @@ Creating a C compiler in C++ for CS340 course at University of Crete.
 
 How to run it:
 
-1st command: flex --outfile scanner.c lex.l
+1st command: flex --outfile scanner.cpp lex.l
 
-2nd command: gcc -o scanner scanner.c
+2nd command: g++ -o scanner scanner.cpp
 
 3rd command: ./scanner
-
-george the big dicker
 
