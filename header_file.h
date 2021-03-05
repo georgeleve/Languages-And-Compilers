@@ -1,4 +1,3 @@
-
 struct alpha_token_t {
   unsigned int  numline;
   unsigned int  numToken;
