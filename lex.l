@@ -30,47 +30,47 @@ comment "//".*
 [A-Za-z] { total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);                         }
 
 
-"if"        { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  IF <-enumerated\n", no_of_lines, total, yytext);       }
-"else"      { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  ELSE <-enumerated\n", no_of_lines, total, yytext);     }
-"while"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  WHILE <-enumerated\n", no_of_lines, total, yytext);    }
-"for"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  FOR <-enumerated\n", no_of_lines, total, yytext);      }
-"function"  { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  FUNCTION <-enumerated\n", no_of_lines, total, yytext); }
-"return"    { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  RETURN <-enumerated\n", no_of_lines, total, yytext);   }
-"break"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  BREAK <-enumerated\n", no_of_lines, total, yytext);    }
-"continue"  { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD CONTINUE <-enumerated\n", no_of_lines, total, yytext);  }
-"and"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  AND <-enumerated\n", no_of_lines, total, yytext);      }
-"not"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  NOT <-enumerated\n", no_of_lines, total, yytext);      }
-"or"        { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  OR <-enumerated\n", no_of_lines, total, yytext);       }
-"local"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  LOCAL <-enumerated\n", no_of_lines, total, yytext);    }
-"true"      { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  TRUE <-enumerated\n", no_of_lines, total, yytext);     }
-"false"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD  FALSE <-enumerated\n", no_of_lines, total, yytext);    }
-"nil"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD NIL <-enumerated\n", no_of_lines, total, yytext);       }
+"if"        { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD IF <-enumerated\n", no_of_lines, total, yytext);       }
+"else"      { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD ELSE <-enumerated\n", no_of_lines, total, yytext);     }
+"while"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD WHILE <-enumerated\n", no_of_lines, total, yytext);    }
+"for"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FOR <-enumerated\n", no_of_lines, total, yytext);      }
+"function"  { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FUNCTION <-enumerated\n", no_of_lines, total, yytext); }
+"return"    { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD RETURN <-enumerated\n", no_of_lines, total, yytext);   }
+"break"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD BREAK <-enumerated\n", no_of_lines, total, yytext);    }
+"continue"  { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD CONTINUE <-enumerated\n", no_of_lines, total, yytext); }
+"and"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD AND <-enumerated\n", no_of_lines, total, yytext);      }
+"not"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD NOT <-enumerated\n", no_of_lines, total, yytext);      }
+"or"        { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD OR <-enumerated\n", no_of_lines, total, yytext);       }
+"local"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD LOCAL <-enumerated\n", no_of_lines, total, yytext);    }
+"true"      { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD TRUE <-enumerated\n", no_of_lines, total, yytext);     }
+"false"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FALSE <-enumerated\n", no_of_lines, total, yytext);    }
+"nil"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD NIL <-enumerated\n", no_of_lines, total, yytext);      }
 
-"="	    { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  EQUAL <-enumerated\n", no_of_lines, total, yytext);          } 
-"+"		{ total++; fprintf(yyout, "%d: #%d  \"\"%s\"\" OPERATOR  PLUS <-enumerated\n", no_of_lines, total, yytext);       }
-"-"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  MINUS <-enumerated\n", no_of_lines, total, yytext);          } 
-"*"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  MUL <-enumerated\n", no_of_lines, total, yytext);            } 
-"/"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  DIVISION <-enumerated\n", no_of_lines, total, yytext);       } 
-"%"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  PERCENTAGE <-enumerated\n", no_of_lines, total, yytext);     } 
-"=="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  EQUAL_EQUAL <-enumerated\n", no_of_lines, total, yytext);    }
-"!="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  NOTEQUAL <-enumerated\n", no_of_lines, total, yytext);       } 
-"++"	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  PLUS_PLUS <-enumerated\n", no_of_lines, total, yytext);      } 
-"--"	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  MINUS_MINUS <-enumerated\n", no_of_lines, total, yytext);    } 
-">"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  GREATER <-enumerated\n", no_of_lines, total, yytext);        } 
-"<"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  LESS_THAN <-enumerated\n", no_of_lines, total, yytext);      } 
-">="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  GREATER_EQUAL <-enumerated\n", no_of_lines, total, yytext);  } 
-"<="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  LESS_EQUAL <-enumerated\n", no_of_lines, total, yytext);     } 
+"="	    { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  EQUAL <-enumerated\n", no_of_lines, total, yytext);         } 
+"+"		{ total++; fprintf(yyout, "%d: #%d  \"\"%s\"\" OPERATOR  PLUS <-enumerated\n", no_of_lines, total, yytext);      }
+"-"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MINUS <-enumerated\n", no_of_lines, total, yytext);          } 
+"*"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MUL <-enumerated\n", no_of_lines, total, yytext);            } 
+"/"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR DIVISION <-enumerated\n", no_of_lines, total, yytext);       } 
+"%"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR PERCENTAGE <-enumerated\n", no_of_lines, total, yytext);     } 
+"=="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR EQUAL_EQUAL <-enumerated\n", no_of_lines, total, yytext);    }
+"!="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR NOTEQUAL <-enumerated\n", no_of_lines, total, yytext);       } 
+"++"	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR PLUS_PLUS <-enumerated\n", no_of_lines, total, yytext);      } 
+"--"	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MINUS_MINUS <-enumerated\n", no_of_lines, total, yytext);    } 
+">"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR GREATER <-enumerated\n", no_of_lines, total, yytext);        } 
+"<"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR LESS_THAN <-enumerated\n", no_of_lines, total, yytext);      } 
+">="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR GREATER_EQUAL <-enumerated\n", no_of_lines, total, yytext);  } 
+"<="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR LESS_EQUAL <-enumerated\n", no_of_lines, total, yytext);     } 
 
-"{"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
-"}"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
+"{"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
+"}"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
 "["     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
 "]"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
 "("     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
 ")"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
 ";"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION SEMICOLON <-enumerated\n" , no_of_lines, total, yytext);      }
 ","     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION COMMA <-enumerated\n" , no_of_lines, total, yytext);          }
-":"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION MPLAMPLA <-enumerated\n" , no_of_lines, total, yytext);       }
-"::"    { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOUBLEMPLAMPLA <-enumerated\n" , no_of_lines, total, yytext); }
+":"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION COLON <-enumerated\n" , no_of_lines, total, yytext);          }
+"::"    { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOUBLE_COLON <-enumerated\n" , no_of_lines, total, yytext);   }
 "."     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOT <-enumerated\n" , no_of_lines, total, yytext);            }
 ".."    { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOUBLEDOT <-enumerated\n" , no_of_lines, total, yytext);      }
 
@@ -79,7 +79,7 @@ comment "//".*
 {comment} { total++; fprintf(yyout, "%d: #%d   \"\" COMMENT LINE_COMMENT <-enumerated\n" , no_of_lines, total);      }
 
 "/*"            { BEGIN(C_COMMENT); }
-<C_COMMENT>"*/" { BEGIN(INITIAL); }
+<C_COMMENT>"*/" { BEGIN(INITIAL);   }
 <C_COMMENT>.    { }
 <C_COMMENT>\n   { }
 
@@ -91,7 +91,8 @@ comment "//".*
 
 %%
 
-/* Na ftiaxo tis diafores metaxi id kai identifier */
+/* Na ftiaxo tis diafores metaxi id kai identifier , na mporoume na teliosoyme otan diabazoyme apo to std in.
+na ftiaxoume to struct kai oti allo xreiazetai*/
 int main(int argc, char** argv) {
     if(argc > 1){
         if(!(yyin = fopen(argv[1], "r"))) {
