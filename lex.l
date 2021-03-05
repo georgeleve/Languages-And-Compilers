@@ -1,16 +1,12 @@
 %{
-
-#include <bits/stdc++.h>
-#include <stdlib.h>
-#include <stdio.h>
 #include "header_file.h"
-using namespace std;
 
-alpha_token_t Initialize(unsigned int numline,unsigned int numToken,char* content , char* type );
-vector <alpha_token_t> token;
+int alpha_yylex (vector<alpha_token*> &yval);
+
+alpha_token* Initialize(unsigned int numline, unsigned int numToken,string content , string type);
 int total = 0;
 int no_of_lines = 1;
-#define YY_DECL int alpha_yylex(void* yval);     // na to kano uncomment kapoia stigmh
+#define YY_DECL int alpha_yylex(vector<alpha_token*> &yval)     // na to kano uncomment kapoia stigmh
 %}
 
 /* Flex options */
@@ -28,6 +24,23 @@ comment "//".*
 
 \n  no_of_lines++; 
 
+
+"if"        { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD IF <-enumerated\n", no_of_lines, total, yytext); yval.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));}
+"else"      { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD ELSE <-enumerated\n", no_of_lines, total, yytext);  yval.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));  }
+"while"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD WHILE <-enumerated\n", no_of_lines, total, yytext);  yval.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));   }
+"for"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FOR <-enumerated\n", no_of_lines, total, yytext);   yval.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));    }
+"function"  { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FUNCTION <-enumerated\n", no_of_lines, total, yytext);  yval.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD")); }
+"return"    { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD RETURN <-enumerated\n", no_of_lines, total, yytext);  yval.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));  }
+"break"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD BREAK <-enumerated\n", no_of_lines, total, yytext);  yval.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));   }
+"continue"  { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD CONTINUE <-enumerated\n", no_of_lines, total, yytext);  yval.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD")); }
+"and"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD AND <-enumerated\n", no_of_lines, total, yytext);   yval.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));    }
+"not"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD NOT <-enumerated\n", no_of_lines, total, yytext);    yval.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));   }
+"or"        { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD OR <-enumerated\n", no_of_lines, total, yytext);    yval.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));    }
+"local"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD LOCAL <-enumerated\n", no_of_lines, total, yytext);    }
+"true"      { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD TRUE <-enumerated\n", no_of_lines, total, yytext);     }
+"false"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FALSE <-enumerated\n", no_of_lines, total, yytext);    }
+"nil"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD NIL <-enumerated\n", no_of_lines, total, yytext);      }
+
 [0-9]+    { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext); }
 "-"[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext);       }
 [0-9]*"."[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext);   } 
@@ -35,36 +48,21 @@ comment "//".*
 ^[a-zA-Z_][a-zA-Z0-9_]* { total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);          }
 [A-Za-z] { total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);                         }
 
-"if"        { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD IF <-enumerated\n", no_of_lines, total, yytext); token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));}
-"else"      { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD ELSE <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));  }
-"while"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD WHILE <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));   }
-"for"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FOR <-enumerated\n", no_of_lines, total, yytext);   token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));    }
-"function"  { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FUNCTION <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD")); }
-"return"    { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD RETURN <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));  }
-"break"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD BREAK <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));   }
-"continue"  { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD CONTINUE <-enumerated\n", no_of_lines, total, yytext);  token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD")); }
-"and"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD AND <-enumerated\n", no_of_lines, total, yytext);   token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));    }
-"not"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD NOT <-enumerated\n", no_of_lines, total, yytext);    token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));   }
-"or"        { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD OR <-enumerated\n", no_of_lines, total, yytext);    token.push_back(Initialize(no_of_lines,total,yytext,"KEYWORD"));    }
-"local"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD LOCAL <-enumerated\n", no_of_lines, total, yytext);    }
-"true"      { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD TRUE <-enumerated\n", no_of_lines, total, yytext);     }
-"false"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FALSE <-enumerated\n", no_of_lines, total, yytext);    }
-"nil"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD NIL <-enumerated\n", no_of_lines, total, yytext);      }
 
-"="	    { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  EQUAL <-enumerated\n", no_of_lines, total, yytext);         } 
-"+"		{ total++; fprintf(yyout, "%d: #%d  \"\"%s\"\" OPERATOR  PLUS <-enumerated\n", no_of_lines, total, yytext);      }
-"-"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MINUS <-enumerated\n", no_of_lines, total, yytext);          } 
-"*"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MULTIPLICATION <-enumerated\n", no_of_lines, total, yytext);  } 
-"/"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR DIVISION <-enumerated\n", no_of_lines, total, yytext);       } 
-"%"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR PERCENTAGE <-enumerated\n", no_of_lines, total, yytext);     } 
-"=="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR EQUAL_EQUAL <-enumerated\n", no_of_lines, total, yytext);    }
-"!="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR NOTEQUAL <-enumerated\n", no_of_lines, total, yytext);       } 
-"++"	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR PLUS_PLUS <-enumerated\n", no_of_lines, total, yytext);      } 
-"--"	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MINUS_MINUS <-enumerated\n", no_of_lines, total, yytext);    } 
-">"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR GREATER <-enumerated\n", no_of_lines, total, yytext);        } 
-"<"		{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR LESS_THAN <-enumerated\n", no_of_lines, total, yytext);      } 
-">="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR GREATER_EQUAL <-enumerated\n", no_of_lines, total, yytext);  } 
-"<="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR LESS_EQUAL <-enumerated\n", no_of_lines, total, yytext);     } 
+"="     { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  EQUAL <-enumerated\n", no_of_lines, total, yytext);         } 
+"+"     { total++; fprintf(yyout, "%d: #%d  \"\"%s\"\" OPERATOR  PLUS <-enumerated\n", no_of_lines, total, yytext);      }
+"-"     { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MINUS <-enumerated\n", no_of_lines, total, yytext);          } 
+"*"     { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MULTIPLICATION <-enumerated\n", no_of_lines, total, yytext);  } 
+"/"     { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR DIVISION <-enumerated\n", no_of_lines, total, yytext);       } 
+"%"     { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR PERCENTAGE <-enumerated\n", no_of_lines, total, yytext);     } 
+"=="    { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR EQUAL_EQUAL <-enumerated\n", no_of_lines, total, yytext);    }
+"!="    { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR NOTEQUAL <-enumerated\n", no_of_lines, total, yytext);       } 
+"++"    { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR PLUS_PLUS <-enumerated\n", no_of_lines, total, yytext);      } 
+"--"    { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MINUS_MINUS <-enumerated\n", no_of_lines, total, yytext);    } 
+">"     { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR GREATER <-enumerated\n", no_of_lines, total, yytext);        } 
+"<"     { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR LESS_THAN <-enumerated\n", no_of_lines, total, yytext);      } 
+">="    { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR GREATER_EQUAL <-enumerated\n", no_of_lines, total, yytext);  } 
+"<="    { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR LESS_EQUAL <-enumerated\n", no_of_lines, total, yytext);     } 
 
 "{"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
 "}"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
@@ -96,14 +94,15 @@ comment "//".*
 
 %%
 
-alpha_token_t Initialize(unsigned int numline,unsigned int numToken,char* content , char* type ) {
-    alpha_token_t a;
-    a.numline = numline;
-    a.numToken = numToken;
-    a.content = content;
-    a.type = type;
+alpha_token* Initialize(unsigned int numline,unsigned int numToken, string content , string type ) {
+    alpha_token* a = (alpha_token*) malloc(sizeof(alpha_token));
+    a->numline = numline;
+    a->numToken = numToken;
+    a->content = content;
+    a->type = type;
     return a;
 }
+
 
 /* Na ftiaxo tis diafores metaxi id kai identifier , na mporoume na teliosoyme otan diabazoyme apo to std in.
 na ftiaxoume to struct kai oti allo xreiazetai*/
@@ -121,8 +120,14 @@ int main(int argc, char** argv) {
     }
 
     fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n\n");
-    /*yylex(); */
-    alpha_yylex((void*) &token); 
-	fprintf(yyout, "\nTotal Tokens = %d", total); 
+
+    vector<alpha_token*> token;
+    alpha_yylex(token); 
+    fprintf(yyout, "\nTotal Tokens = %d %d", total,token.size()); 
+    for(auto a : token) {
+
+        
+        fprintf(yyout, "%s DICKS %d", a->content.c_str(),a->numline); 
+    }
     return 0;
 }

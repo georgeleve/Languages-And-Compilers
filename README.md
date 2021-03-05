@@ -12,3 +12,17 @@ How to run it:
 
 3rd command: ./scanner
 
+flex --outfile scanner.cpp lex.l && g++ -o scanner scanner.cpp
+
+full crap:
+flex --outfile scanner.cpp lex.l && g++ -o scanner scanner.cpp && ./scanner input.txt output.txt
+
+TO DO:
+1) Sto gamo header file to type na to kanete enum.
+2) Na oloklirosete ola ta vector pushback
+3) NA KRATISETE BACKUP TA PROTA 2
+4) HANDLE TA COMMENTS
+5) HANDLE TA STRINGS
+6) O KOSTAS NA FTIAKSEI TIN MAIN ANTHROPINI
+
+PROERETIKO) AN SAS VGEI na kanete to token output stream overload gia na to tiponoume xoris karkino (SPOUTSAMAS)

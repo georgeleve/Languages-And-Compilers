@@ -1,3 +1,9 @@
 --------------------   Lexical Analysis   --------------------
 
-1: #1  "if" IDENT <-ident
+1: #1  "if" KEYWORD IF <-enumerated
+2: #2  "if" KEYWORD IF <-enumerated
+3: #3  "if" KEYWORD IF <-enumerated
+4: #4  "if" KEYWORD IF <-enumerated
+5: #5  "if" KEYWORD IF <-enumerated
+
+Total Tokens = 5 5if DICKS 1if DICKS 2if DICKS 3if DICKS 4if DICKS 5
