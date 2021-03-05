@@ -8,12 +8,14 @@ int no_of_lines = 1;
 /* Flex options */
 %option noyywrap
 %option yylineno
-
+%option noyywrap
 
 /* Flex macros */
 id [a-zA-Z][a-zA-Z_0-9]*
 string \"[^\n"]*\"
 comment "//".*
+
+%x C_COMMENT
 
 %%
 
@@ -58,8 +60,8 @@ comment "//".*
 ">="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  GREATER_EQUAL <-enumerated\n", no_of_lines, total, yytext);  } 
 "<="	{ total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  LESS_EQUAL <-enumerated\n", no_of_lines, total, yytext);     } 
 
-"{"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
-"}"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
+"{"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
+"}"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
 "["     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
 "]"     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION LEFT_BRACE <-enumerated\n" , no_of_lines, total, yytext);     }
 "("     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION RIGHT_BRACE <-enumerated\n" , no_of_lines, total, yytext);    }
@@ -71,32 +73,39 @@ comment "//".*
 "."     { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOT <-enumerated\n" , no_of_lines, total, yytext);            }
 ".."    { total++; fprintf(yyout, "%d: #%d   \"%s\" PUNCTUATION DOUBLEDOT <-enumerated\n" , no_of_lines, total, yytext);      }
 
-"/*"    { total++; fprintf(yyout, "\"%d - " , no_of_lines);       }
-"*/"    { total++; fprintf(yyout, "%d\": #%d  COMMENT BLOCK_COMMENT <-enumerated\n" , no_of_lines, total);      }
-
 {id} { total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", no_of_lines, total, yytext, yytext);  }
 {string} { total++; fprintf(yyout, "%d: #%d  %s STRING %s <-char*\n", no_of_lines, total, yytext, yytext);  }
 {comment} { total++; fprintf(yyout, "%d: #%d   \"\" COMMENT LINE_COMMENT <-enumerated\n" , no_of_lines, total);      }
 
-[\t\n]+   /*ignore wite spaces and newlines */
-[[:space:]]+                ; /* Ignore whitespace */
+"/*"            { BEGIN(C_COMMENT); }
+<C_COMMENT>"*/" { BEGIN(INITIAL); }
+<C_COMMENT>.    { }
+<C_COMMENT>\n   { }
+
+. { printf("%s", yytext); }
+
+[\t]+   /*ignore wite spaces and newlines */
+[[:space:]]+; /* Ignore whitespace */
 
 %%
+
+/* Na ftiaxo tis diafores metaxi id kai identifier */
 int main(int argc, char** argv) {
     if(argc > 1){
         if(!(yyin = fopen(argv[1], "r"))) {
             fprintf(stderr, "Cannot read file: %s\n", argv[1]);
             return 1;
         }
+        yyout = fopen(argv[2], "w");
     }
-    else
-        yyin = stdin; /* na tsekaro pote teleionei */
-    
-    yyout = fopen(argv[2], "w");
+    else {
+        yyin = stdin; /* na tsekaro pote teleionei kai epishs na leitoyrgei otan den dino output file */
+        yyout = stdout;
+    }
 
     fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n\n");
     yylex();
-	fprintf(yyout, "\nTotal Tokens = %d", total);
+	/* fprintf(yyout, "\nTotal Tokens = %d", total); */
     return 0;
 }
 
