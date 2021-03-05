@@ -11,3 +11,6 @@ How to run it:
 2nd command: gcc -o scanner scanner.c
 
 3rd command: ./scanner
+
+george the big dicker
+
