@@ -6,9 +6,8 @@ int no_of_lines = 1;
 %}
 
 /* Flex options */
-%option noyywrap
+%option noyywrap /* read only one input file */
 %option yylineno
-%option noyywrap
 
 /* Flex macros */
 id [a-zA-Z][a-zA-Z_0-9]*
