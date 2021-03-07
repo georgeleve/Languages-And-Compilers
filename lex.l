@@ -2,11 +2,10 @@
 #include "header_file.h"
 
 int alpha_yylex (vector<alpha_token*> &yval);
-
 alpha_token* init_token(unsigned int numline,unsigned int numToken,string content,enum type);
 int total = 0;
 int no_of_lines = 1;
-#define YY_DECL int alpha_yylex(vector<alpha_token*> &yval)     // na to kano uncomment kapoia stigmh
+#define YY_DECL int alpha_yylex(vector<alpha_token*> &yval)
 %}
 
 /* Flex options */
@@ -48,7 +47,6 @@ comment "//".*
 ^[a-zA-Z_][a-zA-Z0-9_]* { total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);      yval.push_back(init_token(no_of_lines,total,yytext,type::IDENT));    }
 [A-Za-z] { total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);          yval.push_back(init_token(no_of_lines,total,yytext,type::IDENT));               }
 
-
 "="     { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  EQUAL <-enumerated\n", no_of_lines, total, yytext);    yval.push_back(init_token(no_of_lines,total,yytext,type::OPERATOR));     } 
 "+"     { total++; fprintf(yyout, "%d: #%d  \"\"%s\"\" OPERATOR  PLUS <-enumerated\n", no_of_lines, total, yytext);    yval.push_back(init_token(no_of_lines,total,yytext,type::OPERATOR));    }
 "-"     { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR MINUS <-enumerated\n", no_of_lines, total, yytext);       yval.push_back(init_token(no_of_lines,total,yytext,type::OPERATOR));     } 
@@ -88,9 +86,7 @@ comment "//".*
 
 . { printf("%s", yytext); }
 
-[\t]+   /*ignore wite spaces and newlines */
-[[:space:]]+; /* Ignore whitespace */
-[ \t]* /* ignores whitespaces */;
+[\t]+ /* ignore wite spaces and newlines */ 
 
 %%
 
@@ -102,7 +98,6 @@ alpha_token* init_token(unsigned int numline, unsigned int numToken, string cont
     a->token_type = t_type;
     return a;
 }
-
 
 /* Na ftiaxo tis diafores metaxi id kai identifier , na mporoume na teliosoyme otan diabazoyme apo to std in.
 na ftiaxoume to struct kai oti allo xreiazetai*/
@@ -120,14 +115,10 @@ int main(int argc, char** argv) {
     }
 
     fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n\n");
-
     vector<alpha_token*> token;
     alpha_yylex(token); 
-    // fprintf(yyout, "\nTotal Tokens = %d %d", total,token.size()); 
     cout << "Total Tokens:" << token.size() << endl;
-    for(auto a : token) {
-        
-        fprintf(yyout, "%s %d", a->content.c_str(),a->numline); 
-    }
+    for(auto a : token)
+        fprintf(yyout, "%d  %s", a->numline, a->content.c_str()); 
     return 0;
 }

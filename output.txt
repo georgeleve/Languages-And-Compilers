@@ -26,5 +26,15 @@
 24: #24  "if" KEYWORD IF <-enumerated
 25: #25  "if" KEYWORD IF <-enumerated
 26: #26  "if" KEYWORD IF <-enumerated
-27: #27  "if" KEYWORD IF <-enumerated
-if 1if 2if 3if 4if 5if 6if 7if 8if 9if 10if 11if 12if 13if 14if 15if 16if 17if 18if 19if 20if 21if 22if 23if 24if 25if 26if 27
+26: #27  "else" KEYWORD ELSE <-enumerated
+26: #28   "{" PUNCTUATION LEFT_BRACE <-enumerated
+26: #29   "]" PUNCTUATION RIGHT_BRACE <-enumerated
+27: #30   ";" PUNCTUATION SEMICOLON <-enumerated
+28: #31   ":" PUNCTUATION COLON <-enumerated
+28: #32   ".." PUNCTUATION DOUBLE_DOT <-enumerated
+28: #33   "." PUNCTUATION DOT <-enumerated
+28: #34  "jhdskjvhn" ID "jhdskjvhn" <-char*
+31: #35  "this  is  a  string   with   tabs and spaces . " STRING "this  is  a  string   with   tabs and spaces . " <-char*
+35: #36   "}" PUNCTUATION RIGHT_BRACE <-enumerated
+36: #37  "if" KEYWORD IF <-enumerated
+1  if2  if3  if4  if5  if6  if7  if8  if9  if10  if11  if12  if13  if14  if15  if16  if17  if18  if19  if20  if21  if22  if23  if24  if25  if26  if26  else26  {26  ]27  ;28  :28  ..28  .28  jhdskjvhn31  "this  is  a  string   with   tabs and spaces . "35  }36  if
