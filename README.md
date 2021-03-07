@@ -20,7 +20,7 @@ flex --outfile scanner.cpp lex.l && g++ -o scanner scanner.cpp && ./scanner inpu
 TO DO:
 1) Sto gamo header file to type na to kanete enum. done
 2) Na oloklirosete ola ta vector pushback  done
-3) NA KRATISETE BACKUP TA PROTA 2 
+3) NA KRATISETE BACKUP TA PROTA 2 done
 4) HANDLE TA COMMENTS
 5) HANDLE TA STRINGS
 6) O LEVE NA FTIAKSEI TIN MAIN ANTHROPINI
