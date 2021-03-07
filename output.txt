@@ -1,40 +1,10 @@
 --------------------   Lexical Analysis   --------------------
 
-1: #1  "if" KEYWORD IF <-enumerated
-2: #2  "if" KEYWORD IF <-enumerated
-3: #3  "if" KEYWORD IF <-enumerated
-4: #4  "if" KEYWORD IF <-enumerated
-5: #5  "if" KEYWORD IF <-enumerated
-6: #6  "if" KEYWORD IF <-enumerated
-7: #7  "if" KEYWORD IF <-enumerated
-8: #8  "if" KEYWORD IF <-enumerated
-9: #9  "if" KEYWORD IF <-enumerated
-10: #10  "if" KEYWORD IF <-enumerated
-11: #11  "if" KEYWORD IF <-enumerated
-12: #12  "if" KEYWORD IF <-enumerated
-13: #13  "if" KEYWORD IF <-enumerated
-14: #14  "if" KEYWORD IF <-enumerated
-15: #15  "if" KEYWORD IF <-enumerated
-16: #16  "if" KEYWORD IF <-enumerated
-17: #17  "if" KEYWORD IF <-enumerated
-18: #18  "if" KEYWORD IF <-enumerated
-19: #19  "if" KEYWORD IF <-enumerated
-20: #20  "if" KEYWORD IF <-enumerated
-21: #21  "if" KEYWORD IF <-enumerated
-22: #22  "if" KEYWORD IF <-enumerated
-23: #23  "if" KEYWORD IF <-enumerated
-24: #24  "if" KEYWORD IF <-enumerated
-25: #25  "if" KEYWORD IF <-enumerated
-26: #26  "if" KEYWORD IF <-enumerated
-26: #27  "else" KEYWORD ELSE <-enumerated
-26: #28   "{" PUNCTUATION LEFT_BRACE <-enumerated
-26: #29   "]" PUNCTUATION RIGHT_BRACE <-enumerated
-27: #30   ";" PUNCTUATION SEMICOLON <-enumerated
-28: #31   ":" PUNCTUATION COLON <-enumerated
-28: #32   ".." PUNCTUATION DOUBLE_DOT <-enumerated
-28: #33   "." PUNCTUATION DOT <-enumerated
-28: #34  "jhdskjvhn" ID "jhdskjvhn" <-char*
-31: #35  "this  is  a  string   with   tabs and spaces . " STRING "this  is  a  string   with   tabs and spaces . " <-char*
-35: #36   "}" PUNCTUATION RIGHT_BRACE <-enumerated
-36: #37  "if" KEYWORD IF <-enumerated
-1  if2  if3  if4  if5  if6  if7  if8  if9  if10  if11  if12  if13  if14  if15  if16  if17  if18  if19  if20  if21  if22  if23  if24  if25  if26  if26  else26  {26  ]27  ;28  :28  ..28  .28  jhdskjvhn31  "this  is  a  string   with   tabs and spaces . "35  }36  if
+1: #0 "1 -  1" COMMENT  BLOCK_COMMENT  <-enumerated
+3: #1  "if" KEYWORD IF <-enumerated
+4: #2  "if" KEYWORD IF <-enumerated
+5: #3  "if" KEYWORD IF <-enumerated
+6: #4  "if" KEYWORD IF <-enumerated
+7: #5  "if" KEYWORD IF <-enumerated
+8: #6  "if" KEYWORD IF <-enumerated
+3  if4  if5  if6  if7  if8  if

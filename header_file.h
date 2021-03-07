@@ -10,6 +10,4 @@ typedef struct alpha_token_t {
   enum type token_type;
 } alpha_token;
 
-
-
 int alpha_yylex (vector<alpha_token> &yval);

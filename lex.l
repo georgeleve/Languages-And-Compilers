@@ -23,7 +23,6 @@ comment "//".*
 
 \n  no_of_lines++; 
 
-
 "if"        { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD IF <-enumerated\n", no_of_lines, total, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::KEYWORD));}
 "else"      { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD ELSE <-enumerated\n", no_of_lines, total, yytext);  yval.push_back(init_token(no_of_lines,total,yytext,type::KEYWORD));  }
 "while"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD WHILE <-enumerated\n", no_of_lines, total, yytext);  yval.push_back(init_token(no_of_lines,total,yytext,type::KEYWORD));   }
@@ -39,13 +38,6 @@ comment "//".*
 "true"      { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD TRUE <-enumerated\n", no_of_lines, total, yytext);  yval.push_back(init_token(no_of_lines,total,yytext,type::KEYWORD));   }
 "false"     { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD FALSE <-enumerated\n", no_of_lines, total, yytext);  yval.push_back(init_token(no_of_lines,total,yytext,type::KEYWORD));  }
 "nil"       { total++; fprintf(yyout, "%d: #%d  \"%s\" KEYWORD NIL <-enumerated\n", no_of_lines, total, yytext);  yval.push_back(init_token(no_of_lines,total,yytext,type::KEYWORD));    }
-
-[0-9]+    { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_INT)); }
-"-"[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext);    yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_INT));   }
-[0-9]*"."[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));  } 
-[-][0-9]*"."[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));}
-^[a-zA-Z_][a-zA-Z0-9_]* { total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);      yval.push_back(init_token(no_of_lines,total,yytext,type::IDENT));    }
-[A-Za-z] { total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);          yval.push_back(init_token(no_of_lines,total,yytext,type::IDENT));               }
 
 "="     { total++; fprintf(yyout, "%d: #%d  \"%s\" OPERATOR  EQUAL <-enumerated\n", no_of_lines, total, yytext);    yval.push_back(init_token(no_of_lines,total,yytext,type::OPERATOR));     } 
 "+"     { total++; fprintf(yyout, "%d: #%d  \"\"%s\"\" OPERATOR  PLUS <-enumerated\n", no_of_lines, total, yytext);    yval.push_back(init_token(no_of_lines,total,yytext,type::OPERATOR));    }
@@ -79,8 +71,14 @@ comment "//".*
 {string} { total++; fprintf(yyout, "%d: #%d  %s STRING %s <-char*\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::STRING)); }
 {comment} { total++; fprintf(yyout, "%d: #%d   \"\" COMMENT LINE_COMMENT <-enumerated\n" , no_of_lines, total); yval.push_back(init_token(no_of_lines,total,yytext,type::COMMENT));      }
 
-"/*"            { BEGIN(C_COMMENT); }
-<C_COMMENT>"*/" { BEGIN(INITIAL);   }
+[0-9]+    { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_INT)); }
+"-"[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext);    yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_INT));   }
+[0-9]*"."[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));  } 
+[-][0-9]*"."[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));}
+^[a-zA-Z_][a-zA-Z0-9_]* { total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);      yval.push_back(init_token(no_of_lines,total,yytext,type::IDENT));    }
+
+"/*"            { BEGIN(C_COMMENT); fprintf(yyout, "%d: #%d \"%d - ", no_of_lines, total, no_of_lines);}
+<C_COMMENT>"*/" { BEGIN(INITIAL);   fprintf(yyout, "%d\" COMMENT  BLOCK_COMMENT  <-enumerated\n", no_of_lines); }
 <C_COMMENT>.    { }
 <C_COMMENT>\n   { }
 
@@ -91,7 +89,7 @@ comment "//".*
 %%
 
 alpha_token* init_token(unsigned int numline, unsigned int numToken, string content, enum type t_type) {
-    alpha_token* a = (alpha_token*) malloc(100*sizeof(alpha_token)); // fix this later
+    alpha_token* a = (alpha_token*) malloc(sizeof(alpha_token)); // fix this later
     a->numline = numline;
     a->numToken = numToken;
     a->content = content;
