@@ -71,7 +71,6 @@ comment "//".*
 "-"[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext);    yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_INT));   }
 [0-9]*"."[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));  } 
 [-][0-9]*"."[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));}
-^[a-zA-Z_][a-zA-Z0-9_]* { total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);      yval.push_back(init_token(no_of_lines,total,yytext,type::IDENT));    }
 
 {id} { total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::ID)); }
 {string} { total++; fprintf(yyout, "%d: #%d  %s STRING %s <-char*\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::STRING)); }

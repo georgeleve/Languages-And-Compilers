@@ -9,14 +9,13 @@ How to run it:
 flex --outfile scanner.cpp lex.l && g++ -o scanner scanner.cpp && ./scanner input.txt output.txt
 
 TO DO:
-1) Sto gamo header file to type na to kanete enum. done
-2) Na oloklirosete ola ta vector pushback  done
-3) NA KRATISETE BACKUP TA PROTA 2 done
 4) HANDLE TA COMMENTS
 5) HANDLE TA STRINGS
 6) NA FTIAKSoume TIN MAIN
+7) ERROR SE UNDEFINED CHAR
 
-na ftiaksoume to ident
+o leve gamietai
+
 
 PROERETIKO) AN SAS VGEI na kanete to token output stream overload gia na to tiponoume xoris karkino (SPOUTSAMAS)
 
