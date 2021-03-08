@@ -1,10 +1,15 @@
 --------------------   Lexical Analysis   --------------------
 
-1: #0 "1 -  1" COMMENT  BLOCK_COMMENT  <-enumerated
-3: #1  "if" KEYWORD IF <-enumerated
-4: #2  "if" KEYWORD IF <-enumerated
-5: #3  "if" KEYWORD IF <-enumerated
-6: #4  "if" KEYWORD IF <-enumerated
-7: #5  "if" KEYWORD IF <-enumerated
-8: #6  "if" KEYWORD IF <-enumerated
-3  if4  if5  if6  if7  if8  if
+2: #1  "32" CONST_INT 32 <-integer
+2: #2  "s" ID "s" <-char*
+4: #3  "s23__2321" IDENT <-ident
+4: #4  "thisismystring" STRING "thisismystring" <-char*
+6: #5  "thisismyid" IDENT <-ident
+9: #5 "9 - 9" COMMENT  BLOCK_COMMENT  <-enumerated
+11: #6  "if" KEYWORD IF <-enumerated
+12: #7  "if" KEYWORD IF <-enumerated
+13: #8  "if" KEYWORD IF <-enumerated
+14: #9  "if" KEYWORD IF <-enumerated
+15: #10  "if" KEYWORD IF <-enumerated
+16: #11  "if" KEYWORD IF <-enumerated
+2  322  s4  s23__23214  "thisismystring"6  thisismyid11  if12  if13  if14  if15  if16  if

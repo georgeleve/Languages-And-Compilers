@@ -386,25 +386,25 @@ struct yy_trans_info
 static const flex_int16_t yy_accept[187] =
     {   0,
         0,    0,    0,    0,   58,   55,   55,    1,   55,   55,
-       22,   35,   36,   20,   18,   38,   19,   41,   21,   46,
-       39,   37,   28,   17,   27,   43,   33,   34,   43,   43,
-       43,   43,   43,   43,   43,   43,   43,   43,   43,   43,
-       31,   32,   43,   50,   43,   43,   43,   43,   43,   43,
-       43,   43,   43,   43,   43,   43,   53,   54,   53,   56,
-       24,    0,   44,   25,   26,    0,   47,   42,   48,   51,
-       45,    0,   46,   40,   30,   23,   29,   43,   43,   43,
-       43,   43,   43,   43,   43,    2,   43,   43,   43,   12,
-       43,   43,   43,   43,   50,   43,   43,   43,   43,   43,
+       22,   35,   36,   20,   18,   38,   19,   41,   21,   43,
+       39,   37,   28,   17,   27,   48,   33,   34,   48,   48,
+       48,   48,   48,   48,   48,   48,   48,   48,   48,   48,
+       31,   32,   47,   47,   47,   47,   47,   47,   47,   47,
+       47,   47,   47,   47,   47,   47,   53,   54,   53,   56,
+       24,    0,   49,   25,   26,    0,   44,   42,   45,   51,
+       50,    0,   43,   40,   30,   23,   29,   48,   48,   48,
+       48,   48,   48,   48,   48,    2,   48,   48,   48,   12,
+       48,   48,   48,   47,   47,   47,   47,   47,   47,   47,
 
-       43,   43,    2,   43,   43,   43,   12,   43,   43,   43,
-       52,   49,   45,   10,   43,   43,   43,   43,    5,   43,
-       43,   16,   11,   43,   43,   43,   10,   43,   43,   43,
-       43,    5,   43,   43,   16,   11,   43,   43,   43,   43,
-       43,    3,   43,   43,   43,   43,   14,   43,   43,   43,
-        3,   43,   43,   43,   43,   14,   43,    8,   43,   15,
-       43,   13,   43,    4,    8,   43,   15,   43,   13,   43,
-        4,   43,   43,    7,   43,   43,    7,   43,   43,   43,
-       43,    9,    6,    9,    6,    0
+       47,   47,    2,   47,   47,   47,   12,   47,   47,   47,
+       52,   46,   50,   10,   48,   48,   48,   48,    5,   48,
+       48,   16,   11,   48,   48,   48,   10,   47,   47,   47,
+       47,    5,   47,   47,   16,   11,   47,   47,   47,   48,
+       48,    3,   48,   48,   48,   48,   14,   48,   47,   47,
+        3,   47,   47,   47,   47,   14,   47,    8,   48,   15,
+       48,   13,   48,    4,    8,   47,   15,   47,   13,   47,
+        4,   48,   48,    7,   47,   47,    7,   48,   48,   47,
+       47,    9,    6,    9,    6,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
@@ -1104,42 +1104,42 @@ YY_RULE_SETUP
 case 43:
 YY_RULE_SETUP
 #line 70 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::ID)); }
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_INT)); }
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
 #line 71 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  %s STRING %s <-char*\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::STRING)); }
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext);    yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_INT));   }
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
 #line 72 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d   \"\" COMMENT LINE_COMMENT <-enumerated\n" , no_of_lines, total); yval.push_back(init_token(no_of_lines,total,yytext,type::COMMENT));      }
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));  } 
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 74 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_INT)); }
+#line 73 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 75 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_INT %s <-integer\n", no_of_lines, total, yytext, yytext);    yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_INT));   }
+#line 74 "lex.l"
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);      yval.push_back(init_token(no_of_lines,total,yytext,type::IDENT));    }
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
 #line 76 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));  } 
+{ total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::ID)); }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
 #line 77 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));}
+{ total++; fprintf(yyout, "%d: #%d  %s STRING %s <-char*\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::STRING)); }
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
 #line 78 "lex.l"
-{ total++; fprintf(yyout, "%d: #%d  \"%s\" IDENT <-ident\n", no_of_lines, total, yytext);      yval.push_back(init_token(no_of_lines,total,yytext,type::IDENT));    }
+{ total++; fprintf(yyout, "%d: #%d   \"\" COMMENT LINE_COMMENT <-enumerated\n" , no_of_lines, total); yval.push_back(init_token(no_of_lines,total,yytext,type::COMMENT));      }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
@@ -1149,7 +1149,7 @@ YY_RULE_SETUP
 case 52:
 YY_RULE_SETUP
 #line 81 "lex.l"
-{ BEGIN(INITIAL);   fprintf(yyout, " %d\" COMMENT  BLOCK_COMMENT  <-enumerated\n", no_of_lines); }
+{ BEGIN(INITIAL);   fprintf(yyout, "%d\" COMMENT  BLOCK_COMMENT  <-enumerated\n", no_of_lines); }
 	YY_BREAK
 case 53:
 YY_RULE_SETUP

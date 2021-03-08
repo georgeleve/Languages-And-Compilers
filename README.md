@@ -14,9 +14,9 @@ TO DO:
 3) NA KRATISETE BACKUP TA PROTA 2 done
 4) HANDLE TA COMMENTS
 5) HANDLE TA STRINGS
-6) O LEVE NA FTIAKSEI TIN MAIN ANTHROPINI
-7)O KWSTAS NA MATHEI TO ARGV 2
+6) NA FTIAKSoume TIN MAIN
+
+na ftiaksoume to ident
 
 PROERETIKO) AN SAS VGEI na kanete to token output stream overload gia na to tiponoume xoris karkino (SPOUTSAMAS)
 
-na ftiaksoume to ident
