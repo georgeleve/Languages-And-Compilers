@@ -78,10 +78,10 @@ comment "//".*
 
 "/*"            { BEGIN(C_COMMENT); fprintf(yyout, "%d: #%d \"%d - ", no_of_lines, total, no_of_lines);}
 <C_COMMENT>"*/" { BEGIN(INITIAL);   fprintf(yyout, "%d\" COMMENT  BLOCK_COMMENT  <-enumerated\n", no_of_lines); }
-<C_COMMENT>.    { }
+<C_COMMENT>.    {}
 <C_COMMENT>\n   { }
 
-. { printf("%s", yytext); }
+. { fprintf(yyout,"undefined input %s in line %d",yytext,no_of_lines); }
 
 [\t]+ /* ignore wite spaces and newlines */ 
 

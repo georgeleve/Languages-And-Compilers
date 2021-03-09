@@ -9,13 +9,9 @@ How to run it:
 flex --outfile scanner.cpp lex.l && g++ -o scanner scanner.cpp && ./scanner input.txt output.txt
 
 TO DO:
-4) HANDLE TA COMMENTS
-5) HANDLE TA STRINGS
-6) NA FTIAKSoume TIN MAIN
-7) ERROR SE UNDEFINED CHAR
-
-o leve gamietai
-
+1) HANDLE TA COMMENTS
+2) HANDLE TA STRINGS
+3) NA FTIAKSoume TIN MAIN
 
 PROERETIKO) AN SAS VGEI na kanete to token output stream overload gia na to tiponoume xoris karkino (SPOUTSAMAS)
 
