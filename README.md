@@ -11,7 +11,7 @@ flex --outfile scanner.cpp lex.l && g++ -o scanner scanner.cpp && ./scanner inpu
 TO DO:
 1) HANDLE TA COMMENTS
 2) HANDLE TA STRINGS
-3) NA FTIAKSoume TIN MAIN
+3) NA FTIAKSoume TIN MAIN - Kwstas
 
 
 

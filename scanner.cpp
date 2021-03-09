@@ -374,8 +374,8 @@ static void yynoreturn yy_fatal_error ( const char* msg  );
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
-#define YY_NUM_RULES 56
-#define YY_END_OF_BUFFER 57
+#define YY_NUM_RULES 55
+#define YY_END_OF_BUFFER 56
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -385,11 +385,11 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[120] =
     {   0,
-        0,    0,    0,    0,   57,   54,   54,    1,   54,   54,
+        0,    0,    0,    0,   56,   55,   54,    1,   55,   55,
        22,   35,   36,   20,   18,   38,   19,   41,   21,   43,
        39,   37,   28,   17,   27,   47,   33,   34,   47,   47,
        47,   47,   47,   47,   47,   47,   47,   47,   47,   47,
-       31,   32,   52,   53,   52,   55,   24,    0,   48,   25,
+       31,   32,   52,   53,   52,   54,   24,    0,   48,   25,
        26,    0,   44,   42,   45,   50,   49,    0,   43,   40,
        30,   23,   29,   47,   47,   47,   47,   47,   47,   47,
        47,    2,   47,   47,   47,   12,   47,   47,   47,   51,
@@ -524,11 +524,11 @@ static const flex_int16_t yy_chk[180] =
     } ;
 
 /* Table of booleans, true if rule could match eol. */
-static const flex_int32_t yy_rule_can_match_eol[57] =
+static const flex_int32_t yy_rule_can_match_eol[56] =
     {   0,
 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0,     };
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0,     };
 
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
@@ -1114,20 +1114,15 @@ YY_RULE_SETUP
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 84 "lex.l"
-{ fprintf(yyout,"undefined input %s in line %d",yytext,no_of_lines); }
-	YY_BREAK
-case 55:
-YY_RULE_SETUP
 #line 86 "lex.l"
 /* ignore wite spaces and newlines */ 
 	YY_BREAK
-case 56:
+case 55:
 YY_RULE_SETUP
 #line 88 "lex.l"
 ECHO;
 	YY_BREAK
-#line 1131 "scanner.cpp"
+#line 1126 "scanner.cpp"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(C_COMMENT):
 	yyterminate();
