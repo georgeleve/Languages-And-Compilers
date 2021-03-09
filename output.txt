@@ -1,4 +1,3 @@
 --------------------   Lexical Analysis   --------------------
 
-"1: #1  "George" ID "George" <-char*
-"1  George
+undefined input ! in line 1

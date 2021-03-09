@@ -74,7 +74,8 @@ one_line_comment "//".*
  
 {one_line_comment} {
     total++; 
-    fprintf(yyout, "%d: #%d  \"\" COMMENT LINE_COMMENT <-enumerated\n", line_number, total); 
+    fprintf(yyout, "%d: #%d  \"\" COMMENT LINE_COMMENT <-enumerated\n", line_number, total);
+    yval.push_back(init_token(line_number,total,"\/\/",type::COMMENT));
 }
  
 "\"" {
@@ -135,6 +136,7 @@ one_line_comment "//".*
         lineNo += c;
     }
     fprintf(yyout, "%s: #%d \"%s\" COMMENT BLOCK_COMMENT <-enumerated\n", lineNo.c_str(), ++total, tp.c_str());
+    yval.push_back(init_token(line_number,total,"\/\*\*\/",type::COMMENT));
     par.pop();
     while(!par.empty()) {
         string tp = par.top();
@@ -144,6 +146,7 @@ one_line_comment "//".*
             lineNo += c;
         }
         fprintf(yyout, "%s: #%d \"%s\" COMMENT NESTED_COMMENT <-enumerated\n", lineNo.c_str(), ++total, tp.c_str());
+        yval.push_back(init_token(line_number,total,"\/\*\*\/",type::COMMENT));
         par.pop();
     }
 }
@@ -152,7 +155,7 @@ one_line_comment "//".*
  
  
  
-. { printf("%sE", yytext); }
+. { fprintf(yyout,"undefined input %s in line %d",yytext,line_number);}
  
 [\t]+ /* ignore wite spaces and newlines */ 
  
@@ -178,7 +181,7 @@ int main(int argc, char** argv) {
         yyout = fopen(argv[2], "w");
     }
     else {
-        yyin = stdin; /* na tsekaro pote teleionei kai epishs na leitoyrgei otan den dino output file px na ta ektiponei sto std out */
+        yyin = stdin; 
         yyout = stdout;
     }
  
@@ -186,7 +189,7 @@ int main(int argc, char** argv) {
     vector<alpha_token*> token;
     alpha_yylex(token); 
     cout << "Total Tokens:" << token.size() << endl;
-    for(auto a : token)
-        fprintf(yyout, "%d  %s", a->numline, a->content.c_str()); 
+    /* for(auto a : token)
+        fprintf(yyout, "%s", a->content.c_str()); */
     return 0;
 }
