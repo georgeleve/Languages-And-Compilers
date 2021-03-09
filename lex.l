@@ -1,5 +1,6 @@
 %{
 #include "header_file.h"
+#include "lex_utils.h"
 
 int alpha_yylex (vector<alpha_token*> &yval);
 alpha_token* init_token(unsigned int numline,unsigned int numToken,string content,enum type);
@@ -14,7 +15,7 @@ int no_of_lines = 1;
 
 /* Flex macros */
 id [a-zA-Z][a-zA-Z_0-9]*
-string \"[^\n"]*\"
+string [\"]([^\"]|\.)*[\"]
 comment "//".*
 
 %x C_COMMENT
@@ -72,16 +73,24 @@ comment "//".*
 [0-9]*"."[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));  } 
 [-][0-9]*"."[0-9]+ { total++; fprintf(yyout, "%d: #%d  \"%s\" CONST_REAL %s <-real\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::CONST_REAL));}
 
+"\"" {
+    char prev = '-';
+    char c;
+    string v = "";
+    while((c=yyinput())!='\"'){
+        if(c=='\n') v+= "\\n";
+        else if(c!=13) v += c;
+        prev = c;
+    }
+
+    fprintf(yyout, "penis detected!: %s\n",v.c_str());
+}
 {id} { total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::ID)); }
-{string} { total++; fprintf(yyout, "%d: #%d  %s STRING %s <-char*\n", no_of_lines, total, yytext, yytext); yval.push_back(init_token(no_of_lines,total,yytext,type::STRING)); }
 {comment} { total++; fprintf(yyout, "%d: #%d   \"\" COMMENT LINE_COMMENT <-enumerated\n" , no_of_lines, total); yval.push_back(init_token(no_of_lines,total,yytext,type::COMMENT));      }
 
-"/*"            { BEGIN(C_COMMENT); fprintf(yyout, "%d: #%d \"%d - ", no_of_lines, total, no_of_lines);}
-<C_COMMENT>"*/" { BEGIN(INITIAL);   fprintf(yyout, "%d\" COMMENT  BLOCK_COMMENT  <-enumerated\n", no_of_lines); }
-<C_COMMENT>.    {}
-<C_COMMENT>\n   { }
 
-. { fprintf(yyout,"undefined input %s in line %d",yytext,no_of_lines); }
+
+. { printf("%sE", yytext); }
 
 [\t]+ /* ignore wite spaces and newlines */ 
 
