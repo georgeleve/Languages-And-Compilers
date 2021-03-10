@@ -26,4 +26,6 @@ TO DO:
 
 5) na kanoume kai perissotero testing, na kanoume turnin kai verify turnin
 
-ENOLH GIA TURN IN:                 turnin submit1@hy340 <dir>
+ENOLH GIA TURNIN:                 turnin submit1@hy340 <dir>
+
+VERIFY TURNIN:                    ls -l ~hy340/TURNIN/submit1

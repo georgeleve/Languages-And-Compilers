@@ -147,8 +147,8 @@ one_line_comment "//".*
     }
 }
 {id} { total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", line_number, total, yytext, yytext); yval.push_back(init_token(line_number,total,yytext,type::ID)); }
- 
- 
+
+
 [\t]+ /* with this rule we ignore white spaces and newlines */ 
  
 %%
