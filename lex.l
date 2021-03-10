@@ -76,6 +76,7 @@ one_line_comment "//".*
 }
  
 "\"" {
+    int temp = line_number;
     char prev = '-';
     string v = "";
     while(true){
@@ -92,12 +93,14 @@ one_line_comment "//".*
           v+= "\\n";  
           line_number++; 
         } 
-        else if(c == '\t') v+= "\\t";
+        else if(c == '\t') v += "\\t";
         else if(c != 13) v += c;
         prev = c;
     }
-    total++; 
-    fprintf(yyout, "%d: #%d  \"%s\" STRING %s <-char*\n", line_number, total, v.c_str(), v.c_str());
+    total++;
+    fprintf(yyout, "%d: #%d  \"%s\" STRING \"%s\" <-char*\n", temp, total, v.c_str(), v.c_str());
+    yval.push_back(init_token(line_number, total, yytext, type::STRING));
+
 }
 "/*" {
     char prev = '-';

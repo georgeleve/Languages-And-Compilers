@@ -10,6 +10,8 @@ flex --outfile scanner.cpp lex.l && g++ -o scanner scanner.cpp && ./scanner inpu
 
 TO DO:
 
+-1) Error checking gia ena string pou anoigei alla den kleinei pote    na grafoume: error: string opens at line kati but doesn't close
+
 0) Na ftiaxoume to undifiend xarakthra giati den paizei opos prepei
 
 1) Na ftiaxoume thn main (to pos diabazei, stdin kai stdout klp)
@@ -24,3 +26,12 @@ TO DO:
 ENOLH GIA TURNIN:                 turnin submit1@hy340 <dir>
 
 VERIFY TURNIN:                    ls -l ~hy340/TURNIN/submit1
+
+
+
+Ama tou doso ayto to input tote den termatizei pote:
+
+"this is a
+
+
+ string 
