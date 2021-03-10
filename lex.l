@@ -176,17 +176,15 @@ int main(int argc, char** argv) {
         fprintf(stderr, "Invalid arguments! Usage: ./scanner input.txt (output.txt)\n");
         return 1;
     }
-    if(argc>1){
-        if(!(yyin = fopen(argv[1], "r"))) {
-            fprintf(stderr, "Cannot open input file: %s\n", argv[1]);
+    if(!(yyin = fopen(argv[1], "r"))) {
+        fprintf(stderr, "Cannot open input file: %s\n", argv[1]);
+        return 1;
+    }
+    yyout = stdout;
+    if(argc==3){
+        if(!(yyout = fopen(argv[2], "w"))) {
+            fprintf(stderr, "Cannot create output file: %s\n", argv[2]);
             return 1;
-        }
-        yyout = stdout;
-        if(argc==3){
-            if(!(yyout = fopen(argv[2], "w"))) {
-                fprintf(stderr, "Cannot create output file: %s\n", argv[2]);
-                return 1;
-            }
         }
     }
     fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n\n");
