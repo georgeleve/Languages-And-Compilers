@@ -172,7 +172,7 @@ alpha_token* init_token(unsigned int numline, unsigned int numToken, string cont
 }
  
 int main(int argc, char** argv) {
-    if(argc<2|| argc>3){
+    if(argc<2 || argc>3){
         fprintf(stderr, "Invalid arguments! Usage: ./scanner input.txt (output.txt)\n");
         return 1;
     }
