@@ -22,4 +22,8 @@ TO DO:
 
 4) Na ftiaxoume to pos tiponontai sto output.txt (px na mhn yparcoun kenes grammes kai na tiponontai omorfa)
 
+
+
 5) na kanoume kai perissotero testing, na kanoume turnin kai verify turnin
+
+ENOLH GIA TURN IN:                 turnin submit1@hy340 <dir>
