@@ -1,3 +1,0 @@
---------------------   Lexical Analysis   --------------------
-
-                                4: #1  "this is a\n\n                   string" STRING "this is a\n\n                   string" <-char*
