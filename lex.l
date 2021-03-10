@@ -17,7 +17,6 @@ id [a-zA-Z][a-zA-Z_0-9]*
 string [\"]([^\"]|\.)*[\"]
 one_line_comment "//".*
 
-
 %%
 
 \n  line_number++; 
@@ -113,7 +112,7 @@ one_line_comment "//".*
         }
         if(prev == '*' && c == '/') { /* closing */
             if(s.empty()){
-                fprintf(yyout, "Error, non balanced comment!");
+                fprintf(yyout, "Error, non balanced comment!\n");
                 exit(0);
             }
             par.push(to_string(s.top())+" - "+to_string(line_number));
@@ -124,7 +123,7 @@ one_line_comment "//".*
         prev = c;
     }
     if(!s.empty()) {
-        fprintf(yyout,"Error, non closing comment!");
+        fprintf(yyout,"Error, non closing comment!\n");
         exit(0);
     }
     string tp = par.top();
@@ -147,7 +146,6 @@ one_line_comment "//".*
     }
 }
 {id} { total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", line_number, total, yytext, yytext); yval.push_back(init_token(line_number,total,yytext,type::ID)); }
-
 
 [\t]+ /* with this rule we ignore white spaces and newlines */ 
  

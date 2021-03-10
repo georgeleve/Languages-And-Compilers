@@ -10,18 +10,13 @@ flex --outfile scanner.cpp lex.l && g++ -o scanner scanner.cpp && ./scanner inpu
 
 TO DO:
 
--1) To id me to ident einai sigoura to idio?
+0) Na ftiaxoume to undifiend xarakthra giati den paizei opos prepei
 
-0) Na ftiaxoume to undifiend xarakthra giati den paizei opos prepei :(
+1) Na ftiaxoume thn main (to pos diabazei, stdin kai stdout klp)
 
-1) Na ftiaxo tis diafores metaxi id kai identifier, na mporoume na teliosoyme otan diabazoyme apo to std in.
+2) Makefile
 
-2) Na ftiaxoume thn main (to pos diabazei, stdin kai stdout klp)
-
-3) Na ftiaxoume Makefile
-
-4) Na ftiaxoume to pos tiponontai sto output.txt (px na mhn yparcoun kenes grammes kai na tiponontai omorfa)
-
+3) (optional) Na ftiaxoume to pos tiponontai sto output.txt (px na mhn yparcoun kenes grammes kai na tiponontai omorfa)
 
 
 5) na kanoume kai perissotero testing, na kanoume turnin kai verify turnin
