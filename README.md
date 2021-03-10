@@ -6,36 +6,24 @@ Creating a C compiler in C++ for CS340 course at University of Crete.
 
 How to run it:
 
+make stdout
+diavazei apo to input.txt kai grafei sto stdout
+
+make file
+diavazei apo to input.txt kai grafei sto output.txt
+
+make clean
+diagrafei to scanner kai to scanner.cpp
+
+make
+paragei to ektelesimo arxeio scanner
+
+
+Without Makefile:
 flex --outfile scanner.cpp lex.l && g++ -o scanner scanner.cpp && ./scanner input.txt output.txt
 
-TO DO:
-
--1) Error checking gia ena string pou anoigei alla den kleinei pote:     error: string opens at line tadeGrammi but doesn't close
-
-Ama tou doso ayto to input tote den termatizei pote:
-
-"this is a
 
 
- string 
- 
-
-0) Na ftiaxoume to undifiend xarakthra giati den paizei opos prepei  
-
-1) Na ftiaxoume thn main (to pos diabazei, stdin kai stdout klp)
-
-
-
-
-
-
-2) Makefile (sxedon etoimo apla an allaxoyme thn main isos xreiastei alagi kai to makefile)
-
-3) (optional) Na ftiaxoume to pos tiponontai sto output.txt (px na mhn yparcoun kenes grammes kai na tiponontai omorfa)
-
-
-5) na kanoume kai perissotero testing, na kanoume turnin kai verify turnin
-
-ENOLH GIA TURNIN:                 turnin submit1@hy340 <dir>
+TURNIN COMMAND:                 turnin submit1@hy340 <dir>
 
 VERIFY TURNIN:                    ls -l ~hy340/TURNIN/submit1
