@@ -1,3 +1,53 @@
 --------------------   Lexical Analysis   --------------------
 
-undefined input ! in line 1
+1: #1  "jfkahgakjhg" ID "jfkahgakjhg" <-char*
+3: #2  "this is a string" STRING this is a string <-char*
+5: #3  "421" CONST_INT 421 <-integer
+6: #4   "{" PUNCTUATION LEFT_BRACE <-enumerated
+ 6: #5   "]" PUNCTUATION RIGHT_BRACE <-enumerated
+  6: #6   "]" PUNCTUATION RIGHT_BRACE <-enumerated
+ 6: #7   "]" PUNCTUATION RIGHT_BRACE <-enumerated
+ 6: #8   "]" PUNCTUATION RIGHT_BRACE <-enumerated
+  8: #9 "8 - 10" COMMENT BLOCK_COMMENT <-enumerated
+13: #10  "*" OPERATOR MULTIPLICATION <-enumerated
+ 13: #11  "%" OPERATOR PERCENTAGE <-enumerated
+ @15: #12   ".." PUNCTUATION DOUBLE_DOT <-enumerated
+16: #13   "." PUNCTUATION DOT <-enumerated
+18: #14  "+" OPERATOR  PLUS <-enumerated
+19: #15  "-" OPERATOR MINUS <-enumerated
+20: #16  "++" OPERATOR PLUS_PLUS <-enumerated
+21: #17  "--" OPERATOR MINUS_MINUS <-enumerated
+22: #18   "{" PUNCTUATION LEFT_BRACE <-enumerated
+    23: #19   "[" PUNCTUATION LEFT_BRACE <-enumerated
+        24: #20  "/" OPERATOR DIVISION <-enumerated
+   \25: #21  "" COMMENT LINE_COMMENT <-enumerated
+        26: #22  "*" OPERATOR MULTIPLICATION <-enumerated
+        $  27: #23  "if" KEYWORD IF <-enumerated
+ 27: #24  "else" KEYWORD ELSE <-enumerated
+ 27: #25  "while" KEYWORD WHILE <-enumerated
+ 29: #26 "29 - 36" COMMENT BLOCK_COMMENT <-enumerated
+32: #27 "32 - 34" COMMENT NESTED_COMMENT <-enumerated
+32: #28 "32 - 32" COMMENT NESTED_COMMENT <-enumerated
+        38: #29  "for" KEYWORD FOR <-enumerated
+38: #30   "(" PUNCTUATION LEFT_BRACE <-enumerated
+38: #31  "int" ID "int" <-char*
+ 38: #32  "i" ID "i" <-char*
+ 38: #33  "=" OPERATOR  EQUAL <-enumerated
+ 38: #34  "0" CONST_INT 0 <-integer
+38: #35   ";" PUNCTUATION SEMICOLON <-enumerated
+ 38: #36  "i" ID "i" <-char*
+ 38: #37  "<" OPERATOR LESS_THAN <-enumerated
+ 38: #38  "40" CONST_INT 40 <-integer
+38: #39   ";" PUNCTUATION SEMICOLON <-enumerated
+ 38: #40  "i" ID "i" <-char*
+38: #41  "++" OPERATOR PLUS_PLUS <-enumerated
+38: #42   ")" PUNCTUATION RIGHT_BRACE <-enumerated
+38: #43   "{" PUNCTUATION LEFT_BRACE <-enumerated
+            39: #44  "printf" ID "printf" <-char*
+39: #45   "(" PUNCTUATION LEFT_BRACE <-enumerated
+39: #46  "hello world" STRING hello world <-char*
+39: #47   ")" PUNCTUATION RIGHT_BRACE <-enumerated
+39: #48   ";" PUNCTUATION SEMICOLON <-enumerated
+        40: #49   "}" PUNCTUATION RIGHT_BRACE <-enumerated
+    41: #50   "]" PUNCTUATION RIGHT_BRACE <-enumerated
+42: #51   "}" PUNCTUATION RIGHT_BRACE <-enumerated
