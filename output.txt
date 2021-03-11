@@ -1,3 +1,51 @@
 --------------------   Lexical Analysis   --------------------
 
-Error, non closing comment at line: 1
+1: #1  "421" CONST_INT 421 <-integer
+2: #2   "{" PUNCTUATION LEFT_BRACE <-enumerated
+2: #3   "]" PUNCTUATION RIGHT_BRACE <-enumerated
+2: #4   "]" PUNCTUATION RIGHT_BRACE <-enumerated
+2: #5   "]" PUNCTUATION RIGHT_BRACE <-enumerated
+2: #6   "]" PUNCTUATION RIGHT_BRACE <-enumerated
+4: #7 "4 - 6" COMMENT BLOCK_COMMENT <-enumerated
+8: #8  "*" OPERATOR MULTIPLICATION <-enumerated
+8: #9  "%" OPERATOR PERCENTAGE <-enumerated
+10: #10   ".." PUNCTUATION DOUBLE_DOT <-enumerated
+11: #11   "." PUNCTUATION DOT <-enumerated
+13: #12  "+" OPERATOR  PLUS <-enumerated
+14: #13  "-" OPERATOR MINUS <-enumerated
+15: #14  "++" OPERATOR PLUS_PLUS <-enumerated
+16: #15  "--" OPERATOR MINUS_MINUS <-enumerated
+17: #16   "{" PUNCTUATION LEFT_BRACE <-enumerated
+18: #17   "[" PUNCTUATION LEFT_BRACE <-enumerated
+19: #18  "/" OPERATOR DIVISION <-enumerated
+20: #19  "" COMMENT LINE_COMMENT <-enumerated
+21: #20  "*" OPERATOR MULTIPLICATION <-enumerated
+22: #21  "if" KEYWORD IF <-enumerated
+22: #22  "else" KEYWORD ELSE <-enumerated
+22: #23  "while" KEYWORD WHILE <-enumerated
+24: #24 "24 - 31" COMMENT BLOCK_COMMENT <-enumerated
+27: #25 "27 - 29" COMMENT NESTED_COMMENT <-enumerated
+27: #26 "27 - 27" COMMENT NESTED_COMMENT <-enumerated
+33: #27  "for" KEYWORD FOR <-enumerated
+33: #28   "(" PUNCTUATION LEFT_BRACE <-enumerated
+33: #29  "int" ID "int" <-char*
+33: #30  "i" ID "i" <-char*
+33: #31  "=" OPERATOR  EQUAL <-enumerated
+33: #32  "0" CONST_INT 0 <-integer
+33: #33   ";" PUNCTUATION SEMICOLON <-enumerated
+33: #34  "i" ID "i" <-char*
+33: #35  "<" OPERATOR LESS_THAN <-enumerated
+33: #36  "40" CONST_INT 40 <-integer
+33: #37   ";" PUNCTUATION SEMICOLON <-enumerated
+33: #38  "i" ID "i" <-char*
+33: #39  "++" OPERATOR PLUS_PLUS <-enumerated
+33: #40   ")" PUNCTUATION RIGHT_BRACE <-enumerated
+33: #41   "{" PUNCTUATION LEFT_BRACE <-enumerated
+34: #42  "printf" ID "printf" <-char*
+34: #43   "(" PUNCTUATION LEFT_BRACE <-enumerated
+34: #44  "hello world" STRING "hello world" <-char*
+34: #45   ")" PUNCTUATION RIGHT_BRACE <-enumerated
+34: #46   ";" PUNCTUATION SEMICOLON <-enumerated
+35: #47   "}" PUNCTUATION RIGHT_BRACE <-enumerated
+36: #48   "]" PUNCTUATION RIGHT_BRACE <-enumerated
+37: #49   "}" PUNCTUATION RIGHT_BRACE <-enumerated
