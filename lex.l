@@ -1,5 +1,6 @@
 %{
 #include "header_file.h"
+#include "parser.h"
 
 #define YY_DECL int alpha_yylex(vector<alpha_token*> &yval)
 int alpha_yylex (vector<alpha_token*> &yval);
@@ -12,6 +13,7 @@ int total = 0, line_number = 1;
 /* Flex options */
 %option noyywrap
 %option yylineno
+
  
 /* Flex macros */
 id [a-zA-Z][a-zA-Z_0-9]*

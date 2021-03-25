@@ -22,6 +22,16 @@ paragei to ektelesimo arxeio scanner
 Without Makefile:
 flex --outfile scanner.cpp lex.l && g++ -o scanner scanner.cpp && ./scanner input.txt output.txt
 
+-----------------------------------------------------
+FOR YACC/BISON
+
+bison --yacc --defines --output=parcer.c parser.y
+
+flex --outputfile=scanner.cpp lex.l
+
+gcc -o calc scanner.cpp parcer.cpp
+
+
 
 
 
