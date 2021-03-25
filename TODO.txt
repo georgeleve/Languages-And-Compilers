@@ -1,0 +1,4 @@
+TO DO:
+Na ftiaxoume to thema pou eixame me ta strings
+
+Na katalavoyme giati den kanei compile     to --output flag

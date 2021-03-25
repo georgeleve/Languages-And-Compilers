@@ -23,9 +23,6 @@ Without Makefile:
 flex --outfile scanner.cpp lex.l && g++ -o scanner scanner.cpp && ./scanner input.txt output.txt
 
 
-TO DO:
-Na ftiaxoume to thema pou eixame me ta strings
-
 
 
 TURNIN COMMAND:                 turnin submit2@hy340 <dir>
