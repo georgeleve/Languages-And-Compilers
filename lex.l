@@ -1,6 +1,5 @@
 %{
 #include "header_file.h"
-#include "parser.h"
 
 #define YY_DECL int alpha_yylex(vector<alpha_token*> &yval)
 int alpha_yylex (vector<alpha_token*> &yval);
@@ -115,8 +114,10 @@ one_line_comment "//".*
     while(true){
         char c = yyinput();
         if(c == EOF || c == '\0') break;
+		bool in = false;
         if(prev == '/' && c == '*'){ /* opening */
             s.push(line_number);
+			in = true;
         }
         if(prev == '*' && c == '/') { /* closing */
             if(s.empty()){
@@ -125,10 +126,12 @@ one_line_comment "//".*
             }
             par.push(to_string(s.top())+" - "+to_string(line_number));
             s.pop();
+			in = true;
         }
         if(c == '\n') line_number++; 
         if(s.empty()) break;
-        prev = c;
+        if(in) prev = '-';
+		else prev = c;
     }
     if(!s.empty()) {
         fprintf(yyout, "Error, non closing comment at line: %d\n", temp);
