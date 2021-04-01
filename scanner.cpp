@@ -1096,7 +1096,12 @@ YY_RULE_SETUP
                 continue;
             }
             else break;
-        } 
+        }
+        if(c == '\\' && prev=='\\'){
+            v += '\\';
+            prev = '-';
+            continue;
+        }
         if(c == '\n'){
           v+= "\\n";  
           line_number++; 
@@ -1112,7 +1117,7 @@ YY_RULE_SETUP
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 108 "lex.l"
+#line 113 "lex.l"
 {
     int temp = line_number;
     char prev = '-';
@@ -1167,14 +1172,14 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 159 "lex.l"
+#line 164 "lex.l"
 { total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", line_number, total, yytext, yytext); yval.push_back(init_token(line_number,total,yytext,type::ID)); }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 161 "lex.l"
+#line 166 "lex.l"
 {
-    if(yytext[0]!=13 && yytext[0]!=32) {
+    if(yytext[0]!=13 && yytext[0]!=32 && yytext[0]!='\t') {
         fprintf(yyout,"Undefined input '%c' in line %d\n",yytext[0], line_number);
         exit(0);
     }   
@@ -1182,15 +1187,15 @@ YY_RULE_SETUP
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 167 "lex.l"
+#line 172 "lex.l"
 
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 168 "lex.l"
+#line 173 "lex.l"
 ECHO;
 	YY_BREAK
-#line 1194 "scanner.cpp"
+#line 1199 "scanner.cpp"
 case YY_STATE_EOF(INITIAL):
 	yyterminate();
 
@@ -2207,7 +2212,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 168 "lex.l"
+#line 173 "lex.l"
 
  
 alpha_token* init_token(unsigned int numline, unsigned int numToken, string content, enum type t_type) {

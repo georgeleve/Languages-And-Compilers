@@ -91,7 +91,12 @@ one_line_comment "//".*
                 continue;
             }
             else break;
-        } 
+        }
+        if(c == '\\' && prev=='\\'){
+            v += '\\';
+            prev = '-';
+            continue;
+        }
         if(c == '\n'){
           v+= "\\n";  
           line_number++; 
@@ -159,7 +164,7 @@ one_line_comment "//".*
 {id} { total++; fprintf(yyout, "%d: #%d  \"%s\" ID \"%s\" <-char*\n", line_number, total, yytext, yytext); yval.push_back(init_token(line_number,total,yytext,type::ID)); }
 
 . {
-    if(yytext[0]!=13 && yytext[0]!=32) {
+    if(yytext[0]!=13 && yytext[0]!=32 && yytext[0]!='\t') {
         fprintf(yyout,"Undefined input '%c' in line %d\n",yytext[0], line_number);
         exit(0);
     }   
