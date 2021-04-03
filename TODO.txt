@@ -1,4 +1,10 @@
-TO DO:
-Na ftiaxoume to thema pou eixame me ta strings
+1) Na ftiaxoume to .y arxeio gia mia apli periptosh (px vlepei ena token kai to typonei
+2) Na vazoume ta tokens sto hashtable h' sto map h' sto unordered map
 
-Na katalavoyme giati den kanei compile     to --output flag
+
+HOW TO RUN IT
+
+yacc -d parser.y
+flex new_lex.l
+g++ snazzle.tab.c lex.yy.c -lfl -o exe
+./exe
