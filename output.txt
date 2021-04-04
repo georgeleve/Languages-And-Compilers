@@ -1,3 +1,0 @@
---------------------   Lexical Analysis   --------------------
-
-Error, non closing comment at line: 1

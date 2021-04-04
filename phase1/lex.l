@@ -133,7 +133,8 @@ one_line_comment "//".*
             s.pop();
 			in = true;
         }
-        if(c == '\n') line_number++;
+        if(c == '\n') line_number++; 
+        if(s.empty()) break;
         if(in) prev = '-';
 		else prev = c;
     }
@@ -178,4 +179,26 @@ alpha_token* init_token(unsigned int numline, unsigned int numToken, string cont
     a->content = content;
     a->token_type = t_type;
     return a;
+}
+ 
+int main(int argc, char** argv) {
+    if(argc<2 || argc>3){
+        fprintf(stderr, "Invalid arguments! Usage: ./scanner input.txt (output.txt)\n");
+        return 1;
+    }
+    if(!(yyin = fopen(argv[1], "r"))) {
+        fprintf(stderr, "Cannot open input file: %s\n", argv[1]);
+        return 1;
+    }
+    yyout = stdout;
+    if(argc==3){
+        if(!(yyout = fopen(argv[2], "w"))) {
+            fprintf(stderr, "Cannot create output file: %s\n", argv[2]);
+            return 1;
+        }
+    }
+    fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n\n");
+    vector<alpha_token*> token;
+    alpha_yylex(token); 
+    return 0;
 }

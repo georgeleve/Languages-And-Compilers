@@ -1,0 +1,11 @@
+1) Na ftiaxoume to .y arxeio gia mia apli periptosh (px vlepei ena token kai to typonei
+2) Na vazoume ta tokens sto hashtable h' sto map h' sto unordered map
+
+
+HOW TO RUN IT
+
+bison --yacc --defines --output=parcer.c parser.y   // dimiourgeitai to parcer.c kai to parser.h
+flex --outfile=scanner.c scanner.l                  // dhmiourgeitai to scanner.c
+
+gcc -o calc scanner.c parser.c
+./calc

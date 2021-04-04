@@ -1,0 +1,4 @@
+--------------------   Lexical Analysis   --------------------
+
+1: #1  "hello" ID "hello" <-char*
+1: #2  "world" ID "world" <-char*
