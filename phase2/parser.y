@@ -131,7 +131,7 @@ expr:	assignexpr { printf("Assignes expression \n"); }
 	;
 
 
-term  ( expr )
+term: ( expr )
 | - expr
 | not expr
 
@@ -140,8 +140,10 @@ term  ( expr )
 | --lvalue
 | lvalue--
 | primary
-assginexpr  lvalue = expr
-primary  lvalue
+
+assginexpr: lvalue = expr
+
+primary: lvalue
 | call
 | objectdef
 | ( funcdef )
@@ -150,29 +152,44 @@ lvalue  id
 | local id
 | :: id
 | member
-member  lvalue . id
+
+member: lvalue . id
 | lvalue [ expr ]
 | call . id
 | call [ expr ]
-call  call ( elist )
+
+call: call ( elist )
 | lvalue callsuffix
 | ( funcdef) ( elist )
-callsuffix  normcall
-| methodcall
-normcall  ( elist )
-methodcall .. id ( elist ) // equivalent to lvalue.id(lvalue, elist)
-elist  [ expr [, expr]  ]
-objectdef  [ [elist | indexed] ]
-indexed  [indexedelem [, indexedelem]  ]
-indexedelem  { expr : expr }
-block  { [stmt] }
-funcdef  function [id] (idlist) block
-const  number | string | nil | true | false
-idlist [id [, id]  ]
-ifstmt  if ( expr ) stmt [ else stmt ]
 
-forstmt  for ( elist; expr; elist) stmt
-returnstmt  return [expr];
+callsuffix: normcall
+| methodcall
+
+normcall: ( elist )
+
+methodcall: .. id ( elist ) // equivalent to lvalue.id(lvalue, elist)
+
+elist: [ expr [, expr] : ]
+
+objectdef: [ [elist | indexed] ]
+
+indexed: [indexedelem [, indexedelem] : ]
+
+indexedelem: { expr : expr }
+
+block  { [stmt] }
+
+funcdef: function [id] (idlist) block
+
+const: number | string | nil | true | false
+
+idlist: [id [, id]  ]
+
+ifstmt: if ( expr ) stmt [ else stmt ]
+
+forstmt: for ( elist; expr; elist) stmt
+
+returnstmt: return [expr];
 
 %%
 
@@ -200,27 +217,3 @@ int main(int argc, char** argv){
 	fclose(yyin);
 	return 0;
 }
-
-/* h main tou lex
-int main(int argc, char** argv) {
-    if(argc<2 || argc>3){
-        fprintf(stderr, "Invalid arguments! Usage: ./scanner input.txt (output.txt)\n");
-        return 1;
-    }
-    if(!(yyin = fopen(argv[1], "r"))) {
-        fprintf(stderr, "Cannot open input file: %s\n", argv[1]);
-        return 1;
-    }
-    yyout = stdout;
-    if(argc==3){
-        if(!(yyout = fopen(argv[2], "w"))) {
-            fprintf(stderr, "Cannot create output file: %s\n", argv[2]);
-            return 1;
-        }
-    }
-    fprintf(yyout, "--------------------   Lexical Analysis   --------------------\n\n");
-    vector<alpha_token*> token;
-    alpha_yylex(token); 
-    return 0;
-}
-*/

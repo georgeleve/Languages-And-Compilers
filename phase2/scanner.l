@@ -1,8 +1,7 @@
 %{
     // This is in order to get the token types from Yacc
-    //#include "y.tab.h" /* This is the file that will be created from parcer.y  */
     // extern YYSTYPE yylval;   /*  maybe UNCOMMENT THIS LATER  */
-    int yylineno = 1;
+    #include "parser.h"
     /* may use this sometime  [\(\)\{\}:;=,]    { return yytext[0]; }  */
 %}
 
@@ -21,8 +20,6 @@ integer [0-9]+
 \n  { yylineno++; return ENDL; }
 
 [\n]+ { return '\n' }
-
-
 
 "if" 		{return IF;}
 "else" 		{return ELSE;}
@@ -68,16 +65,11 @@ integer [0-9]+
 "."		{return '.';}
 ".."	{return '..';}
 
-
 {integer} { yyval.intval = atoi(yytext); return INTEGER; }
 "-"[0-9]+ { yyval.intval = atoi(yytext); return INTEGER; } /* negative integer */
-
 [0-9]*"."[0-9]+ { yylval.floatval = atof(yytext); return FLOAT;}
 [-][0-9]*"."[0-9]+ { yylval.floatval = atof(yytext); return FLOAT;}
-
-{id} { yyval.stringval = strdup(yytext); return ID; }
-
-{one_line_comment} { total++; fprintf(yyout, "%d: #%d  \"\" COMMENT LINE_COMMENT <-enumerated\n", line_number, total);  }
+{one_line_comment} {}
  
 <<EOF>>		    { return EOF; }
 
@@ -168,6 +160,8 @@ integer [0-9]+
         par.pop();
     }
 }
+
+{id} { yyval.stringval = strdup(yytext); return ID; }
 
 . { fprintf(stderr, "Cannot match character %s with any rule\n", yytext); }
 

@@ -1,5 +1,5 @@
 1) Na ftiaxoume to .y arxeio gia mia apli periptosh (px vlepei ena token kai to typonei
-2) Na vazoume ta tokens sto hashtable h' sto map h' sto unordered map
+2) Na vazoume ta tokens sto hashtable h' sto map h' sto unordered map h' se lista
 
 
 HOW TO RUN IT
