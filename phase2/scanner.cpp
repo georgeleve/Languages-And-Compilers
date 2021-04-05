@@ -374,8 +374,8 @@ static void yynoreturn yy_fatal_error ( const char* msg  );
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
-#define YY_NUM_RULES 54
-#define YY_END_OF_BUFFER 55
+#define YY_NUM_RULES 55
+#define YY_END_OF_BUFFER 56
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -385,11 +385,11 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[113] =
     {   0,
-       53,   53,   55,   52,   52,    1,   52,   49,   23,   36,
+       52,   52,   56,   53,   52,    1,   53,   49,   23,   36,
        37,   21,   19,   39,   20,   42,   22,   44,   40,   38,
        29,   18,   28,   51,   34,   35,   51,   51,   51,   51,
        51,   51,   51,   51,   51,   51,   51,   51,   32,   33,
-       53,    2,   25,   26,   27,    0,   45,   43,   46,   50,
+       52,    2,   25,   26,   27,    0,   45,   43,   46,   50,
        48,    0,   44,   41,   31,   24,   30,   51,   51,   51,
        51,   51,   51,   51,   51,    3,   51,   51,   51,   13,
        51,   51,   51,   47,   48,   11,   51,   51,   51,   51,
@@ -520,11 +520,11 @@ static const flex_int16_t yy_chk[170] =
     } ;
 
 /* Table of booleans, true if rule could match eol. */
-static const flex_int32_t yy_rule_can_match_eol[55] =
+static const flex_int32_t yy_rule_can_match_eol[56] =
     {   0,
 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
 
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
@@ -1184,19 +1184,29 @@ YY_RULE_SETUP
 case 52:
 YY_RULE_SETUP
 #line 166 "scanner.l"
-{ fprintf(stderr, "Cannot match character %s with any rule\n", yytext); }
+
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
 #line 168 "scanner.l"
-
+{
+    if(yytext[0]!=13 && yytext[0]!=32 && yytext[0]!='\t') {
+		fprintf(stderr, "Cannot match character %c (%d) with any rule\n", yytext[0],yytext[0]);
+        exit(0);
+    }   
+}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 170 "scanner.l"
+#line 174 "scanner.l"
+
+	YY_BREAK
+case 55:
+YY_RULE_SETUP
+#line 176 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1200 "scanner.cpp"
+#line 1210 "scanner.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2211,5 +2221,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 170 "scanner.l"
+#line 176 "scanner.l"
 

@@ -163,8 +163,14 @@ integer [0-9]+
 
 {id} { yylval.stringval = strdup(yytext); return ID; }
 
-. { fprintf(stderr, "Cannot match character %s with any rule\n", yytext); }
+[ \t]*
 
+. {
+    if(yytext[0]!=13 && yytext[0]!=32 && yytext[0]!='\t') {
+		fprintf(stderr, "Cannot match character %c (%d) with any rule\n", yytext[0],yytext[0]);
+        exit(0);
+    }   
+}
 [ \t]*
 
 %%

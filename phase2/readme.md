@@ -14,6 +14,9 @@ g++ -o calc scanner.cpp parser.cpp
 
 ./calc
 
+
+//For non retards:
+bison --yacc --defines --output=parser.cpp parser.y && flex --outfile=scanner.cpp scanner.l && g++ -o calc scanner.cpp parser.cpp && ./calc
 ---------------------------------------------------------------
 TURNIN COMMAND:                 turnin submit2@hy340 <dir>
 
