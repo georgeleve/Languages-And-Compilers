@@ -4,11 +4,9 @@
 
 3) Na vazoume ta tokens sto hashtable h' sto map h' sto unordered map h' se lista kai na kanoyme elegxous gia errors
 
+4)O LEVE LEEI OTI PREPEI NA TSEKAROYME THN GRAMMATIKH
 
-HOW TO RUN IT
+5) O LEVE LEEI NA BALOYME KAI KWDIKA MESA GIA TA STOIXEIA MESA STHN GRAMMATIKH
 
-bison --yacc --defines --output=parcer.c parser.y   // dimiourgeitai to parcer.c kai to parser.h
-flex --outfile=scanner.c scanner.l                  // dhmiourgeitai to scanner.c
+6) O LEVE LEEI NA TA TYPWNOYME OPWS TA TYPWNOYN OI KLOOYN TOY CSD
 
-gcc -o calc scanner.c parser.c
-./calc

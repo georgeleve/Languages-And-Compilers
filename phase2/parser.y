@@ -15,7 +15,7 @@
   	//extern int yyparse();
 %}
 %start program
-%error-verbose /* print more information about errors */
+/* %define parse.error verbose  print more information about errors */ 
 
 %union {
 	char* stringval;
@@ -150,7 +150,7 @@ indexedelem: LEFT_BRACE expr COLON expr RIGHT_BRACE	{ printf("{ Expr : Expr }\n"
 		   ;
 
 block: LEFT_BRACE { } 
-		RIGHT_BRACE { printf("{ Statement }\n") }
+		RIGHT_BRACE { printf("{ Statement }\n"); }
 	 ;
 
 tempid: ID	{ }
@@ -237,14 +237,14 @@ returnstmt:	RETURN SEMICOLON { printf("|RETURN;\n"); }
 int yyerror (char* yaccProvidedMessage) {
 	fprintf(stderr, "%s: at line %d, before token: %s\n", yaccProvidedMessage, yylineno, yytext);
 	fprintf(stderr, "INPUT NOT VALID\n");
-	cout << "EEK, parse error on line " << yylineno << "!  Message: " << s << endl;
+	cout << "EEK, parse error on line " << yylineno << "!  Message: " << yaccProvidedMessage << endl;
 	return 0;
 }
 
 // h main opos thn exei to front
 int main(int argc, char** argv){
 	if (argc > 1){
-		if(!yyin = fopen(argv[1], "r"))){
+		if(!(yyin = fopen(argv[1], "r"))){
 			fprintf(stderr, "Error: cannot read file: %s\n", argv[1]);
 			return 1;
 		}

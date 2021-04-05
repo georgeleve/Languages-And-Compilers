@@ -6,11 +6,11 @@ Theofanis Tsesmetzis csd4142
 ---------------------------------------------------------------
 FOR YACC/BISON
 
-bison --yacc --defines --output=parser.c parser.y
+bison --yacc --defines --output=parser.cpp parser.y
 
-flex --outfile=scanner.c scanner.l
+flex --outfile=scanner.cpp scanner.l
 
-gcc -o calc scanner.c parser.c
+g++ -o calc scanner.cpp parser.cpp
 
 ./calc
 

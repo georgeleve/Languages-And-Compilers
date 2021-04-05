@@ -1,7 +1,9 @@
 %{
     // This is in order to get the token types from Yacc
     // extern YYSTYPE yylval;   /*  maybe UNCOMMENT THIS LATER  */
-    #include "parser.h"
+    #include "parser.hpp"
+    #include <bits/stdc++.h>
+    using namespace std;
     /* may use this sometime  [\(\)\{\}:;=,]    { return yytext[0]; }  */
 %}
 
@@ -17,9 +19,9 @@ integer [0-9]+
 
 %%
 
-\n  { yylineno++; return ENDL; }
+\n  { yylineno++; }
 
-[\n]+ { return '\n' }
+[\n]+ { return '\n'; }
 
 "if" 		{return IF;}
 "else" 		{return ELSE;}
@@ -63,10 +65,10 @@ integer [0-9]+
 ":"		{return COLON;}
 "::"	{return DOUBLE_COLON;}
 "."		{return DOT;}
-".."	{return DOUBLE_DOT;}
+".."	{return DOT_DOT;}
 
-{integer} { yyval.intval = atoi(yytext); return INTEGER; }
-"-"[0-9]+ { yyval.intval = atoi(yytext); return INTEGER; } /* negative integer */
+{integer} { yylval.intval = atoi(yytext); return INTEGER; }
+"-"[0-9]+ { yylval.intval = atoi(yytext); return INTEGER; } /* negative integer */
 [0-9]*"."[0-9]+ { yylval.floatval = atof(yytext); return FLOAT;}
 [-][0-9]*"."[0-9]+ { yylval.floatval = atof(yytext); return FLOAT;}
 {one_line_comment} {}
@@ -74,7 +76,7 @@ integer [0-9]+
 <<EOF>>		    { return EOF; }
 
 "\"" {
-    int temp = line_number;
+    int temp = yylineno;
     char prev = '-';
     string v = "";
     while(true){
@@ -98,41 +100,39 @@ integer [0-9]+
         }
         if(c == '\n'){
           v+= "\\n";  
-          line_number++; 
+          yylineno++; 
         } 
         else if(c == '\t') v += "\\t";
         else if(c != 13) v += c;
         prev = c;
     }
-    total++;
-    fprintf(yyout, "%d: #%d  \"%s\" STRING \"%s\" <-char*\n", temp, total, v.c_str(), v.c_str());
-    yval.push_back(init_token(line_number, total, yytext, type::STRING));
+    fprintf(yyout, "%d: #%d  \"%s\" STRING \"%s\" <-char*\n", temp, v.c_str(), v.c_str());
 }
 
 "/*" {
-    int temp = line_number;
+    int temp = yylineno;
     char prev = '-';
     stack<string> par;
     stack<int> s;
-    s.push(line_number);
+    s.push(yylineno);
     while(true){
         char c = yyinput();
         if(c == EOF || c == '\0') break;
 		bool in = false;
         if(prev == '/' && c == '*'){ /* opening */
-            s.push(line_number);
+            s.push(yylineno);
 			in = true;
         }
         if(prev == '*' && c == '/') { /* closing */
             if(s.empty()){
-                fprintf(yyout, "Error, comment closing at line: %d has not been opened.\n", line_number);
+                fprintf(yyout, "Error, comment closing at line: %d has not been opened.\n", yylineno);
                 exit(0);
             }
-            par.push(to_string(s.top())+" - "+to_string(line_number));
+            par.push(to_string(s.top())+" - "+to_string(yylineno));
             s.pop();
 			in = true;
         }
-        if(c == '\n') line_number++; 
+        if(c == '\n') yylineno++; 
         if(s.empty()) break;
         if(in) prev = '-';
 		else prev = c;
@@ -147,7 +147,7 @@ integer [0-9]+
         if(c == ' ') break;
         lineNo += c;
     }
-    fprintf(yyout, "%s: #%d \"%s\" COMMENT BLOCK_COMMENT <-enumerated\n", lineNo.c_str(), ++total, tp.c_str());
+    fprintf(yyout, "%s: #%d \"%s\" COMMENT BLOCK_COMMENT <-enumerated\n", lineNo.c_str(), tp.c_str());
     par.pop();
     while(!par.empty()) {
         string tp = par.top();
@@ -156,12 +156,12 @@ integer [0-9]+
             if(c==' ') break;
             lineNo += c;
         }
-        fprintf(yyout, "%s: #%d \"%s\" COMMENT NESTED_COMMENT <-enumerated\n", lineNo.c_str(), ++total, tp.c_str());
+        fprintf(yyout, "%s: #%d \"%s\" COMMENT NESTED_COMMENT <-enumerated\n", lineNo.c_str(), tp.c_str());
         par.pop();
     }
 }
 
-{id} { yyval.stringval = strdup(yytext); return ID; }
+{id} { yylval.stringval = strdup(yytext); return ID; }
 
 . { fprintf(stderr, "Cannot match character %s with any rule\n", yytext); }
 
