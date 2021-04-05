@@ -1,5 +1,8 @@
 1) Na ftiaxoume to .y arxeio gia mia apli periptosh (px vlepei ena token kai to typonei
-2) Na vazoume ta tokens sto hashtable h' sto map h' sto unordered map h' se lista
+
+2) Na ftiasoyme sto shmeio na ginetai h syntaktikh analysh kai na mas bgainoyn ta conflicts
+
+3) Na vazoume ta tokens sto hashtable h' sto map h' sto unordered map h' se lista kai na kanoyme elegxous gia errors
 
 
 HOW TO RUN IT
