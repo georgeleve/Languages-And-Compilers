@@ -147,7 +147,7 @@ integer [0-9]+
         if(c == ' ') break;
         lineNo += c;
     }
-    fprintf(yyout, "%s: #%d \"%s\" COMMENT BLOCK_COMMENT <-enumerated\n", lineNo.c_str(), tp.c_str());
+    /* fprintf(yyout, "%s: #%d \"%s\" COMMENT BLOCK_COMMENT <-enumerated\n", lineNo.c_str(), tp.c_str()); */
     par.pop();
     while(!par.empty()) {
         string tp = par.top();
@@ -156,7 +156,7 @@ integer [0-9]+
             if(c==' ') break;
             lineNo += c;
         }
-        fprintf(yyout, "%s: #%d \"%s\" COMMENT NESTED_COMMENT <-enumerated\n", lineNo.c_str(), tp.c_str());
+        /* fprintf(yyout, "%s: #%d \"%s\" COMMENT NESTED_COMMENT <-enumerated\n", lineNo.c_str(), tp.c_str()); */
         par.pop();
     }
 }

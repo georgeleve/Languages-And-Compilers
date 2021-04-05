@@ -42,7 +42,7 @@ void increaseScope(){
 	symTable.push_back(tp);
 }
 
-bool decreaseScope(){
+void decreaseScope(){
 	scope--;
 	symTable.pop_back();
 }
