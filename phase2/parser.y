@@ -25,7 +25,7 @@
 
 %type <intval> expr
 %type <stringval> stmt ifstmt whilestmt forstmt returnstmt block funcdef lvalue primary call objectdef const member
-%type <stringval> elist callsuffix normcall methodcall indexed indexedelem
+%type <stringval> elist callsuffix normcall methodcall indexed indexedelem temp_stmt ident_temp
 
 %left ASSIGN
 %left OR
@@ -62,19 +62,19 @@ stmt: expr SEMICOLON { }
 	;
 
 expr: assignexpr { printf("Assignes expression \n"); }
-	| expr PLUS expr	 {printf("expression  + expression -> %d+%d\n",$1,$3); 	$$ = $1 + $3;}
-	| expr MINUS expr	 {printf("expression  - expression -> %d-%d\n",$1,$3); 	$$ = $1 - $3;}
-	| expr MUL expr		 {printf("expression  * expression -> %d*%d\n",$1,$3); 	$$ = $1 * $3;}
-	| expr DIV expr		 {printf("expression  / expression -> %d/%d\n",$1,$3); 	$$ = $1 / $3;}
-	| expr MODULO expr		 {printf("expression %% expression -> %d %% %d\n",$1,$3); 	$$ = $1 % $3;}
-	| expr GREATER expr	 {printf("expression  > expression -> %d>%d\n",$1,$3); 	$$ = ($1 > $3)?1:0;}
-	| expr GREATER_EQUAL expr {printf("expression >= expression -> %d>=%d\n",$1,$3); 	$$ = ($1>=$3)?1:0;}
-	| expr LESS expr	 {printf("expression  < expression -> %d<%d\n",$1,$3); 	$$ = ($1<$3)?1:0;}
-	| expr LESS_EQUAL expr {printf("expression <= expression -> %d<=%d\n",$1,$3); 	$$ = ($1<=$3)?1:0;}
-	| expr EQUAL expr		 {printf("expression == expression -> %d==%d\n",$1,$3); 	$$ = ($1==$3)?1:0;}
-	| expr NOT_EQUAL expr	 {printf("expression != expression -> %d!=%d\n",$1,$3); 	$$ = ($1!=$3)?1:0;}
-	| expr AND expr	   	 {printf("expression && expression -> %d&&%d\n",$1,$3); 	$$ = ($1&&$3)?1:0;}
-	| expr OR expr		 {printf("expression || expression -> %d/%d\n",$1,$3); 	$$ = ($1||$3)?1:0;}
+	| expr PLUS expr	 {printf("expression  + expression -> %d+%d\n", $1, $3); 	$$ = $1 + $3;}
+	| expr MINUS expr	 {printf("expression  - expression -> %d-%d\n", $1, $3); 	$$ = $1 - $3;}
+	| expr MUL expr		 {printf("expression  * expression -> %d*%d\n", $1, $3); 	$$ = $1 * $3;}
+	| expr DIV expr		 {printf("expression  / expression -> %d/%d\n", $1, $3); 	$$ = $1 / $3;}
+	| expr MODULO expr	 {printf("expression %% expression -> %d %% %d\n", $1, $3); 	$$ = $1 % $3;}
+	| expr GREATER expr	 {printf("expression  > expression -> %d>%d\n", $1, $3); 	$$ = ($1 > $3)?1:0;}
+	| expr GREATER_EQUAL expr {printf("expression >= expression -> %d>=%d\n", $1, $3); 	$$ = ($1>=$3)?1:0;}
+	| expr LESS expr	 {printf("expression  < expression -> %d<%d\n", $1, $3); 	$$ = ($1<$3)?1:0;}
+	| expr LESS_EQUAL expr {printf("expression <= expression -> %d<=%d\n", $1, $3); 	$$ = ($1<=$3)?1:0;}
+	| expr EQUAL expr		 {printf("expression == expression -> %d==%d\n", $1, $3); 	$$ = ($1==$3)?1:0;}
+	| expr NOT_EQUAL expr	 {printf("expression != expression -> %d!=%d\n", $1, $3); 	$$ = ($1!=$3)?1:0;}
+	| expr AND expr	   	 {printf("expression && expression -> %d&&%d\n", $1, $3); 	$$ = ($1&&$3)?1:0;}
+	| expr OR expr		 {printf("expression || expression -> %d/%d\n", $1, $3); 	$$ = ($1||$3)?1:0;}
 	| term			     {printf(" term \n");}
 	;
 
@@ -89,14 +89,15 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
 	;
 
 assignexpr: lvalue ASSIGN expr { 
-		string var = yytext;
-		if(lookup(var)){
-			printf(" ITS ALREADY IN\n");
-		}else{
-			insert(var, LOC, yylineno);
-			cout << "The variable %s changed\n" << endl;
-		}
-	};
+				string var = yytext;
+				if(lookup(var)){
+					printf(" ITS ALREADY IN\n");
+				}else{
+					insert(var, LOC, yylineno);
+					cout << "The variable %s changed\n" << endl;
+				}
+	   	 }
+		 ;
 
 primary: lvalue { printf(" lvalue "); }
 	   | call { printf(" call "); }
@@ -148,11 +149,23 @@ indexed: indexedelem { printf("Idexedelem\n"); }
 indexedelem: LEFT_BRACE expr COLON expr RIGHT_BRACE	{ printf("  indexed  { Expr : Expr }\n"); }
 		   ;
 
-block: LEFT_BRACE {increaseScope(); printf("Scope increased\n");} 
-		RIGHT_BRACE { printf("{ Statement }\n"); decreaseScope();printf("Scope decreased\n");}
+temp_stmt:	temp_stmt stmt	{;} 
+	| {;}
+	;
+
+block: LEFT_BRACE {increaseScope(); printf("Scope increased\n");}
+	   temp_stmt{}
+	   RIGHT_BRACE { printf("{ Statement }\n"); decreaseScope();printf("Scope decreased\n");}
 	 ;
 
-funcdef: FUNCTION ID { 
+ident_temp:	ID	{}
+	|	{
+			printf("idents temp\n");
+		}
+	;
+
+
+funcdef: FUNCTION ident_temp { 
 			string fName = yytext; 
 			if(generalLookup(fName)){
 				printf("THIS PIECE OF SHIT ALREADY EXISTS! \n");
@@ -163,17 +176,17 @@ funcdef: FUNCTION ID {
 		}
 		LEFT_PARENTH  { printf(" LEFT_PARENTH "); }
 		idlist
-		RIGHT_PARENTH  { printf(" RIGHT_PARENTH ");  }    
-		{} 
+		{}
+		RIGHT_PARENTH  { printf(" RIGHT_PARENTH ");  }
 		block { printf(" block ");  } 
 	    ;
 
-const:	INTEGER		{ printf("INTEGER\n");		}	 
-	 | FLOAT	{ printf("FLOAT\n");	}
-	 | STRING		{ printf("STRING\n");		}
-	 | NIL			{ printf("NIL\n");			}
-	 | TRUE			{ printf("TRUE\n");			}
-	 | FALSE		{ printf("FALSE\n");		}
+const:	INTEGER		{ printf("integer\n");		}	 
+	 | FLOAT	{ printf("float\n");	}
+	 | STRING		{ printf("string\n");		}
+	 | NIL			{ printf("nil\n");			}
+	 | TRUE			{ printf("true\n");			}
+	 | FALSE		{ printf("false\n");		}
 	 ;
 
 idlist:	ID {	printf("|ID:%s\n",yytext); }
@@ -186,19 +199,19 @@ idlist:	ID {	printf("|ID:%s\n",yytext); }
 
 ifstmt:	IF LEFT_PARENTH expr RIGHT_PARENTH
 		{
-			printf(" if(expr) "); 
+			printf("if(expr)");
 		}
 		stmt
 		{
-			printf(" if stmt "); 
+			printf("if stmt"); 
 		}
 	 | ifstmt ELSE
 		{
-			printf(" else "); 
+			printf("else"); 
 		}
 		stmt
 		{
-			printf(" else stmt "); 
+			printf("else stmt"); 
 		}
 	 ;	 
 
