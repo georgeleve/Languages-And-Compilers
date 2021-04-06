@@ -5,53 +5,35 @@ int scope = 0;
 
 enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC };
 
-/*
-typedef struct Variable {
-	const string name;
-	unsigned int scope;
-	unsigned int line;
-} Variable;
-
-typedef struct Function {
-	const string name;
-	unsigned int scope;
-	unsigned int line;
-} Function;
-
-typedef struct SymbolTableEntry {
-	bool isActive;
-	union {
-		Variable *varVal;
-		Function *funcVal;
-	} value;
-	enum SymbolType type;
-} SymbolTableEntry; 
-*/
-
 typedef struct Information{
 	enum SymbolType type;
 	unsigned int line;
 } Information;
 
-vector<map<string,Information>> symTable;
+vector<map<string,Information>> activeSymTable;
+vector<map<string,Information>> fullSymTable;
 
 void increaseScope(){
 	scope++;
 	map<string, Information> tp;
-	symTable.push_back(tp);
+	activeSymTable.push_back(tp);
+	if(fullSymTable.size()<=scope){
+		map<string, Information> tp2;
+		fullSymTable.push_back(tp);
+	}
 }
 
 void decreaseScope(){
 	scope--;
-	symTable.pop_back();
+	activeSymTable.pop_back();
 }
 
 bool lookup(string s){
-	return symTable.back().find(s) != symTable.back().end();
+	return activeSymTable.back().find(s) != activeSymTable.back().end();
 }
 
 bool globalLookup(string s){
-	return symTable[0].find(s) != symTable[0].end();
+	return activeSymTable[0].find(s) != activeSymTable[0].end();
 }
 
 bool generalLookup(string s){
@@ -62,29 +44,60 @@ void insert(string name, enum SymbolType type, unsigned int line){
 	Information info;
 	info.type = type;
 	info.line = line;
-	symTable.back().insert({name, info});
+	activeSymTable[scope].insert({name, info});
+	
+	Information info2;
+	info2.type = type;
+	info2.line = line;
+	fullSymTable[scope].insert({name, info2});
 }
 
 void globalInsert(string name, enum SymbolType type, unsigned int line){
 	Information info;
 	info.type = type;
 	info.line = line;
-	symTable[0].insert({name, info});
+	activeSymTable[0].insert({name, info});
+	
+	Information info2;
+	info2.type = type;
+	info2.line = line;
+	fullSymTable[0].insert({name, info2});
 }
 
 void initializeSymTable(){
 	map<string,Information> tp;
-	symTable.push_back(tp);
+	activeSymTable.push_back(tp);
+	map<string,Information> tp2;
+	fullSymTable.push_back(tp2);
+	
 	globalInsert("print", LIBFUNC, 0);
 	globalInsert("input", LIBFUNC, 0);
 	globalInsert("objectmemberkeys", LIBFUNC, 0);
 	globalInsert("objecttotalmembers", LIBFUNC, 0);
 	globalInsert("objectcopy", LIBFUNC, 0);
-	globalInsert("totalastrrguments", LIBFUNC, 0);
+	globalInsert("totalarguments", LIBFUNC, 0);
 	globalInsert("argument", LIBFUNC, 0);
 	globalInsert("typeof", LIBFUNC, 0);
 	globalInsert("strtonum", LIBFUNC, 0);
 	globalInsert("sqrt", LIBFUNC, 0);
 	globalInsert("cos", LIBFUNC, 0);
 	globalInsert("sin", LIBFUNC, 0);
+}
+void printFullSymTable(){
+	for(int i = 0; i<fullSymTable.size(); i++){
+		printf("------------   Scope #%d   ------------\n",i);
+		
+		for(auto v : fullSymTable[i]){
+			string key = v.first;
+			Information info = v.second;
+			enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC };
+			string label = "";
+			if(info.type == GLOBAL) label = "[global variable]";
+			else if(info.type == LOC) label = "[local variable]";
+			else if(info.type == FORMAL) label = "[formal argument]";
+			else if(info.type == USERFUNC) label = "[user function]";
+			else label = "[library function]";	
+			printf("\"%s\" %s (line %d) (scope %d)\n",key.c_str(),label.c_str(),info.line,i);
+		}
+	}
 }

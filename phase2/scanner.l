@@ -18,9 +18,7 @@ integer [0-9]+
 
 %%
 
-\n  { yylineno++; }
-
-[\n]+ { return '\n'; }
+\n  { }
 
 "if" 		{return IF;}
 "else" 		{return ELSE;}

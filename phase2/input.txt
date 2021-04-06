@@ -1,1 +1,8 @@
-function x(){ k = 5; }
+function x(){ 
+	function y(c,d,e,f){
+		function v(k,l){
+			s = 5;
+			x = 5;
+		} 
+	} 
+}
