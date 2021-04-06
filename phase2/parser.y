@@ -58,7 +58,7 @@ stmt: expr SEMICOLON { }
 	| CONTINUE SEMICOLON { printf("CONTINUE semicolon\n"); }
 	| block { printf("Block\n"); }
 	| funcdef { printf("Function definition\n"); }
-	| SEMICOLON { printf("We saw a ;  (SEMICOLON)\n"); }
+	| SEMICOLON { printf(" ; SEMICOLON\n"); }
 	;
 
 expr: assignexpr { printf("Assignes expression \n"); }
@@ -75,77 +75,77 @@ expr: assignexpr { printf("Assignes expression \n"); }
 	| expr NOT_EQUAL expr	 {printf("expression != expression -> %d!=%d\n",$1,$3); 	$$ = ($1!=$3)?1:0;}
 	| expr AND expr	   	 {printf("expression && expression -> %d&&%d\n",$1,$3); 	$$ = ($1&&$3)?1:0;}
 	| expr OR expr		 {printf("expression || expression -> %d/%d\n",$1,$3); 	$$ = ($1||$3)?1:0;}
-	| term			     {printf("Terminal\n");}
+	| term			     {printf(" term \n");}
 	;
 
-term: LEFT_PARENTH expr RIGHT_PARENTH { printf(" hello world "); }
-	| MINUS expr { printf(" hello world ");}
-	| NOT expr { printf(" hello world "); }
-	| PLUS_PLUS lvalue { printf(" hello world "); }
-	| lvalue PLUS_PLUS { printf(" hello world "); }
-	| MINUS_MINUS lvalue { printf(" hello world "); }
-	| lvalue MINUS_MINUS { printf(" hello world "); }
-	| primary { printf(" hello world "); }
+term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
+	| MINUS expr { printf(" - ");}
+	| NOT expr { printf(" != "); }
+	| PLUS_PLUS lvalue { printf(" ++lvalue "); }
+	| lvalue PLUS_PLUS { printf(" lvalue++ "); }
+	| MINUS_MINUS lvalue { printf(" --lvalue "); }
+	| lvalue MINUS_MINUS { printf(" lvalue-- "); }
+	| primary { printf(" primary "); }
 	;
 
 assignexpr: lvalue ASSIGN expr { 
 		string var = yytext;
 		if(lookup(var)){
-			printf("SUCK A DICK ITS ALREADY IN\n");
+			printf(" ITS ALREADY IN\n");
 		}else{
-			insert(var,LOC,yylineno);
-			printf("The shity variable %s cahnged\n");
+			insert(var, LOC, yylineno);
+			cout << "The variable %s changed\n" << endl;
 		}
 	};
 
-primary: lvalue { printf(" hello world "); }
-	   | call { printf(" hello world "); }
-	   | objectdef { printf(" hello world "); }
-	   | LEFT_PARENTH funcdef RIGHT_PARENTH { printf(" hello world "); }
-	   | const { printf(" hello world "); }
+primary: lvalue { printf(" lvalue "); }
+	   | call { printf(" call "); }
+	   | objectdef { printf(" objectdef "); }
+	   | LEFT_PARENTH funcdef RIGHT_PARENTH { printf(" LEFT_PARENTH funcdef RIGHT_PARENTH "); }
+	   | const { printf(" const "); }
 	   ;
 
-lvalue: ID { printf(" hello world "); }
-	  | LOCAL ID { printf(" hello world "); }
-	  | DOUBLE_COLON ID { printf(" hello world "); }
-   	  | member { printf(" hello world "); }
+lvalue: ID { printf(" ID "); }
+	  | LOCAL ID { printf(" LOCAL ID "); }
+	  | DOUBLE_COLON ID { printf(" DOUBLE_COLON ID "); }
+   	  | member { printf(" member "); }
   	  ;
 
-member: lvalue DOT ID { printf(" hello world "); }
-	  | lvalue LEFT_BRACKET expr RIGHT_BRACKET { printf(" hello world "); }
-      | call DOT ID { printf(" hello world "); }
-	  | call LEFT_BRACKET expr RIGHT_BRACKET { printf(" hello world "); }
+member: lvalue DOT ID { printf(" lvalue DOT ID "); }
+	  | lvalue LEFT_BRACKET expr RIGHT_BRACKET { printf(" lvalue LEFT_BRACKET expr RIGHT_BRACKET "); }
+      | call DOT ID { printf(" call DOT ID "); }
+	  | call LEFT_BRACKET expr RIGHT_BRACKET { printf("call LEFT_BRACKET expr RIGHT_BRACKET "); }
    	  ;
 
-call: call LEFT_PARENTH elist RIGHT_PARENTH { printf(" hello world "); }
-	| lvalue callsuffix { printf(" hello world "); }
-	| LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_BRACKET { printf(" hello world "); }
+call: call LEFT_PARENTH elist RIGHT_PARENTH { printf(" call LEFT_PARENTH elist RIGHT_PARENTH "); }
+	| lvalue callsuffix { printf("  lvalue callsuffix "); }
+	| LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_BRACKET { printf("LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_BRACKET"); }
 	;
 
-callsuffix: normcall { }
-		  | methodcall { }
+callsuffix: normcall { printf(" "); }
+		  | methodcall { printf(" "); }
 	      ;
 
-normcall: LEFT_PARENTH elist RIGHT_PARENTH { }
+normcall: LEFT_PARENTH elist RIGHT_PARENTH { printf("normcall "); }
 		;
 
-methodcall: DOT_DOT ID LEFT_PARENTH elist RIGHT_PARENTH { } 
+methodcall: DOT_DOT ID LEFT_PARENTH elist RIGHT_PARENTH { printf(" methodcall "); } 
 		  ;
 
-elist: expr { printf("katiii"); }
-	 | elist COMMA expr	{ printf("katiii\n");} 
-	 | { printf("katiii\n"); }
+elist: expr { printf("elist"); }
+	 | elist COMMA expr	{ printf("elist\n");} 
+	 | { printf("elist\n"); }
 	 ;
 
-objectdef: LEFT_BRACKET elist RIGHT_BRACKET { }
-		 | LEFT_BRACKET indexed RIGHT_BRACKET { } 
+objectdef: LEFT_BRACKET elist RIGHT_BRACKET { printf(" objectdef ");  }
+		 | LEFT_BRACKET indexed RIGHT_BRACKET { printf(" ");  } 
 		 ;
 
 indexed: indexedelem { printf("Idexedelem\n"); }
 	   |indexed COMMA indexedelem { printf("indexedelem comma indexedelem\n"); }
 	   ;
 
-indexedelem: LEFT_BRACE expr COLON expr RIGHT_BRACE	{ printf("{ Expr : Expr }\n"); }
+indexedelem: LEFT_BRACE expr COLON expr RIGHT_BRACE	{ printf("  indexed  { Expr : Expr }\n"); }
 		   ;
 
 block: LEFT_BRACE {increaseScope(); printf("Scope increased\n");} 
@@ -161,21 +161,22 @@ funcdef: FUNCTION ID {
 				printf("Function got deep inside my ass! \n");
 			}
 		}
-		LEFT_PARENTH  { /*printf("ducks\n");*/}
+		LEFT_PARENTH  { printf(" LEFT_PARENTH "); }
 		idlist
-		RIGHT_PARENTH  { }    					{} 
-		block { } 
-	   ;
+		RIGHT_PARENTH  { printf(" RIGHT_PARENTH ");  }    
+		{} 
+		block { printf(" block ");  } 
+	    ;
 
-const:	INTEGER		{ printf("NUMBER\n");		}	 
-	 | FLOAT	{ printf("REALNUMBER\n");	}
+const:	INTEGER		{ printf("INTEGER\n");		}	 
+	 | FLOAT	{ printf("FLOAT\n");	}
 	 | STRING		{ printf("STRING\n");		}
 	 | NIL			{ printf("NIL\n");			}
 	 | TRUE			{ printf("TRUE\n");			}
 	 | FALSE		{ printf("FALSE\n");		}
 	 ;
 
-idlist:	ID {		printf("|ID:%s\n",yytext); }
+idlist:	ID {	printf("|ID:%s\n",yytext); }
 	  |idlist COMMA ID
 		{	
 			printf("|ID,...,ID: %s\n",yytext);
@@ -185,54 +186,53 @@ idlist:	ID {		printf("|ID:%s\n",yytext); }
 
 ifstmt:	IF LEFT_PARENTH expr RIGHT_PARENTH
 		{
-			
+			printf(" if(expr) "); 
 		}
 		stmt
 		{
-			
+			printf(" if stmt "); 
 		}
 	 | ifstmt ELSE
 		{
-			
+			printf(" else "); 
 		}
 		stmt
 		{
-			
+			printf(" else stmt "); 
 		}
 	 ;	 
 
 whilestmt:	WHILE  
 		 {
-
-
+			 printf(" WHILE "); 
 		 }
 		 LEFT_PARENTH expr RIGHT_PARENTH
 		 {
-		 
+			 printf(" (expr) "); 
 		 }
 		 stmt
 		 {
-			
+			printf(" while stmt "); 
 		 } 
 		 ;  	
 
 	
 forstmt:	FOR
 		{
-			
+			printf(" for "); 
 		}
 		LEFT_PARENTH elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTH 
 		{
-			
+			printf(" ( ; ; )"); 
 		}
 		stmt
 		{
-			
+			printf(" for stmt "); 
 		} 
 		;	 
 
-returnstmt:	RETURN SEMICOLON { printf("|RETURN;\n"); } 
-		  | RETURN expr SEMICOLON{ printf("|RETURN EXPR;\n"); }
+returnstmt:	RETURN SEMICOLON { printf("RETURN;\n"); } 
+		  | RETURN expr SEMICOLON{ printf("RETURN EXPR;\n"); }
 		  ;	 
 %%
 

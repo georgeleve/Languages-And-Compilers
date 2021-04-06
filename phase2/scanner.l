@@ -1,10 +1,9 @@
 %{
-    // This is in order to get the token types from Yacc
-    // extern YYSTYPE yylval;   /*  maybe UNCOMMENT THIS LATER  */
+    /* This is in order to get the token types from Yacc
+       extern YYSTYPE yylval;   */
     #include "parser.hpp"
     #include <bits/stdc++.h>
     using namespace std;
-    /* may use this sometime  [\(\)\{\}:;=,]    { return yytext[0]; }  */
 %}
 
 /* Flex options */
@@ -106,7 +105,7 @@ integer [0-9]+
         else if(c != 13) v += c;
         prev = c;
     }
-    fprintf(yyout, "%d: #%d  \"%s\" STRING \"%s\" <-char*\n", temp, v.c_str(), v.c_str());
+    /* fprintf(yyout, "%d: #%d  \"%s\" STRING \"%s\" <-char*\n", temp, v.c_str(), v.c_str()); */
 }
 
 "/*" {
@@ -163,11 +162,9 @@ integer [0-9]+
 
 {id} { yylval.stringval = strdup(yytext); return ID; }
 
-[ \t]*
-
 . {
     if(yytext[0]!=13 && yytext[0]!=32 && yytext[0]!='\t') {
-		fprintf(stderr, "Cannot match character %c (%d) with any rule\n", yytext[0],yytext[0]);
+		fprintf(stderr, "Cannot match character %c (%d) with any rule\n", yytext[0], yytext[0]);
         exit(0);
     }   
 }
