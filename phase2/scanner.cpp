@@ -1112,11 +1112,13 @@ YY_RULE_SETUP
         prev = c;
     }
     /* fprintf(yyout, "%d: #%d  \"%s\" STRING \"%s\" <-char*\n", temp, v.c_str(), v.c_str()); */
+	yylval.stringval = strdup(v.c_str());
+	return STRING;
 }
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 109 "scanner.l"
+#line 111 "scanner.l"
 {
     int temp = yylineno;
     char prev = '-';
@@ -1171,12 +1173,12 @@ YY_RULE_SETUP
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 161 "scanner.l"
+#line 163 "scanner.l"
 { yylval.stringval = strdup(yytext); return ID; }
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 163 "scanner.l"
+#line 165 "scanner.l"
 {
     if(yytext[0]!=13 && yytext[0]!=32 && yytext[0]!='\t') {
 		fprintf(stderr, "Cannot match character %c (%d) with any rule\n", yytext[0], yytext[0]);
@@ -1186,15 +1188,15 @@ YY_RULE_SETUP
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 169 "scanner.l"
+#line 171 "scanner.l"
 
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 171 "scanner.l"
+#line 173 "scanner.l"
 ECHO;
 	YY_BREAK
-#line 1198 "scanner.cpp"
+#line 1200 "scanner.cpp"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2209,5 +2211,5 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 171 "scanner.l"
+#line 173 "scanner.l"
 

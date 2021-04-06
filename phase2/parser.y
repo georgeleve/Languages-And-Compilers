@@ -8,12 +8,6 @@
 	extern char* yytext;
 	extern FILE* yyout;
 	
-	string lastLvalue;
-	/*
-	int lastLvalueLine;
-	
-	int lastIDlineNo;
-	*/
 %}
 %start program
 
@@ -70,6 +64,7 @@ stmt: expr SEMICOLON { }
 	;
 
 expr: assignexpr { printf("Assignes expression \n"); }
+	| assignexpr_str {printf("String assign \n");}
 	| expr PLUS expr	 {printf("expression  + expression -> %d+%d\n", $1, $3); 	$$ = $1 + $3;}
 	| expr MINUS expr	 {printf("expression  - expression -> %d-%d\n", $1, $3); 	$$ = $1 - $3;}
 	| expr MUL expr		 {printf("expression  * expression -> %d*%d\n", $1, $3); 	$$ = $1 * $3;}
@@ -83,7 +78,7 @@ expr: assignexpr { printf("Assignes expression \n"); }
 	| expr NOT_EQUAL expr	 {printf("expression != expression -> %d!=%d\n", $1, $3); 	$$ = ($1!=$3)?1:0;}
 	| expr AND expr	   	 {printf("expression && expression -> %d&&%d\n", $1, $3); 	$$ = ($1&&$3)?1:0;}
 	| expr OR expr		 {printf("expression || expression -> %d/%d\n", $1, $3); 	$$ = ($1||$3)?1:0;}
-	| term			     {printf(" term \n");}
+	| term			     {printf(" term: \n");}
 	;
 
 term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
@@ -96,8 +91,64 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
 	| primary { printf(" primary "); }
 	;
 
-assignexpr: lvalue ASSIGN expr { 
-				string var = lastLvalue;
+assignexpr_str: ID ASSIGN STRING {
+				string var = $1;
+				string toAssign = $3;
+				printf(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB: %s",var.c_str());
+				if(lookup(var)){
+					printf(" ITS ALREADY IN\n");
+				}else{
+					insert(var, LOC, yylineno);
+					printf("assigned %s ",var.c_str());
+				}
+	   	 }
+		 | LOCAL ID ASSIGN STRING {
+				string var = $2;
+				string toAssign = $4;
+				printf(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB: %s",var.c_str());
+				if(lookup(var)){
+					printf(" ITS ALREADY IN\n");
+				}else{
+					insert(var, LOC, yylineno);
+					printf("assigned %s ",var.c_str());
+				}
+	   	 }
+		 | DOUBLE_COLON ID ASSIGN STRING {
+				string var = $1;
+				string toAssign = $3;
+				printf(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB: %s",var.c_str());
+				if(lookup(var)){
+					printf(" ITS ALREADY IN\n");
+				}else{
+					insert(var, LOC, yylineno);
+					printf("assigned %s ",var.c_str());
+				}
+	   	 }
+		 ;
+		 
+assignexpr: ID ASSIGN expr {
+				string var = $1;
+				printf(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %s",var.c_str());
+				if(lookup(var)){
+					printf(" ITS ALREADY IN\n");
+				}else{
+					insert(var, LOC, yylineno);
+					printf("assigned %s ",var.c_str());
+				}
+	   	 }
+		 | LOCAL ID ASSIGN expr { 
+				string var = $2;
+				printf(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %s",var.c_str());
+				if(lookup(var)){
+					printf(" ITS ALREADY IN\n");
+				}else{
+					insert(var, LOC, yylineno);
+					printf("assigned %s ",var.c_str());
+				}
+	   	 }
+		 | DOUBLE_COLON ID ASSIGN expr { 
+				string var = $2;
+				printf(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %s",var.c_str());
 				if(lookup(var)){
 					printf(" ITS ALREADY IN\n");
 				}else{
@@ -107,15 +158,15 @@ assignexpr: lvalue ASSIGN expr {
 	   	 }
 		 ;
 
-primary: lvalue { printf(" lvalue "); }
+primary: lvalue { printf(" lvalue %s", $1); }
 	   | call { printf(" call "); }
 	   | objectdef { printf(" objectdef "); }
 	   | LEFT_PARENTH funcdef RIGHT_PARENTH { printf(" LEFT_PARENTH funcdef RIGHT_PARENTH "); }
 	   | const { printf(" const "); }
 	   ;
 
-lvalue: ID {   lastLvalue = yytext; printf(" ID UPDATEDDDDDDDDDDDDDDDDDDDDDDDDDDDD "); }
-	  | LOCAL ID { printf(" LOCAL ID "); }
+lvalue: ID { printf(" ID UPDATEDDDDDDDDDDDDDDDDDDDDDDDDDDDD "); }
+	  | LOCAL ID { string var = $2; printf(" LOCAL ID -------------------------------------- %s",var.c_str()); }
 	  | DOUBLE_COLON ID { printf(" DOUBLE_COLON ID "); }
    	  | member { printf(" member "); }
   	  ;
@@ -165,18 +216,9 @@ block: LEFT_BRACE {increaseScope(); printf("Scope increased\n");}
 	   temp_stmt{}
 	   RIGHT_BRACE { printf("{ Statement }\n"); decreaseScope();printf("Scope decreased\n");}
 	 ;
-
-ident_temp:	ID	{
-			printf("GUCCI????? : %d sheeeeeeeeeeeeeeeeeeeeeeeeeeeeesh\n",yylineno);
-		}
-	|	{
-			printf("WHAT THE FUCK IS THIS????? : %d sheeeeeeeeeeeeeeeeeeeeeeeeeeeeesh\n",yylineno);
-
-		}
-	;
-
-funcdef: FUNCTION ident_temp { 
-			string fName = yytext; 
+	 
+funcdef: FUNCTION ID { 
+			string fName = $2; 
 			if(generalLookup(fName)){
 				printf("THIS PIECE OF SHIT ALREADY EXISTS! \n");
 			}else{

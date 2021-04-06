@@ -10,16 +10,24 @@ typedef struct Information{
 	unsigned int line;
 } Information;
 
+typedef struct PrintToken{
+	string value;
+	Information info;
+} PrintToken;
+
+bool comparator(PrintToken a, PrintToken b){
+	return a.info.line < b.info.line;
+}
 vector<map<string,Information>> activeSymTable;
-vector<map<string,Information>> fullSymTable;
+vector<vector<PrintToken>> fullSymTable;
 
 void increaseScope(){
 	scope++;
 	map<string, Information> tp;
 	activeSymTable.push_back(tp);
 	if(fullSymTable.size()<=scope){
-		map<string, Information> tp2;
-		fullSymTable.push_back(tp);
+		vector<PrintToken> tp2;
+		fullSymTable.push_back(tp2);
 	}
 }
 
@@ -49,7 +57,7 @@ void insert(string name, enum SymbolType type, unsigned int line){
 	Information info2;
 	info2.type = type;
 	info2.line = line;
-	fullSymTable[scope].insert({name, info2});
+	fullSymTable[scope].push_back({name, info2});
 }
 
 void globalInsert(string name, enum SymbolType type, unsigned int line){
@@ -61,13 +69,13 @@ void globalInsert(string name, enum SymbolType type, unsigned int line){
 	Information info2;
 	info2.type = type;
 	info2.line = line;
-	fullSymTable[0].insert({name, info2});
+	fullSymTable[0].push_back({name, info2});
 }
 
 void initializeSymTable(){
 	map<string,Information> tp;
 	activeSymTable.push_back(tp);
-	map<string,Information> tp2;
+	vector<PrintToken> tp2;
 	fullSymTable.push_back(tp2);
 	
 	globalInsert("print", LIBFUNC, 0);
@@ -83,13 +91,15 @@ void initializeSymTable(){
 	globalInsert("cos", LIBFUNC, 0);
 	globalInsert("sin", LIBFUNC, 0);
 }
+
+
 void printFullSymTable(){
 	for(int i = 0; i<fullSymTable.size(); i++){
 		printf("------------   Scope #%d   ------------\n",i);
-		
+		vector<PrintToken> a;
 		for(auto v : fullSymTable[i]){
-			string key = v.first;
-			Information info = v.second;
+			string key = v.value;
+			Information info = v.info;
 			enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC };
 			string label = "";
 			if(info.type == GLOBAL) label = "[global variable]";

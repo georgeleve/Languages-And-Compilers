@@ -104,6 +104,8 @@ integer [0-9]+
         prev = c;
     }
     /* fprintf(yyout, "%d: #%d  \"%s\" STRING \"%s\" <-char*\n", temp, v.c_str(), v.c_str()); */
+	yylval.stringval = strdup(v.c_str());
+	return STRING;
 }
 
 "/*" {

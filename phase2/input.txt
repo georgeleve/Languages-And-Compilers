@@ -1,8 +1,13 @@
-function x(){ 
-	function y(c,d,e,f){
-		function v(k,l){
-			s = 5;
-			x = 5;
-		} 
-	} 
+read(a);
+a = input();
+function foo(x) {
+local print = "hello";
+print(x + y);
+ local hello = a;
+local hello = 35;
+function hello() {
+ print(::a + ::x);
+ }
+function cos(){}
 }
+function foo(){} 
