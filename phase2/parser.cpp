@@ -75,8 +75,9 @@
 	extern FILE* yyin;
 	extern int yylex(void);
 	extern char* yytext;
+	extern FILE* yyout;
 
-#line 80 "parser.cpp"
+#line 81 "parser.cpp"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -224,13 +225,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 12 "parser.y"
+#line 13 "parser.y"
 
 	char* stringval;
 	int intval;
 	float floatval;
 
-#line 234 "parser.cpp"
+#line 235 "parser.cpp"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -610,14 +611,14 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_uint8 yyrline[] =
 {
-       0,    48,    48,    49,    52,    53,    54,    55,    56,    57,
-      58,    59,    60,    61,    64,    65,    66,    67,    68,    69,
-      70,    71,    72,    73,    74,    75,    76,    77,    78,    81,
-      82,    83,    84,    85,    86,    87,    88,    91,   102,   103,
-     104,   105,   106,   109,   110,   111,   112,   115,   116,   117,
-     118,   121,   122,   123,   126,   127,   130,   133,   136,   137,
-     138,   141,   142,   145,   146,   149,   152,   153,   156,   157,
-     156,   161,   162,   168,   177,   179,   180,   168,   184,   185,
+       0,    49,    49,    50,    53,    54,    55,    56,    57,    58,
+      59,    60,    61,    62,    65,    66,    67,    68,    69,    70,
+      71,    72,    73,    74,    75,    76,    77,    78,    79,    82,
+      83,    84,    85,    86,    87,    88,    89,    92,   103,   104,
+     105,   106,   107,   110,   111,   112,   113,   116,   117,   118,
+     119,   122,   123,   124,   127,   128,   131,   134,   137,   138,
+     139,   142,   143,   146,   147,   150,   153,   154,   157,   158,
+     157,   162,   163,   168,   177,   179,   180,   168,   184,   185,
      186,   187,   188,   189,   192,   193,   197,   201,   200,   209,
      208,   219,   223,   218,   234,   238,   233,   247,   248
 };
@@ -1600,211 +1601,211 @@ yyreduce:
   switch (yyn)
     {
   case 3:
-#line 49 "parser.y"
+#line 50 "parser.y"
                 { printf("Program\n"); }
-#line 1606 "parser.cpp"
+#line 1607 "parser.cpp"
     break;
 
   case 4:
-#line 52 "parser.y"
+#line 53 "parser.y"
                      { }
-#line 1612 "parser.cpp"
+#line 1613 "parser.cpp"
     break;
 
   case 5:
-#line 53 "parser.y"
+#line 54 "parser.y"
                  { printf("IF statement\n"); }
-#line 1618 "parser.cpp"
+#line 1619 "parser.cpp"
     break;
 
   case 6:
-#line 54 "parser.y"
+#line 55 "parser.y"
                     { printf("WHILE statement\n"); }
-#line 1624 "parser.cpp"
+#line 1625 "parser.cpp"
     break;
 
   case 7:
-#line 55 "parser.y"
+#line 56 "parser.y"
                   { printf("FOR statement\n"); }
-#line 1630 "parser.cpp"
+#line 1631 "parser.cpp"
     break;
 
   case 8:
-#line 56 "parser.y"
+#line 57 "parser.y"
                      { }
-#line 1636 "parser.cpp"
+#line 1637 "parser.cpp"
     break;
 
   case 9:
-#line 57 "parser.y"
+#line 58 "parser.y"
                           { printf("BREAK\n"); }
-#line 1642 "parser.cpp"
+#line 1643 "parser.cpp"
     break;
 
   case 10:
-#line 58 "parser.y"
+#line 59 "parser.y"
                              { printf("CONTINUE semicolon\n"); }
-#line 1648 "parser.cpp"
+#line 1649 "parser.cpp"
     break;
 
   case 11:
-#line 59 "parser.y"
+#line 60 "parser.y"
                 { printf("Block\n"); }
-#line 1654 "parser.cpp"
+#line 1655 "parser.cpp"
     break;
 
   case 12:
-#line 60 "parser.y"
+#line 61 "parser.y"
                   { printf("Function definition\n"); }
-#line 1660 "parser.cpp"
+#line 1661 "parser.cpp"
     break;
 
   case 13:
-#line 61 "parser.y"
+#line 62 "parser.y"
                     { printf(" ; SEMICOLON\n"); }
-#line 1666 "parser.cpp"
+#line 1667 "parser.cpp"
     break;
 
   case 14:
-#line 64 "parser.y"
+#line 65 "parser.y"
                  { printf("Assignes expression \n"); }
-#line 1672 "parser.cpp"
+#line 1673 "parser.cpp"
     break;
 
   case 15:
-#line 65 "parser.y"
+#line 66 "parser.y"
                                  {printf("expression  + expression -> %d+%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = (yyvsp[-2].intval) + (yyvsp[0].intval);}
-#line 1678 "parser.cpp"
+#line 1679 "parser.cpp"
     break;
 
   case 16:
-#line 66 "parser.y"
+#line 67 "parser.y"
                                  {printf("expression  - expression -> %d-%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = (yyvsp[-2].intval) - (yyvsp[0].intval);}
-#line 1684 "parser.cpp"
+#line 1685 "parser.cpp"
     break;
 
   case 17:
-#line 67 "parser.y"
+#line 68 "parser.y"
                                  {printf("expression  * expression -> %d*%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = (yyvsp[-2].intval) * (yyvsp[0].intval);}
-#line 1690 "parser.cpp"
+#line 1691 "parser.cpp"
     break;
 
   case 18:
-#line 68 "parser.y"
+#line 69 "parser.y"
                                  {printf("expression  / expression -> %d/%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = (yyvsp[-2].intval) / (yyvsp[0].intval);}
-#line 1696 "parser.cpp"
+#line 1697 "parser.cpp"
     break;
 
   case 19:
-#line 69 "parser.y"
+#line 70 "parser.y"
                                  {printf("expression %% expression -> %d %% %d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = (yyvsp[-2].intval) % (yyvsp[0].intval);}
-#line 1702 "parser.cpp"
+#line 1703 "parser.cpp"
     break;
 
   case 20:
-#line 70 "parser.y"
+#line 71 "parser.y"
                                  {printf("expression  > expression -> %d>%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = ((yyvsp[-2].intval) > (yyvsp[0].intval))?1:0;}
-#line 1708 "parser.cpp"
+#line 1709 "parser.cpp"
     break;
 
   case 21:
-#line 71 "parser.y"
+#line 72 "parser.y"
                                   {printf("expression >= expression -> %d>=%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = ((yyvsp[-2].intval)>=(yyvsp[0].intval))?1:0;}
-#line 1714 "parser.cpp"
+#line 1715 "parser.cpp"
     break;
 
   case 22:
-#line 72 "parser.y"
+#line 73 "parser.y"
                                  {printf("expression  < expression -> %d<%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = ((yyvsp[-2].intval)<(yyvsp[0].intval))?1:0;}
-#line 1720 "parser.cpp"
+#line 1721 "parser.cpp"
     break;
 
   case 23:
-#line 73 "parser.y"
+#line 74 "parser.y"
                                {printf("expression <= expression -> %d<=%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = ((yyvsp[-2].intval)<=(yyvsp[0].intval))?1:0;}
-#line 1726 "parser.cpp"
+#line 1727 "parser.cpp"
     break;
 
   case 24:
-#line 74 "parser.y"
+#line 75 "parser.y"
                                          {printf("expression == expression -> %d==%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = ((yyvsp[-2].intval)==(yyvsp[0].intval))?1:0;}
-#line 1732 "parser.cpp"
+#line 1733 "parser.cpp"
     break;
 
   case 25:
-#line 75 "parser.y"
+#line 76 "parser.y"
                                  {printf("expression != expression -> %d!=%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = ((yyvsp[-2].intval)!=(yyvsp[0].intval))?1:0;}
-#line 1738 "parser.cpp"
+#line 1739 "parser.cpp"
     break;
 
   case 26:
-#line 76 "parser.y"
+#line 77 "parser.y"
                                  {printf("expression && expression -> %d&&%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = ((yyvsp[-2].intval)&&(yyvsp[0].intval))?1:0;}
-#line 1744 "parser.cpp"
+#line 1745 "parser.cpp"
     break;
 
   case 27:
-#line 77 "parser.y"
+#line 78 "parser.y"
                                  {printf("expression || expression -> %d/%d\n", (yyvsp[-2].intval), (yyvsp[0].intval)); 	(yyval.intval) = ((yyvsp[-2].intval)||(yyvsp[0].intval))?1:0;}
-#line 1750 "parser.cpp"
+#line 1751 "parser.cpp"
     break;
 
   case 28:
-#line 78 "parser.y"
+#line 79 "parser.y"
                                      {printf(" term \n");}
-#line 1756 "parser.cpp"
+#line 1757 "parser.cpp"
     break;
 
   case 29:
-#line 81 "parser.y"
+#line 82 "parser.y"
                                       { printf( "(" ); }
-#line 1762 "parser.cpp"
+#line 1763 "parser.cpp"
     break;
 
   case 30:
-#line 82 "parser.y"
+#line 83 "parser.y"
                      { printf(" - ");}
-#line 1768 "parser.cpp"
+#line 1769 "parser.cpp"
     break;
 
   case 31:
-#line 83 "parser.y"
+#line 84 "parser.y"
                    { printf(" != "); }
-#line 1774 "parser.cpp"
+#line 1775 "parser.cpp"
     break;
 
   case 32:
-#line 84 "parser.y"
+#line 85 "parser.y"
                            { printf(" ++lvalue "); }
-#line 1780 "parser.cpp"
+#line 1781 "parser.cpp"
     break;
 
   case 33:
-#line 85 "parser.y"
+#line 86 "parser.y"
                            { printf(" lvalue++ "); }
-#line 1786 "parser.cpp"
+#line 1787 "parser.cpp"
     break;
 
   case 34:
-#line 86 "parser.y"
+#line 87 "parser.y"
                              { printf(" --lvalue "); }
-#line 1792 "parser.cpp"
+#line 1793 "parser.cpp"
     break;
 
   case 35:
-#line 87 "parser.y"
+#line 88 "parser.y"
                              { printf(" lvalue-- "); }
-#line 1798 "parser.cpp"
+#line 1799 "parser.cpp"
     break;
 
   case 36:
-#line 88 "parser.y"
+#line 89 "parser.y"
                   { printf(" primary "); }
-#line 1804 "parser.cpp"
+#line 1805 "parser.cpp"
     break;
 
   case 37:
-#line 91 "parser.y"
+#line 92 "parser.y"
                                { 
 				string var = yytext;
 				if(lookup(var)){
@@ -1814,219 +1815,219 @@ yyreduce:
 					cout << "The variable %s changed\n" << endl;
 				}
 	   	 }
-#line 1818 "parser.cpp"
+#line 1819 "parser.cpp"
     break;
 
   case 38:
-#line 102 "parser.y"
+#line 103 "parser.y"
                 { printf(" lvalue "); }
-#line 1824 "parser.cpp"
+#line 1825 "parser.cpp"
     break;
 
   case 39:
-#line 103 "parser.y"
+#line 104 "parser.y"
                   { printf(" call "); }
-#line 1830 "parser.cpp"
+#line 1831 "parser.cpp"
     break;
 
   case 40:
-#line 104 "parser.y"
+#line 105 "parser.y"
                        { printf(" objectdef "); }
-#line 1836 "parser.cpp"
+#line 1837 "parser.cpp"
     break;
 
   case 41:
-#line 105 "parser.y"
+#line 106 "parser.y"
                                                 { printf(" LEFT_PARENTH funcdef RIGHT_PARENTH "); }
-#line 1842 "parser.cpp"
+#line 1843 "parser.cpp"
     break;
 
   case 42:
-#line 106 "parser.y"
+#line 107 "parser.y"
                    { printf(" const "); }
-#line 1848 "parser.cpp"
+#line 1849 "parser.cpp"
     break;
 
   case 43:
-#line 109 "parser.y"
+#line 110 "parser.y"
            { printf(" ID "); }
-#line 1854 "parser.cpp"
+#line 1855 "parser.cpp"
     break;
 
   case 44:
-#line 110 "parser.y"
+#line 111 "parser.y"
                      { printf(" LOCAL ID "); }
-#line 1860 "parser.cpp"
+#line 1861 "parser.cpp"
     break;
 
   case 45:
-#line 111 "parser.y"
+#line 112 "parser.y"
                             { printf(" DOUBLE_COLON ID "); }
-#line 1866 "parser.cpp"
+#line 1867 "parser.cpp"
     break;
 
   case 46:
-#line 112 "parser.y"
+#line 113 "parser.y"
                    { printf(" member "); }
-#line 1872 "parser.cpp"
+#line 1873 "parser.cpp"
     break;
 
   case 47:
-#line 115 "parser.y"
+#line 116 "parser.y"
                       { printf(" lvalue DOT ID "); }
-#line 1878 "parser.cpp"
+#line 1879 "parser.cpp"
     break;
 
   case 48:
-#line 116 "parser.y"
+#line 117 "parser.y"
                                                    { printf(" lvalue LEFT_BRACKET expr RIGHT_BRACKET "); }
-#line 1884 "parser.cpp"
+#line 1885 "parser.cpp"
     break;
 
   case 49:
-#line 117 "parser.y"
+#line 118 "parser.y"
                     { printf(" call DOT ID "); }
-#line 1890 "parser.cpp"
+#line 1891 "parser.cpp"
     break;
 
   case 50:
-#line 118 "parser.y"
+#line 119 "parser.y"
                                                  { printf("call LEFT_BRACKET expr RIGHT_BRACKET "); }
-#line 1896 "parser.cpp"
+#line 1897 "parser.cpp"
     break;
 
   case 51:
-#line 121 "parser.y"
+#line 122 "parser.y"
                                             { printf(" call LEFT_PARENTH elist RIGHT_PARENTH "); }
-#line 1902 "parser.cpp"
+#line 1903 "parser.cpp"
     break;
 
   case 52:
-#line 122 "parser.y"
+#line 123 "parser.y"
                             { printf("  lvalue callsuffix "); }
-#line 1908 "parser.cpp"
+#line 1909 "parser.cpp"
     break;
 
   case 53:
-#line 123 "parser.y"
+#line 124 "parser.y"
                                                                               { printf("LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_BRACKET"); }
-#line 1914 "parser.cpp"
+#line 1915 "parser.cpp"
     break;
 
   case 54:
-#line 126 "parser.y"
+#line 127 "parser.y"
                      { printf(" "); }
-#line 1920 "parser.cpp"
+#line 1921 "parser.cpp"
     break;
 
   case 55:
-#line 127 "parser.y"
+#line 128 "parser.y"
                                { printf(" "); }
-#line 1926 "parser.cpp"
+#line 1927 "parser.cpp"
     break;
 
   case 56:
-#line 130 "parser.y"
+#line 131 "parser.y"
                                            { printf("normcall "); }
-#line 1932 "parser.cpp"
+#line 1933 "parser.cpp"
     break;
 
   case 57:
-#line 133 "parser.y"
+#line 134 "parser.y"
                                                         { printf(" methodcall "); }
-#line 1938 "parser.cpp"
+#line 1939 "parser.cpp"
     break;
 
   case 58:
-#line 136 "parser.y"
+#line 137 "parser.y"
             { printf("elist"); }
-#line 1944 "parser.cpp"
+#line 1945 "parser.cpp"
     break;
 
   case 59:
-#line 137 "parser.y"
+#line 138 "parser.y"
                                 { printf("elist\n");}
-#line 1950 "parser.cpp"
+#line 1951 "parser.cpp"
     break;
 
   case 60:
-#line 138 "parser.y"
+#line 139 "parser.y"
            { printf("elist\n"); }
-#line 1956 "parser.cpp"
+#line 1957 "parser.cpp"
     break;
 
   case 61:
-#line 141 "parser.y"
+#line 142 "parser.y"
                                             { printf(" objectdef ");  }
-#line 1962 "parser.cpp"
+#line 1963 "parser.cpp"
     break;
 
   case 62:
-#line 142 "parser.y"
+#line 143 "parser.y"
                                                       { printf(" ");  }
-#line 1968 "parser.cpp"
+#line 1969 "parser.cpp"
     break;
 
   case 63:
-#line 145 "parser.y"
+#line 146 "parser.y"
                      { printf("Idexedelem\n"); }
-#line 1974 "parser.cpp"
+#line 1975 "parser.cpp"
     break;
 
   case 64:
-#line 146 "parser.y"
+#line 147 "parser.y"
                                       { printf("indexedelem comma indexedelem\n"); }
-#line 1980 "parser.cpp"
+#line 1981 "parser.cpp"
     break;
 
   case 65:
-#line 149 "parser.y"
+#line 150 "parser.y"
                                                         { printf("  indexed  { Expr : Expr }\n"); }
-#line 1986 "parser.cpp"
+#line 1987 "parser.cpp"
     break;
 
   case 66:
-#line 152 "parser.y"
+#line 153 "parser.y"
                                 {;}
-#line 1992 "parser.cpp"
+#line 1993 "parser.cpp"
     break;
 
   case 67:
-#line 153 "parser.y"
+#line 154 "parser.y"
           {;}
-#line 1998 "parser.cpp"
+#line 1999 "parser.cpp"
     break;
 
   case 68:
-#line 156 "parser.y"
+#line 157 "parser.y"
                   {increaseScope(); printf("Scope increased\n");}
-#line 2004 "parser.cpp"
+#line 2005 "parser.cpp"
     break;
 
   case 69:
-#line 157 "parser.y"
+#line 158 "parser.y"
                     {}
-#line 2010 "parser.cpp"
+#line 2011 "parser.cpp"
     break;
 
   case 70:
-#line 158 "parser.y"
+#line 159 "parser.y"
                        { printf("{ Statement }\n"); decreaseScope();printf("Scope decreased\n");}
-#line 2016 "parser.cpp"
+#line 2017 "parser.cpp"
     break;
 
   case 71:
-#line 161 "parser.y"
+#line 162 "parser.y"
                         {}
-#line 2022 "parser.cpp"
+#line 2023 "parser.cpp"
     break;
 
   case 72:
-#line 162 "parser.y"
+#line 163 "parser.y"
                 {
 			printf("idents temp\n");
 		}
-#line 2030 "parser.cpp"
+#line 2031 "parser.cpp"
     break;
 
   case 73:
@@ -2040,73 +2041,73 @@ yyreduce:
 				printf("Function got deep inside my ass! \n");
 			}
 		}
-#line 2044 "parser.cpp"
+#line 2045 "parser.cpp"
     break;
 
   case 74:
 #line 177 "parser.y"
                               { printf(" LEFT_PARENTH "); }
-#line 2050 "parser.cpp"
+#line 2051 "parser.cpp"
     break;
 
   case 75:
 #line 179 "parser.y"
                 {}
-#line 2056 "parser.cpp"
+#line 2057 "parser.cpp"
     break;
 
   case 76:
 #line 180 "parser.y"
                                { printf(" RIGHT_PARENTH ");  }
-#line 2062 "parser.cpp"
+#line 2063 "parser.cpp"
     break;
 
   case 77:
 #line 181 "parser.y"
                       { printf(" block ");  }
-#line 2068 "parser.cpp"
+#line 2069 "parser.cpp"
     break;
 
   case 78:
 #line 184 "parser.y"
                         { printf("integer\n");		}
-#line 2074 "parser.cpp"
+#line 2075 "parser.cpp"
     break;
 
   case 79:
 #line 185 "parser.y"
                         { printf("float\n");	}
-#line 2080 "parser.cpp"
+#line 2081 "parser.cpp"
     break;
 
   case 80:
 #line 186 "parser.y"
                                 { printf("string\n");		}
-#line 2086 "parser.cpp"
+#line 2087 "parser.cpp"
     break;
 
   case 81:
 #line 187 "parser.y"
                                 { printf("nil\n");			}
-#line 2092 "parser.cpp"
+#line 2093 "parser.cpp"
     break;
 
   case 82:
 #line 188 "parser.y"
                                 { printf("true\n");			}
-#line 2098 "parser.cpp"
+#line 2099 "parser.cpp"
     break;
 
   case 83:
 #line 189 "parser.y"
                                 { printf("false\n");		}
-#line 2104 "parser.cpp"
+#line 2105 "parser.cpp"
     break;
 
   case 84:
 #line 192 "parser.y"
            {	printf("|ID:%s\n",yytext); }
-#line 2110 "parser.cpp"
+#line 2111 "parser.cpp"
     break;
 
   case 85:
@@ -2114,13 +2115,13 @@ yyreduce:
                 {	
 			printf("|ID,...,ID: %s\n",yytext);
 		}
-#line 2118 "parser.cpp"
+#line 2119 "parser.cpp"
     break;
 
   case 86:
 #line 197 "parser.y"
                 {}
-#line 2124 "parser.cpp"
+#line 2125 "parser.cpp"
     break;
 
   case 87:
@@ -2128,7 +2129,7 @@ yyreduce:
                 {
 			printf("if(expr)");
 		}
-#line 2132 "parser.cpp"
+#line 2133 "parser.cpp"
     break;
 
   case 88:
@@ -2136,7 +2137,7 @@ yyreduce:
                 {
 			printf("if stmt"); 
 		}
-#line 2140 "parser.cpp"
+#line 2141 "parser.cpp"
     break;
 
   case 89:
@@ -2144,7 +2145,7 @@ yyreduce:
                 {
 			printf("else"); 
 		}
-#line 2148 "parser.cpp"
+#line 2149 "parser.cpp"
     break;
 
   case 90:
@@ -2152,7 +2153,7 @@ yyreduce:
                 {
 			printf("else stmt"); 
 		}
-#line 2156 "parser.cpp"
+#line 2157 "parser.cpp"
     break;
 
   case 91:
@@ -2160,7 +2161,7 @@ yyreduce:
                  {
 			 printf(" WHILE "); 
 		 }
-#line 2164 "parser.cpp"
+#line 2165 "parser.cpp"
     break;
 
   case 92:
@@ -2168,7 +2169,7 @@ yyreduce:
                  {
 			 printf(" (expr) "); 
 		 }
-#line 2172 "parser.cpp"
+#line 2173 "parser.cpp"
     break;
 
   case 93:
@@ -2176,7 +2177,7 @@ yyreduce:
                  {
 			printf(" while stmt "); 
 		 }
-#line 2180 "parser.cpp"
+#line 2181 "parser.cpp"
     break;
 
   case 94:
@@ -2184,7 +2185,7 @@ yyreduce:
                 {
 			printf(" for "); 
 		}
-#line 2188 "parser.cpp"
+#line 2189 "parser.cpp"
     break;
 
   case 95:
@@ -2192,7 +2193,7 @@ yyreduce:
                 {
 			printf(" ( ; ; )"); 
 		}
-#line 2196 "parser.cpp"
+#line 2197 "parser.cpp"
     break;
 
   case 96:
@@ -2200,23 +2201,23 @@ yyreduce:
                 {
 			printf(" for stmt "); 
 		}
-#line 2204 "parser.cpp"
+#line 2205 "parser.cpp"
     break;
 
   case 97:
 #line 247 "parser.y"
                                  { printf("RETURN;\n"); }
-#line 2210 "parser.cpp"
+#line 2211 "parser.cpp"
     break;
 
   case 98:
 #line 248 "parser.y"
                                          { printf("RETURN EXPR;\n"); }
-#line 2216 "parser.cpp"
+#line 2217 "parser.cpp"
     break;
 
 
-#line 2220 "parser.cpp"
+#line 2221 "parser.cpp"
 
       default: break;
     }
@@ -2459,19 +2460,25 @@ int yyerror (char* yaccProvidedMessage) {
 	return 0;
 }
 
-// h main opos thn exei to front
-int main(int argc, char** argv){
-	if (argc > 1){
-		if(!(yyin = fopen(argv[1], "r"))){
-			fprintf(stderr, "Error: cannot read file: %s\n", argv[1]);
-			return 1;
-		}
-	}else{
-		yyin = stdin;
-	}
+int main(int argc, char** argv) {
+    if(argc<2 || argc>3){
+        fprintf(stderr, "Invalid arguments! Usage: ./calc input.txt (output.txt)\n");
+        return 1;
+    }
+    if(!(yyin = fopen(argv[1], "r"))) {
+        fprintf(stderr, "Cannot open input file: %s\n", argv[1]);
+        return 1;
+    }
+	yyout = stdout;
+    if(argc==3){
+        if(!(yyout = fopen(argv[2], "w"))) {
+            fprintf(stderr, "Cannot create output file: %s\n", argv[2]);
+            return 1;
+        }
+    }
 	initializeSymTable();
 	yyparse(); /* Parse through the input - the function generated by yacc */
 	
-	fclose(yyin);
-	return 0;
+	//fclose(yyin);
+    return 0;
 }

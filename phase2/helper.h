@@ -3,9 +3,8 @@ using namespace std;
 
 int scope = 0;
 
-enum SymbolType {
- GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC
-}; 
+enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC };
+
 /*
 typedef struct Variable {
 	const string name;
@@ -38,7 +37,7 @@ vector<map<string,Information>> symTable;
 
 void increaseScope(){
 	scope++;
-	map<string,Information> tp;
+	map<string, Information> tp;
 	symTable.push_back(tp);
 }
 
@@ -56,29 +55,36 @@ bool globalLookup(string s){
 }
 
 bool generalLookup(string s){
-	return lookup(s) || globalLookup(s);      
+	return lookup(s) || globalLookup(s);
 }
 
 void insert(string name, enum SymbolType type, unsigned int line){
 	Information info;
 	info.type = type;
 	info.line = line;
-	symTable.back().insert({name,info});
+	symTable.back().insert({name, info});
 }
 
 void globalInsert(string name, enum SymbolType type, unsigned int line){
 	Information info;
 	info.type = type;
 	info.line = line;
-	symTable[0].insert({name,info});
+	symTable[0].insert({name, info});
 }
 
 void initializeSymTable(){
 	map<string,Information> tp;
 	symTable.push_back(tp);
-	globalInsert("print",LIBFUNC,0);
-	globalInsert("input",LIBFUNC,0);
-	globalInsert("objectmemberkeys",LIBFUNC,0);
-	globalInsert("objecttotalmembers",LIBFUNC,0);
-	globalInsert("objectcopy",LIBFUNC,0);
+	globalInsert("print", LIBFUNC, 0);
+	globalInsert("input", LIBFUNC, 0);
+	globalInsert("objectmemberkeys", LIBFUNC, 0);
+	globalInsert("objecttotalmembers", LIBFUNC, 0);
+	globalInsert("objectcopy", LIBFUNC, 0);
+	globalInsert("totalastrrguments", LIBFUNC, 0);
+	globalInsert("argument", LIBFUNC, 0);
+	globalInsert("typeof", LIBFUNC, 0);
+	globalInsert("strtonum", LIBFUNC, 0);
+	globalInsert("sqrt", LIBFUNC, 0);
+	globalInsert("cos", LIBFUNC, 0);
+	globalInsert("sin", LIBFUNC, 0);
 }
