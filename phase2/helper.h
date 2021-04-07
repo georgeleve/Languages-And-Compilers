@@ -44,7 +44,7 @@ pair<int, Information> lookup(string s){
 }
 
 pair<int, Information> globalLookup(string s){
-	if(activeSymTable[0].find(s) != activeSymTable.back().end()) return {0,activeSymTable[0].find(s)->second};
+	if(activeSymTable[0].find(s) != activeSymTable[0].end()) return {0,activeSymTable[0].find(s)->second};
 	return {-1,{GLOBAL,0}};
 }
 

@@ -142,7 +142,7 @@ primary: lvalue
 	   
 	   ;
 
-lvalue: ID
+lvalue: ID 
 	  | LOCAL ID { //This part is correct 100%
 			string var = $2;
 			if(lookup(var).first==-1){
@@ -156,7 +156,7 @@ lvalue: ID
 	  | DOUBLE_COLON ID { //This part is correct 100%
 			string var = $2;
 			pair<int,Information> lk = globalLookup(var);
-			if(lk.first!=-1){
+			if(lk.first==-1){
 				printf("Could not find global variable: %s (line %d)\n",var.c_str(),yylineno);
 			}else printf("We refer to the already existant global %s (line %d)\n",var.c_str(),yylineno); 
 		}
@@ -211,11 +211,13 @@ block: LEFT_BRACE {increaseScope();}
 	 
 funcdef: FUNCTION ID { 
 			string fName = $2; 
-			pair<int,Information> lk = generalLookup(fName);
+			pair<int,Information> lk = lookup(fName);
 			if(lk.first!=-1){
 				printf("%s already declared in this scope (line %d).\n",fName.c_str(),yylineno);
 			}else{
-				insertUserFunction(yytext, yylineno);
+				if(isSystemFunction(fName)){
+					printf("%s it is already defined as a lib function. (line %d)\n",fName.c_str(),yylineno);
+				} else insertUserFunction(fName, yylineno);
 			}
 		}
 		LEFT_PARENTH  { increaseScope();}
