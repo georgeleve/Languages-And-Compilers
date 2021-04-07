@@ -1,5 +1,8 @@
 #include <bits/stdc++.h>
 using namespace std;
+#pragma GCC diagnostic ignored "-Wenum-compare"
+#pragma GCC diagnostic ignored "-Wwrite-strings"
+#pragma GCC diagnostic ignored "-Wformat="
 
 int scope = 0;
 

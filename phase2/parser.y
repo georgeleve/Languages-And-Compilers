@@ -26,7 +26,7 @@
 
 %type <intval> expr
 %type <stringval> stmt ifstmt whilestmt forstmt returnstmt block funcdef lvalue primary call objectdef const member
-%type <stringval> elist callsuffix normcall methodcall indexed indexedelem temp_stmt ident_temp
+%type <stringval> elist callsuffix normcall methodcall indexed indexedelem temp_stmt
 
 %left ASSIGN
 %left OR
@@ -100,8 +100,8 @@ assignexpr: ID ASSIGN expr { //This should be correct - This part is done
 				printf("%s is not accessible! (line %d)\n",var.c_str(),yylineno); 
 			}else {
 				if(scopeFound.second.type == USERFUNC || scopeFound.second.type == LIBFUNC){
-					printf("Can not assign value to function! (line %d)\n",yylineno);
-				} else printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(),yylineno,scopeFound);
+					printf("Can not assign value to function! (line %d)\n", yylineno);
+				} else printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
 			}
 		}
 		 | LOCAL ID ASSIGN expr {
@@ -136,10 +136,6 @@ primary: lvalue
 	   | objectdef
 	   | LEFT_PARENTH funcdef RIGHT_PARENTH
 	   | const
-	   
-	   
-	   
-	   
 	   ;
 
 lvalue: ID 
@@ -156,9 +152,10 @@ lvalue: ID
 	  | DOUBLE_COLON ID { //This part is correct 100%
 			string var = $2;
 			pair<int,Information> lk = globalLookup(var);
-			if(lk.first==-1){
-				printf("Could not find global variable: %s (line %d)\n",var.c_str(),yylineno);
-			}else printf("We refer to the already existant global %s (line %d)\n",var.c_str(),yylineno); 
+			if(lk.first==-1)
+				printf("Could not find global variable %s (line %d)\n ", var.c_str(), yylineno);
+			else
+				printf("We refer to the already existant global %s (line %d)\n", var.c_str(), yylineno); 
 		}
    	  | member
   	  ;
