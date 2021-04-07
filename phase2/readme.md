@@ -1,3 +1,4 @@
+---------------------------------------------------------------
 Compilers Project CS340 Phase 2
 @authors    
 Georgios Gerasimos Leventopoulos csd4152     
@@ -18,7 +19,7 @@ g++ -o calc scanner.cpp parser.cpp
 //One command
 bison --yacc --defines --output=parser.cpp parser.y && flex --outfile=scanner.cpp scanner.l && g++ -o calc scanner.cpp parser.cpp && ./calc input.txt
 ---------------------------------------------------------------
-TURNIN COMMAND:                 turnin submit2@hy340 <dir>
+TURNIN COMMAND:                 turnin submit2@hy340 phase2
 
 VERIFY TURNIN:                    ls -l ~hy340/TURNIN/submit2
 ---------------------------------------------------------------

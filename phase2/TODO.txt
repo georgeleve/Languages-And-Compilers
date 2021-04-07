@@ -7,3 +7,10 @@
 7) na kanoyme Makefile
 
 8) handle otan kanoume    x = ID + expr klp
+
+
+
+NA XANADO:
+
+TO BLOCK
+TO FUNCDEF
