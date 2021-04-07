@@ -3,7 +3,7 @@ using namespace std;
 
 int scope = 0;
 
-enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC };
+enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC};
 
 typedef struct Information{
 	enum SymbolType type;
@@ -18,6 +18,8 @@ typedef struct PrintToken{
 bool comparator(PrintToken a, PrintToken b){
 	return a.info.line < b.info.line;
 }
+
+set<string> systemFunctions;
 vector<map<string,Information>> activeSymTable;
 vector<vector<PrintToken>> fullSymTable;
 
@@ -36,18 +38,71 @@ void decreaseScope(){
 	activeSymTable.pop_back();
 }
 
-bool lookup(string s){
-	return activeSymTable.back().find(s) != activeSymTable.back().end();
+pair<int, Information> lookup(string s){
+	if(activeSymTable.back().find(s) != activeSymTable.back().end()) return {scope,activeSymTable.back().find(s)->second};
+	return {-1,{GLOBAL,0}};
 }
 
-bool globalLookup(string s){
-	return activeSymTable[0].find(s) != activeSymTable[0].end();
+pair<int, Information> globalLookup(string s){
+	if(activeSymTable[0].find(s) != activeSymTable.back().end()) return {0,activeSymTable[0].find(s)->second};
+	return {-1,{GLOBAL,0}};
 }
 
-bool generalLookup(string s){
-	return lookup(s) || globalLookup(s);
+pair<int, Information> generalLookup(string s){
+	if(lookup(s).first!=-1) return lookup(s);
+	return globalLookup(s);
 }
 
+pair<int, Information> lookupTillGlobalScope(string s){ 
+	if(lookup(s).first!=-1) return {scope,activeSymTable[scope].find(s)->second};
+	bool functionInBetween = false;
+	for(int i = scope-1; i>=0; i--) {
+		for(auto v : activeSymTable[i]) if(v.second.type == USERFUNC) functionInBetween = true;
+		if(activeSymTable[i].find(s) != activeSymTable[i].end()){
+			if(i==0) return {i,activeSymTable[i].find(s)->second};
+			if(functionInBetween) return {-2,{GLOBAL,0}}; //Not accesible.
+			return {i,activeSymTable[i].find(s)->second};
+		}
+	}
+	return {-1,{GLOBAL,0}}; //Not found at all
+}
+
+void insertVariable(string name, unsigned int line){
+	Information info;
+	info.type = scope==0?GLOBAL:LOC;
+	info.line = line;
+	activeSymTable[scope].insert({name, info});
+	
+	Information info2;
+	info2.type = scope==0?GLOBAL:LOC;
+	info2.line = line;
+	fullSymTable[scope].push_back({name, info2});
+}
+
+void insertArgument(string name, unsigned int line){
+	Information info;
+	info.type = FORMAL;
+	info.line = line;
+	activeSymTable[scope].insert({name, info});
+	
+	Information info2;
+	info2.type = FORMAL;
+	info2.line = line;
+	fullSymTable[scope].push_back({name, info2});
+}
+
+void insertUserFunction(string name, unsigned int line){
+	Information info;
+	info.type = USERFUNC;
+	info.line = line;
+	activeSymTable[scope].insert({name, info});
+	
+	Information info2;
+	info2.type = USERFUNC;
+	info2.line = line;
+	fullSymTable[scope].push_back({name, info2});
+}
+/*
 void insert(string name, enum SymbolType type, unsigned int line){
 	Information info;
 	info.type = type;
@@ -59,7 +114,11 @@ void insert(string name, enum SymbolType type, unsigned int line){
 	info2.line = line;
 	fullSymTable[scope].push_back({name, info2});
 }
+*/
 
+bool isSystemFunction(string name){
+	return systemFunctions.find(name) != systemFunctions.end();
+}
 void globalInsert(string name, enum SymbolType type, unsigned int line){
 	Information info;
 	info.type = type;
@@ -70,6 +129,8 @@ void globalInsert(string name, enum SymbolType type, unsigned int line){
 	info2.type = type;
 	info2.line = line;
 	fullSymTable[0].push_back({name, info2});
+	
+	if(type == LIBFUNC) systemFunctions.insert(name);
 }
 
 void initializeSymTable(){

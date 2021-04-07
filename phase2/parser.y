@@ -1,6 +1,5 @@
 %{
 	#include "helper.h"
-
 	int yyerror (char* yaccProvidedMessage);
 	extern int yylineno;
 	extern FILE* yyin;
@@ -48,37 +47,36 @@
 %%
 
 program: stmt program 	
-	   |	{ printf("Program\n"); }
+	   |	{}
        ;
 
-stmt: expr SEMICOLON { }
-	| ifstmt { printf("IF statement\n"); }
-	| whilestmt { printf("WHILE statement\n"); }
-	| forstmt { printf("FOR statement\n"); }
-	| returnstmt { } 
-	| BREAK SEMICOLON { printf("BREAK\n"); }
-	| CONTINUE SEMICOLON { printf("CONTINUE semicolon\n"); }
-	| block { printf("Block\n"); }
-	| funcdef { printf("Function definition\n"); }
-	| SEMICOLON { printf(" ; SEMICOLON\n"); }
+stmt: expr SEMICOLON
+	| ifstmt 
+	| whilestmt 
+	| forstmt 
+	| returnstmt 
+	| BREAK SEMICOLON
+	| CONTINUE SEMICOLON
+	| block
+	| funcdef
+	| SEMICOLON
 	;
 
-expr: assignexpr { printf("Assignes expression \n"); }
-	| assignexpr_str {printf("String assign \n");}
-	| expr PLUS expr	 {printf("expression  + expression -> %d+%d\n", $1, $3); 	$$ = $1 + $3;}
-	| expr MINUS expr	 {printf("expression  - expression -> %d-%d\n", $1, $3); 	$$ = $1 - $3;}
-	| expr MUL expr		 {printf("expression  * expression -> %d*%d\n", $1, $3); 	$$ = $1 * $3;}
-	| expr DIV expr		 {printf("expression  / expression -> %d/%d\n", $1, $3); 	$$ = $1 / $3;}
-	| expr MODULO expr	 {printf("expression %% expression -> %d %% %d\n", $1, $3); 	$$ = $1 % $3;}
-	| expr GREATER expr	 {printf("expression  > expression -> %d>%d\n", $1, $3); 	$$ = ($1 > $3)?1:0;}
-	| expr GREATER_EQUAL expr {printf("expression >= expression -> %d>=%d\n", $1, $3); 	$$ = ($1>=$3)?1:0;}
-	| expr LESS expr	 {printf("expression  < expression -> %d<%d\n", $1, $3); 	$$ = ($1<$3)?1:0;}
-	| expr LESS_EQUAL expr {printf("expression <= expression -> %d<=%d\n", $1, $3); 	$$ = ($1<=$3)?1:0;}
-	| expr EQUAL expr		 {printf("expression == expression -> %d==%d\n", $1, $3); 	$$ = ($1==$3)?1:0;}
-	| expr NOT_EQUAL expr	 {printf("expression != expression -> %d!=%d\n", $1, $3); 	$$ = ($1!=$3)?1:0;}
-	| expr AND expr	   	 {printf("expression && expression -> %d&&%d\n", $1, $3); 	$$ = ($1&&$3)?1:0;}
-	| expr OR expr		 {printf("expression || expression -> %d/%d\n", $1, $3); 	$$ = ($1||$3)?1:0;}
-	| term			     {printf(" term: \n");}
+expr: assignexpr
+	| expr PLUS expr	 {$$ = $1 + $3;}
+	| expr MINUS expr	 {$$ = $1 - $3;}
+	| expr MUL expr		 {$$ = $1 * $3;}
+	| expr DIV expr		 {$$ = $1 / $3;}
+	| expr MODULO expr	 {$$ = $1 % $3;}
+	| expr GREATER expr	 {$$ = ($1 > $3)?1:0;}
+	| expr GREATER_EQUAL expr {$$ = ($1>=$3)?1:0;}
+	| expr LESS expr	 {$$ = ($1<$3)?1:0;}
+	| expr LESS_EQUAL expr {$$ = ($1<=$3)?1:0;}
+	| expr EQUAL expr		 {$$ = ($1==$3)?1:0;}
+	| expr NOT_EQUAL expr	 {$$ = ($1!=$3)?1:0;}
+	| expr AND expr	   	 {$$ = ($1&&$3)?1:0;}
+	| expr OR expr		 {$$ = ($1||$3)?1:0;}
+	| term
 	;
 
 term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
@@ -88,180 +86,177 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
 	| lvalue PLUS_PLUS { printf(" lvalue++ "); }
 	| MINUS_MINUS lvalue { printf(" --lvalue "); }
 	| lvalue MINUS_MINUS { printf(" lvalue-- "); }
-	| primary { printf(" primary "); }
+	| primary
 	;
 
-assignexpr_str: ID ASSIGN STRING {
-				string var = $1;
-				string toAssign = $3;
-				printf(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB: %s",var.c_str());
-				if(lookup(var)){
-					printf(" ITS ALREADY IN\n");
-				}else{
-					insert(var, LOC, yylineno);
-					printf("assigned %s ",var.c_str());
-				}
-	   	 }
-		 | LOCAL ID ASSIGN STRING {
-				string var = $2;
-				string toAssign = $4;
-				printf(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB: %s",var.c_str());
-				if(lookup(var)){
-					printf(" ITS ALREADY IN\n");
-				}else{
-					insert(var, LOC, yylineno);
-					printf("assigned %s ",var.c_str());
-				}
-	   	 }
-		 | DOUBLE_COLON ID ASSIGN STRING {
-				string var = $1;
-				string toAssign = $3;
-				printf(" BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB: %s",var.c_str());
-				if(lookup(var)){
-					printf(" ITS ALREADY IN\n");
-				}else{
-					insert(var, LOC, yylineno);
-					printf("assigned %s ",var.c_str());
-				}
-	   	 }
-		 ;
-		 
-assignexpr: ID ASSIGN expr {
-				string var = $1;
-				printf(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %s",var.c_str());
-				if(lookup(var)){
-					printf(" ITS ALREADY IN\n");
-				}else{
-					insert(var, LOC, yylineno);
-					printf("assigned %s ",var.c_str());
-				}
-	   	 }
-		 | LOCAL ID ASSIGN expr { 
-				string var = $2;
-				printf(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %s",var.c_str());
-				if(lookup(var)){
-					printf(" ITS ALREADY IN\n");
-				}else{
-					insert(var, LOC, yylineno);
-					printf("assigned %s ",var.c_str());
-				}
+assignexpr: ID ASSIGN expr { //This should be correct - This part is done
+			string var = $1;
+			pair<int,Information> scopeFound = lookupTillGlobalScope(var);
+			printf("playing with %s (line %d) (scopeFound: %d)\n",var.c_str(),yylineno,scopeFound.first); 
+			if(scopeFound.first==-1){
+				insertVariable(var, yylineno);
+				printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
+			}else if(scopeFound.first==-2){
+				printf("%s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+			}else {
+				if(scopeFound.second.type == USERFUNC || scopeFound.second.type == LIBFUNC){
+					printf("Can not assign value to function! (line %d)\n",yylineno);
+				} else printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(),yylineno,scopeFound);
+			}
+		}
+		 | LOCAL ID ASSIGN expr {
+			string var = $2;
+			pair<int,Information> lk = lookup(var);
+			if(lk.first==-1){
+				if(!isSystemFunction(var)){
+					insertVariable(var,yylineno);
+					printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
+				}else printf("%s is a system function.\n (line %d)",var.c_str(),yylineno); 
+			}else {
+				if(lk.second.type == USERFUNC || lk.second.type == LIBFUNC){
+					printf("Can not assign value to function! (line %d)\n",yylineno);
+				} else printf("We refer to the already existant %s (line %d)\n",var.c_str(),yylineno);
+			}
 	   	 }
 		 | DOUBLE_COLON ID ASSIGN expr { 
 				string var = $2;
-				printf(" AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA: %s",var.c_str());
-				if(lookup(var)){
-					printf(" ITS ALREADY IN\n");
+				pair<int,Information> lk = globalLookup(var);
+				if(lk.first!=-1){
+					if(lk.second.type == USERFUNC || lk.second.type == LIBFUNC){
+						printf("Can not assign value to function! (line %d)\n",yylineno);
+					} else printf("We refer to the global %s (line %d)\n",var.c_str(),yylineno);
 				}else{
-					insert(var, LOC, yylineno);
-					printf("assigned %s ",var.c_str());
+					printf("Could not find a global variable/function %s (line %d)\n",var.c_str(),yylineno);
 				}
 	   	 }
 		 ;
 
-primary: lvalue { printf(" lvalue %s", $1); }
-	   | call { printf(" call "); }
-	   | objectdef { printf(" objectdef "); }
-	   | LEFT_PARENTH funcdef RIGHT_PARENTH { printf(" LEFT_PARENTH funcdef RIGHT_PARENTH "); }
-	   | const { printf(" const "); }
+primary: lvalue
+	   | call
+	   | objectdef
+	   | LEFT_PARENTH funcdef RIGHT_PARENTH
+	   | const
+	   
+	   
+	   
+	   
 	   ;
 
-lvalue: ID { printf(" ID UPDATEDDDDDDDDDDDDDDDDDDDDDDDDDDDD "); }
-	  | LOCAL ID { string var = $2; printf(" LOCAL ID -------------------------------------- %s",var.c_str()); }
-	  | DOUBLE_COLON ID { printf(" DOUBLE_COLON ID "); }
-   	  | member { printf(" member "); }
+lvalue: ID
+	  | LOCAL ID { //This part is correct 100%
+			string var = $2;
+			if(lookup(var).first==-1){
+				if(!isSystemFunction(var)){
+					insertVariable(var,yylineno);
+					printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
+				}else printf("%s is a system function.\n (line %d)",var.c_str(),yylineno); 
+			}else printf("We refer to the already existant %s (line %d)\n",var.c_str(),yylineno); 
+		
+		}
+	  | DOUBLE_COLON ID { //This part is correct 100%
+			string var = $2;
+			pair<int,Information> lk = globalLookup(var);
+			if(lk.first!=-1){
+				printf("Could not find global variable: %s (line %d)\n",var.c_str(),yylineno);
+			}else printf("We refer to the already existant global %s (line %d)\n",var.c_str(),yylineno); 
+		}
+   	  | member
   	  ;
 
-member: lvalue DOT ID { printf(" lvalue DOT ID "); }
-	  | lvalue LEFT_BRACKET expr RIGHT_BRACKET { printf(" lvalue LEFT_BRACKET expr RIGHT_BRACKET "); }
-      | call DOT ID { printf(" call DOT ID "); }
-	  | call LEFT_BRACKET expr RIGHT_BRACKET { printf("call LEFT_BRACKET expr RIGHT_BRACKET "); }
+member: lvalue DOT ID
+	  | lvalue LEFT_BRACKET expr RIGHT_BRACKET
+      | call DOT ID
+	  | call LEFT_BRACKET expr RIGHT_BRACKET
    	  ;
 
-call: call LEFT_PARENTH elist RIGHT_PARENTH { printf(" call LEFT_PARENTH elist RIGHT_PARENTH "); }
-	| lvalue callsuffix { printf("  lvalue callsuffix "); }
-	| LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_BRACKET { printf("LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_BRACKET"); }
+call: call LEFT_PARENTH elist RIGHT_PARENTH
+	| lvalue callsuffix
+	| LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_BRACKET
 	;
 
-callsuffix: normcall { printf(" "); }
-		  | methodcall { printf(" "); }
+callsuffix: normcall
+		  | methodcall
 	      ;
 
-normcall: LEFT_PARENTH elist RIGHT_PARENTH { printf("normcall "); }
+normcall: LEFT_PARENTH elist RIGHT_PARENTH
 		;
 
-methodcall: DOT_DOT ID LEFT_PARENTH elist RIGHT_PARENTH { printf(" methodcall "); } 
+methodcall: DOT_DOT ID LEFT_PARENTH elist RIGHT_PARENTH 
 		  ;
 
-elist: expr { printf("elist"); }
-	 | elist COMMA expr	{ printf("elist\n");} 
-	 | { printf("elist\n"); }
+elist: expr
+	 | elist COMMA expr
+	 | {}
 	 ;
 
-objectdef: LEFT_BRACKET elist RIGHT_BRACKET { printf(" objectdef ");  }
-		 | LEFT_BRACKET indexed RIGHT_BRACKET { printf(" ");  } 
+objectdef: LEFT_BRACKET elist RIGHT_BRACKET
+		 | LEFT_BRACKET indexed RIGHT_BRACKET
 		 ;
 
-indexed: indexedelem { printf("Idexedelem\n"); }
-	   |indexed COMMA indexedelem { printf("indexedelem comma indexedelem\n"); }
+indexed: indexedelem
+	   |indexed COMMA indexedelem 
 	   ;
 
-indexedelem: LEFT_BRACE expr COLON expr RIGHT_BRACE	{ printf("  indexed  { Expr : Expr }\n"); }
+indexedelem: LEFT_BRACE expr COLON expr RIGHT_BRACE
 		   ;
 
 temp_stmt:	temp_stmt stmt	{;} 
 	| {;}
 	;
 
-block: LEFT_BRACE {increaseScope(); printf("Scope increased\n");}
+block: LEFT_BRACE {increaseScope();}
 	   temp_stmt{}
-	   RIGHT_BRACE { printf("{ Statement }\n"); decreaseScope();printf("Scope decreased\n");}
+	   RIGHT_BRACE {decreaseScope();}
 	 ;
 	 
 funcdef: FUNCTION ID { 
 			string fName = $2; 
-			if(generalLookup(fName)){
-				printf("THIS PIECE ALREADY EXISTS! \n");
+			pair<int,Information> lk = generalLookup(fName);
+			if(lk.first!=-1){
+				printf("%s already declared in this scope (line %d).\n",fName.c_str(),yylineno);
 			}else{
-				insert(yytext, USERFUNC, yylineno);
-				printf("Function got into the HASHTABLEEEEEEE! \n");
+				insertUserFunction(yytext, yylineno);
 			}
 		}
-		LEFT_PARENTH  { printf(" LEFT_PARENTH "); increaseScope();}
+		LEFT_PARENTH  { increaseScope();}
 		idlist
-		{}
-		RIGHT_PARENTH  { printf(" RIGHT_PARENTH "); decreaseScope(); }
-		block { printf(" block ");  } 
+		RIGHT_PARENTH
+		LEFT_BRACE
+		temp_stmt
+		RIGHT_BRACE {decreaseScope();}
 	    ;
 
-const:	INTEGER		{ printf("integer\n");		}	 
-	 | FLOAT	{ printf("float\n");	}
-	 | STRING		{ printf("string\n");		}
-	 | NIL			{ printf("nil\n");			}
-	 | TRUE			{ printf("true\n");			}
-	 | FALSE		{ printf("false\n");		}
+const:	INTEGER
+	 | FLOAT
+	 | STRING
+	 | NIL
+	 | TRUE
+	 | FALSE
 	 ;
 
 idlist:	ID 					{	
-			printf("|ID:%s\n",yytext); 
 			string varName = yytext; 
-			if(generalLookup(varName)){
-				printf("THIS PIECE ALREADY EXISTS! \n");
+			pair<int,Information> lk = lookup(varName);
+			if(lk.first!=-1){
+				printf("%s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
 			}else{
-				insert(yytext, FORMAL, yylineno);
-				printf("Var got deep inside the HASHTABLEEEEEEE \n");
+				if(isSystemFunction(varName)){
+					printf("%s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
+				} else insertArgument(varName, yylineno);
 			}
 		}
 		|idlist COMMA ID	{	
-			printf("|ID,...,ID: %s\n",yytext);
 			string varName = yytext; 
-			if(generalLookup(varName)){
-				printf("THIS PIECE ALREADY EXISTS! \n");
+			pair<int,Information> lk = lookup(varName);
+			if(lk.first!=-1){
+				printf("%s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
 			}else{
-				insert(yytext, FORMAL, yylineno);
-				printf("Var got deep inside my ass! \n");
+				if(isSystemFunction(varName)){
+					printf("%s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
+				} else insertArgument(varName, yylineno);
 			}
 		} 
-	  |	{}
+		| {}
 	  ;
 
 ifstmt:	IF LEFT_PARENTH expr RIGHT_PARENTH
