@@ -220,10 +220,10 @@ block: LEFT_BRACE {increaseScope(); printf("Scope increased\n");}
 funcdef: FUNCTION ID { 
 			string fName = $2; 
 			if(generalLookup(fName)){
-				printf("THIS PIECE OF SHIT ALREADY EXISTS! \n");
+				printf("THIS PIECE ALREADY EXISTS! \n");
 			}else{
 				insert(yytext, USERFUNC, yylineno);
-				printf("Function got deep inside my ass! \n");
+				printf("Function got into the HASHTABLEEEEEEE! \n");
 			}
 		}
 		LEFT_PARENTH  { printf(" LEFT_PARENTH "); increaseScope();}
@@ -245,17 +245,17 @@ idlist:	ID 					{
 			printf("|ID:%s\n",yytext); 
 			string varName = yytext; 
 			if(generalLookup(varName)){
-				printf("THIS PIECE OF SHIT ALREADY EXISTS! \n");
+				printf("THIS PIECE ALREADY EXISTS! \n");
 			}else{
 				insert(yytext, FORMAL, yylineno);
-				printf("Var got deep inside my ass! \n");
+				printf("Var got deep inside the HASHTABLEEEEEEE \n");
 			}
 		}
 		|idlist COMMA ID	{	
 			printf("|ID,...,ID: %s\n",yytext);
 			string varName = yytext; 
 			if(generalLookup(varName)){
-				printf("THIS PIECE OF SHIT ALREADY EXISTS! \n");
+				printf("THIS PIECE ALREADY EXISTS! \n");
 			}else{
 				insert(yytext, FORMAL, yylineno);
 				printf("Var got deep inside my ass! \n");

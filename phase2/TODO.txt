@@ -1,9 +1,3 @@
-1) Na ftiaxoume to .y arxeio gia mia apli periptosh (px vlepei ena token kai to typonei)
-
-2) Na vazoume ta tokens sto sto map h' sto unordered map h' se lista kai na kanoyme elegxous gia errors
-
-3)O LEVE LEEI OTI PREPEI NA TSEKAROYME THN GRAMMATIKH
-
 4) O LEVE LEEI NA BALOYME KAI KWDIKA MESA GIA TA STOIXEIA MESA STHN GRAMMATIKH
 
 5) O LEVE LEEI NA TA TYPWNOYME OPWS TA TYPWNOYN
@@ -11,3 +5,5 @@
 6) Na diabazoyme apo arxeio kai na grafoume se arxeio
 
 7) na kanoyme Makefile
+
+8) handle otan kanoume    x = ID + expr klp
