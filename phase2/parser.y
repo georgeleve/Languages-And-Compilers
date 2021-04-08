@@ -7,6 +7,8 @@
 	extern char* yytext;
 	extern FILE* yyout;
 	
+	int fID = 1;
+	bool afterReturn = false;
 %}
 %start program
 
@@ -97,10 +99,10 @@ assignexpr: ID ASSIGN expr { //This should be correct - This part is done
 				insertVariable(var, yylineno);
 				printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
 			}else if(scopeFound.first==-2){
-				printf("%s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+				printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
 			}else {
 				if(scopeFound.second.type == USERFUNC || scopeFound.second.type == LIBFUNC){
-					printf("Can not assign value to function! (line %d)\n", yylineno);
+					printf("Error: Can not assign value to function! (line %d)\n", yylineno);
 				} else printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
 			}
 		}
@@ -111,10 +113,10 @@ assignexpr: ID ASSIGN expr { //This should be correct - This part is done
 				if(!isSystemFunction(var)){
 					insertVariable(var,yylineno);
 					printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
-				}else printf("%s is a system function.\n (line %d)",var.c_str(),yylineno); 
+				}else printf("Error: %s is a system function. (line %d)\n",var.c_str(),yylineno); 
 			}else {
 				if(lk.second.type == USERFUNC || lk.second.type == LIBFUNC){
-					printf("Can not assign value to function! (line %d)\n",yylineno);
+					printf("Error: Can not assign value to function! (line %d)\n",yylineno);
 				} else printf("We refer to the already existant %s (line %d)\n",var.c_str(),yylineno);
 			}
 	   	 }
@@ -123,10 +125,10 @@ assignexpr: ID ASSIGN expr { //This should be correct - This part is done
 				pair<int,Information> lk = globalLookup(var);
 				if(lk.first!=-1){
 					if(lk.second.type == USERFUNC || lk.second.type == LIBFUNC){
-						printf("Can not assign value to function! (line %d)\n",yylineno);
+						printf("Error: Can not assign value to function! (line %d)\n",yylineno);
 					} else printf("We refer to the global %s (line %d)\n",var.c_str(),yylineno);
 				}else{
-					printf("Could not find a global variable/function %s (line %d)\n",var.c_str(),yylineno);
+					printf("Error: Could not find a global variable/function %s (line %d)\n",var.c_str(),yylineno);
 				}
 	   	 }
 		 ;
@@ -138,14 +140,25 @@ primary: lvalue
 	   | const
 	   ;
 
-lvalue: ID 
+lvalue: ID {
+			string var = $1;
+			pair<int,Information> scopeFound = lookupTillGlobalScope(var);
+			if(scopeFound.first==-1){
+				if(!afterReturn) insertVariable(var, yylineno);
+				printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+			}else if(scopeFound.first==-2){
+				printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+			}else {
+				printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+			}
+		}
 	  | LOCAL ID { //This part is correct 100%
 			string var = $2;
 			if(lookup(var).first==-1){
 				if(!isSystemFunction(var)){
-					insertVariable(var,yylineno);
+					if(!afterReturn) insertVariable(var,yylineno);
 					printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
-				}else printf("%s is a system function.\n (line %d)",var.c_str(),yylineno); 
+				}else printf("Error: %s is a system function. (line %d)\n",var.c_str(),yylineno); 
 			}else printf("We refer to the already existant %s (line %d)\n",var.c_str(),yylineno); 
 		
 		}
@@ -153,7 +166,7 @@ lvalue: ID
 			string var = $2;
 			pair<int,Information> lk = globalLookup(var);
 			if(lk.first==-1)
-				printf("Could not find global variable %s (line %d)\n ", var.c_str(), yylineno);
+				printf("Error: Could not find global variable %s (line %d)\n", var.c_str(), yylineno);
 			else
 				printf("We refer to the already existant global %s (line %d)\n", var.c_str(), yylineno); 
 		}
@@ -210,12 +223,24 @@ funcdef: FUNCTION ID {
 			string fName = $2; 
 			pair<int,Information> lk = lookup(fName);
 			if(lk.first!=-1){
-				printf("%s already declared in this scope (line %d).\n",fName.c_str(),yylineno);
+				printf("Error: %s already declared in this scope (line %d).\n",fName.c_str(),yylineno);
 			}else{
 				if(isSystemFunction(fName)){
-					printf("%s it is already defined as a lib function. (line %d)\n",fName.c_str(),yylineno);
+					printf("Error: %s it is already defined as a lib function. (line %d)\n",fName.c_str(),yylineno);
 				} else insertUserFunction(fName, yylineno);
 			}
+		}
+		LEFT_PARENTH  { increaseScope();}
+		idlist
+		RIGHT_PARENTH
+		LEFT_BRACE
+		temp_stmt
+		RIGHT_BRACE {decreaseScope();}
+		| FUNCTION { 
+			string fName = ("_f"+to_string(fID++));
+			while(lookup(fName).first!=-1 || isSystemFunction(fName)) fName = ("_f"+to_string(fID++));
+			insertUserFunction(fName, yylineno);
+			printf("Inserted function with name %s\n", fName.c_str());
 		}
 		LEFT_PARENTH  { increaseScope();}
 		idlist
@@ -237,10 +262,10 @@ idlist:	ID 					{
 			string varName = yytext; 
 			pair<int,Information> lk = lookup(varName);
 			if(lk.first!=-1){
-				printf("%s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
+				printf("Error: %s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
 			}else{
 				if(isSystemFunction(varName)){
-					printf("%s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
+					printf("Error: %s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
 				} else insertArgument(varName, yylineno);
 			}
 		}
@@ -248,10 +273,10 @@ idlist:	ID 					{
 			string varName = yytext; 
 			pair<int,Information> lk = lookup(varName);
 			if(lk.first!=-1){
-				printf("%s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
+				printf("Error: %s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
 			}else{
 				if(isSystemFunction(varName)){
-					printf("%s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
+					printf("Error: %s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
 				} else insertArgument(varName, yylineno);
 			}
 		} 
@@ -306,7 +331,7 @@ forstmt:	FOR
 		;	 
 
 returnstmt:	RETURN SEMICOLON { printf("RETURN;\n"); } 
-		  | RETURN expr SEMICOLON{ printf("RETURN EXPR;\n"); }
+		  | RETURN{afterReturn = true;} expr SEMICOLON{ afterReturn = false;}
 		  ;	 
 %%
 
