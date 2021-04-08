@@ -25,7 +25,33 @@ bool comparator(PrintToken a, PrintToken b){
 set<string> systemFunctions;
 vector<map<string,Information>> activeSymTable;
 vector<vector<PrintToken>> fullSymTable;
+stack<int> lastType; //Top of stack is 0 if the latest thing we found between a function and a loop is a function
 
+void pushType(int type){ // 0 is loop 1 is function
+	lastType.push(type);
+}
+
+void popType(){
+	lastType.pop();
+}
+bool isLastTypeLoop(){ // 0 is loop 1 is function
+	if(lastType.empty()) return false;
+	return lastType.top()==0;
+}
+bool isInFunction(){
+	bool in = false;
+	stack<int> temp;
+	while(!lastType.empty()){
+		int p = lastType.top(); lastType.pop();
+		temp.push(p);
+		if(p==1) in = true;
+	}
+	while(!temp.empty()){
+		int p = temp.top(); temp.pop();
+		lastType.push(p);
+	}
+	return in;
+}
 void increaseScope(){
 	scope++;
 	map<string, Information> tp;
@@ -56,14 +82,14 @@ pair<int, Information> generalLookup(string s){
 	return globalLookup(s);
 }
 
-pair<int, Information> lookupTillGlobalScope(string s){ 
+pair<int, Information> lookupTillGlobalScope(string s, bool careAboutFunctionInBetween){ 
 	if(lookup(s).first!=-1) return {scope,activeSymTable[scope].find(s)->second};
 	bool functionInBetween = false;
 	for(int i = scope-1; i>=0; i--) {
 		for(auto v : activeSymTable[i]) if(v.second.type == USERFUNC) functionInBetween = true;
 		if(activeSymTable[i].find(s) != activeSymTable[i].end()){
 			if(i==0) return {i,activeSymTable[i].find(s)->second};
-			if(functionInBetween) return {-2,{GLOBAL,0}}; //Not accesible.
+			if(functionInBetween && careAboutFunctionInBetween) return {-2,{GLOBAL,0}}; //Not accesible.
 			return {i,activeSymTable[i].find(s)->second};
 		}
 	}

@@ -1,7 +1,6 @@
-function f(){
-    local f=10;
-    function g(){
-        f = 5;
-        return f();
-    }
+function foo(x){
+
+   function (){
+      x=6;		//Cannot access 'x' inside function (anonymous)
+   }
 }
