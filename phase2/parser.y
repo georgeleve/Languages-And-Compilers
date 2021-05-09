@@ -282,7 +282,7 @@ member: lvalue DOT ID
 
 call: call LEFT_PARENTH elist RIGHT_PARENTH
 	| lvalue callsuffix;
-	| LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_BRACKET
+	| LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH
 	;
 
 callsuffix: normcall
