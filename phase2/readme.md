@@ -18,6 +18,9 @@ g++ -o calc scanner.cpp parser.cpp
 
 //One command
 bison --yacc --defines --output=parser.cpp parser.y && flex --outfile=scanner.cpp scanner.l && g++ -o calc scanner.cpp parser.cpp && ./calc input.txt
+
+//Makefile command:
+make && ./calc input.txt
 ---------------------------------------------------------------
 TURNIN COMMAND:                 turnin submit2@hy340 phase2
 

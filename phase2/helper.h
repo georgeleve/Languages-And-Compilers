@@ -131,23 +131,11 @@ void insertUserFunction(string name, unsigned int line){
 	info2.line = line;
 	fullSymTable[scope].push_back({name, info2});
 }
-/*
-void insert(string name, enum SymbolType type, unsigned int line){
-	Information info;
-	info.type = type;
-	info.line = line;
-	activeSymTable[scope].insert({name, info});
-	
-	Information info2;
-	info2.type = type;
-	info2.line = line;
-	fullSymTable[scope].push_back({name, info2});
-}
-*/
 
 bool isSystemFunction(string name){
 	return systemFunctions.find(name) != systemFunctions.end();
 }
+
 void globalInsert(string name, enum SymbolType type, unsigned int line){
 	Information info;
 	info.type = type;

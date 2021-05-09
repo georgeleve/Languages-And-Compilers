@@ -619,12 +619,12 @@ static const yytype_int16 yyrline[] =
       75,    76,    77,    78,    79,    80,    81,    82,    83,    86,
       87,    88,    89,   102,   115,   128,   141,   144,   159,   173,
      184,   185,   186,   187,   190,   191,   192,   193,   194,   197,
-     222,   232,   240,   243,   244,   245,   246,   249,   250,   251,
-     254,   255,   258,   261,   264,   265,   266,   269,   270,   273,
-     274,   277,   277,   277,   280,   281,   284,   285,   284,   289,
-     300,   289,   306,   312,   306,   320,   321,   322,   323,   324,
-     325,   328,   339,   350,   354,   353,   362,   361,   372,   376,
-     371,   386,   390,   385,   398,   399,   399
+     256,   266,   274,   277,   278,   279,   280,   283,   284,   285,
+     288,   289,   292,   295,   298,   299,   300,   303,   304,   307,
+     308,   311,   311,   311,   314,   315,   318,   319,   318,   323,
+     334,   323,   340,   346,   340,   354,   355,   356,   357,   358,
+     359,   362,   373,   384,   388,   387,   396,   395,   406,   410,
+     405,   420,   424,   419,   432,   433,   433
 };
 #endif
 
@@ -1877,6 +1877,39 @@ yyreduce:
 #line 197 "parser.y"
            {
 			string var = (yyvsp[0].stringval);
+			
+			//lookup without taking into account if there is function in between
+			pair<int,Information> search = lookupTillGlobalScope(var,false);
+			
+			if(search.first==-1){
+				//Not found at all!
+				if(shouldInsert) {
+					insertVariable(var, yylineno);
+					//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
+				}else {
+					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
+				}	
+			}else{
+				if(search.second.type == USERFUNC || search.second.type == LIBFUNC){
+					printf("1WWWWWe refer to the already existant function %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
+				}else{
+					//In this case the variable should be a variable
+					search = lookupTillGlobalScope(var,true);
+					if(search.first==-1){
+						if(shouldInsert) {
+							insertVariable(var, yylineno);
+							//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
+						}else {
+							printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
+						}					
+					}else if(search.first==-2){
+						printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					}else {
+						printf("2WWWWWe refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
+					}
+				}
+			}
+			/* REMOVE THIS IF EVERYTHING WORKS
 			if(insideCall){
 				pair<int,Information> scopeFound = lookupTillGlobalScope(var,false);
 				if(scopeFound.first==-1){
@@ -1899,12 +1932,13 @@ yyreduce:
 					//printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
 				}
 			}
+			*/
 		}
-#line 1904 "parser.cpp"
+#line 1938 "parser.cpp"
     break;
 
   case 50:
-#line 222 "parser.y"
+#line 256 "parser.y"
                      { //This part is correct 100%
 			string var = (yyvsp[0].stringval);
 			if(lookup(var).first==-1){
@@ -1915,11 +1949,11 @@ yyreduce:
 			}//else printf("We refer to the already existant %s (line %d)\n",var.c_str(),yylineno); 
 		
 		}
-#line 1919 "parser.cpp"
+#line 1953 "parser.cpp"
     break;
 
   case 51:
-#line 232 "parser.y"
+#line 266 "parser.y"
                             { //This part is correct 100%
 			string var = (yyvsp[0].stringval);
 			pair<int,Information> lk = globalLookup(var);
@@ -1927,59 +1961,59 @@ yyreduce:
 				printf("Error: Could not find global variable %s (line %d)\n", var.c_str(), yylineno);
 			//else printf("We refer to the already existant global %s (line %d)\n", var.c_str(), yylineno); 
 		}
-#line 1931 "parser.cpp"
+#line 1965 "parser.cpp"
     break;
 
   case 66:
-#line 266 "parser.y"
+#line 300 "parser.y"
            {}
-#line 1937 "parser.cpp"
+#line 1971 "parser.cpp"
     break;
 
   case 71:
-#line 277 "parser.y"
+#line 311 "parser.y"
                        {shouldInsert = false;}
-#line 1943 "parser.cpp"
+#line 1977 "parser.cpp"
     break;
 
   case 72:
-#line 277 "parser.y"
+#line 311 "parser.y"
                                                          {shouldInsert = true;}
-#line 1949 "parser.cpp"
+#line 1983 "parser.cpp"
     break;
 
   case 74:
-#line 280 "parser.y"
+#line 314 "parser.y"
                                 {;}
-#line 1955 "parser.cpp"
+#line 1989 "parser.cpp"
     break;
 
   case 75:
-#line 281 "parser.y"
+#line 315 "parser.y"
           {;}
-#line 1961 "parser.cpp"
+#line 1995 "parser.cpp"
     break;
 
   case 76:
-#line 284 "parser.y"
+#line 318 "parser.y"
                   {increaseScope();}
-#line 1967 "parser.cpp"
+#line 2001 "parser.cpp"
     break;
 
   case 77:
-#line 285 "parser.y"
+#line 319 "parser.y"
                     {}
-#line 1973 "parser.cpp"
+#line 2007 "parser.cpp"
     break;
 
   case 78:
-#line 286 "parser.y"
+#line 320 "parser.y"
                        {decreaseScope();}
-#line 1979 "parser.cpp"
+#line 2013 "parser.cpp"
     break;
 
   case 79:
-#line 289 "parser.y"
+#line 323 "parser.y"
                      { 
 			string fName = (yyvsp[0].stringval); 
 			pair<int,Information> lk = lookup(fName);
@@ -1991,46 +2025,46 @@ yyreduce:
 				} else insertUserFunction(fName, yylineno);
 			}
 		}
-#line 1995 "parser.cpp"
+#line 2029 "parser.cpp"
     break;
 
   case 80:
-#line 300 "parser.y"
+#line 334 "parser.y"
                               { increaseScope(); pushType(1);}
-#line 2001 "parser.cpp"
+#line 2035 "parser.cpp"
     break;
 
   case 81:
-#line 305 "parser.y"
+#line 339 "parser.y"
                             {decreaseScope();popType();}
-#line 2007 "parser.cpp"
+#line 2041 "parser.cpp"
     break;
 
   case 82:
-#line 306 "parser.y"
+#line 340 "parser.y"
                            { 
 			string fName = ("_f"+to_string(fID++));
 			while(lookup(fName).first!=-1 || isSystemFunction(fName)) fName = ("_f"+to_string(fID++));
 			insertUserFunction(fName, yylineno);
 			//printf("Inserted function with name %s\n", fName.c_str());
 		}
-#line 2018 "parser.cpp"
+#line 2052 "parser.cpp"
     break;
 
   case 83:
-#line 312 "parser.y"
+#line 346 "parser.y"
                               { increaseScope(); pushType(1);}
-#line 2024 "parser.cpp"
+#line 2058 "parser.cpp"
     break;
 
   case 84:
-#line 317 "parser.y"
+#line 351 "parser.y"
                             {decreaseScope();popType();}
-#line 2030 "parser.cpp"
+#line 2064 "parser.cpp"
     break;
 
   case 91:
-#line 328 "parser.y"
+#line 362 "parser.y"
                                                 {	
 			string varName = yytext; 
 			pair<int,Information> lk = lookup(varName);
@@ -2042,11 +2076,11 @@ yyreduce:
 				} else insertArgument(varName, yylineno);
 			}
 		}
-#line 2046 "parser.cpp"
+#line 2080 "parser.cpp"
     break;
 
   case 92:
-#line 339 "parser.y"
+#line 373 "parser.y"
                                         {	
 			string varName = yytext; 
 			pair<int,Information> lk = lookup(varName);
@@ -2058,113 +2092,113 @@ yyreduce:
 				} else insertArgument(varName, yylineno);
 			}
 		}
-#line 2062 "parser.cpp"
+#line 2096 "parser.cpp"
     break;
 
   case 93:
-#line 350 "parser.y"
+#line 384 "parser.y"
                   {}
-#line 2068 "parser.cpp"
+#line 2102 "parser.cpp"
     break;
 
   case 94:
-#line 354 "parser.y"
+#line 388 "parser.y"
                 {
 			//printf("if(expr)");
 		}
-#line 2076 "parser.cpp"
+#line 2110 "parser.cpp"
     break;
 
   case 95:
-#line 358 "parser.y"
+#line 392 "parser.y"
                 {
 			//printf("if stmt"); 
 		}
-#line 2084 "parser.cpp"
+#line 2118 "parser.cpp"
     break;
 
   case 96:
-#line 362 "parser.y"
+#line 396 "parser.y"
                 {
 			//printf("else"); 
 		}
-#line 2092 "parser.cpp"
+#line 2126 "parser.cpp"
     break;
 
   case 97:
-#line 366 "parser.y"
+#line 400 "parser.y"
                 {
 			//printf("else stmt"); 
 		}
-#line 2100 "parser.cpp"
+#line 2134 "parser.cpp"
     break;
 
   case 98:
-#line 372 "parser.y"
+#line 406 "parser.y"
                  {
 			 pushType(0);
 		 }
-#line 2108 "parser.cpp"
+#line 2142 "parser.cpp"
     break;
 
   case 99:
-#line 376 "parser.y"
+#line 410 "parser.y"
                  {
 		 }
-#line 2115 "parser.cpp"
+#line 2149 "parser.cpp"
     break;
 
   case 100:
-#line 379 "parser.y"
+#line 413 "parser.y"
                  {
 			popType();
 		 }
-#line 2123 "parser.cpp"
+#line 2157 "parser.cpp"
     break;
 
   case 101:
-#line 386 "parser.y"
+#line 420 "parser.y"
                 {
 			pushType(0);
 		}
-#line 2131 "parser.cpp"
+#line 2165 "parser.cpp"
     break;
 
   case 102:
-#line 390 "parser.y"
+#line 424 "parser.y"
                 {
 		}
-#line 2138 "parser.cpp"
+#line 2172 "parser.cpp"
     break;
 
   case 103:
-#line 393 "parser.y"
+#line 427 "parser.y"
                 {
 			popType();
 		}
-#line 2146 "parser.cpp"
+#line 2180 "parser.cpp"
     break;
 
   case 104:
-#line 398 "parser.y"
+#line 432 "parser.y"
                                  {if(!isInFunction()) printf("Error: This return is not part of a function. (line %d)\n",yylineno); }
-#line 2152 "parser.cpp"
+#line 2186 "parser.cpp"
     break;
 
   case 105:
-#line 399 "parser.y"
+#line 433 "parser.y"
                           {shouldInsert = false;}
-#line 2158 "parser.cpp"
+#line 2192 "parser.cpp"
     break;
 
   case 106:
-#line 399 "parser.y"
+#line 433 "parser.y"
                                                                 { if(!isInFunction()) printf("Error: This return is not part of a function. (line %d)\n",yylineno); shouldInsert = true;}
-#line 2164 "parser.cpp"
+#line 2198 "parser.cpp"
     break;
 
 
-#line 2168 "parser.cpp"
+#line 2202 "parser.cpp"
 
       default: break;
     }
@@ -2396,7 +2430,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 401 "parser.y"
+#line 435 "parser.y"
 
 
 /* this will be called if we have syntax errors */

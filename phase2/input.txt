@@ -1,6 +1,6 @@
-function foo(x){
+x = ( 
+	-(function(x) { 
+		return [{"x": x}];
+	}) (2) + 2
 
-   function (){
-      x=6;		//Cannot access 'x' inside function (anonymous)
-   }
-}
+) and not false or 2>=2;

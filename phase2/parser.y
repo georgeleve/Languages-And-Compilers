@@ -196,6 +196,39 @@ primary: lvalue
 
 lvalue: ID {
 			string var = $1;
+			
+			//lookup without taking into account if there is function in between
+			pair<int,Information> search = lookupTillGlobalScope(var,false);
+			
+			if(search.first==-1){
+				//Not found at all!
+				if(shouldInsert) {
+					insertVariable(var, yylineno);
+					//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
+				}else {
+					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
+				}	
+			}else{
+				if(search.second.type == USERFUNC || search.second.type == LIBFUNC){
+					printf("1WWWWWe refer to the already existant function %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
+				}else{
+					//In this case the variable should be a variable
+					search = lookupTillGlobalScope(var,true);
+					if(search.first==-1){
+						if(shouldInsert) {
+							insertVariable(var, yylineno);
+							//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
+						}else {
+							printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
+						}					
+					}else if(search.first==-2){
+						printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					}else {
+						printf("2WWWWWe refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
+					}
+				}
+			}
+			/* REMOVE THIS IF EVERYTHING WORKS
 			if(insideCall){
 				pair<int,Information> scopeFound = lookupTillGlobalScope(var,false);
 				if(scopeFound.first==-1){
@@ -218,6 +251,7 @@ lvalue: ID {
 					//printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
 				}
 			}
+			*/
 		}
 	  | LOCAL ID { //This part is correct 100%
 			string var = $2;
