@@ -1,11 +1,28 @@
-TO DO:
-front 4 sto slide 15: na xrhsimopoihso vector gia na apothikeyo ta quads
-afou etsi den xreiazetai na asxoloymaste me to resizing kai me thn ylopoihsh tou dinamikoy tou pinaka
+---------------------------------------------------------------
+Compilers Project CS340 Phase 2
+@authors    
+Georgios Gerasimos Leventopoulos csd4152     
+Konstantinos Anemozalis csd4149  
+Theofanis Tsesmetzis csd4142
+---------------------------------------------------------------
+FOR YACC/BISON
 
-na do dialexi 8 styo slide 78-81
+bison --yacc --defines --output=parser.cpp parser.y
 
-na do oti dialexh xreiazetai
+flex --outfile=scanner.cpp scanner.l
 
-na ftiaxoume oti bug exoume apo thn phase2
+g++ -o calc scanner.cpp parser.cpp
 
-na katalavoume kalytera pos douleyei to AST
+./calc
+
+
+//One command
+bison --yacc --defines --output=parser.cpp parser.y && flex --outfile=scanner.cpp scanner.l && g++ -o calc scanner.cpp parser.cpp && ./calc input.txt
+
+//Makefile command:
+make && ./calc input.txt
+---------------------------------------------------------------
+TURNIN COMMAND:                 turnin submit2@hy340 phase2
+
+VERIFY TURNIN:                    ls -l ~hy340/TURNIN/submit2
+---------------------------------------------------------------

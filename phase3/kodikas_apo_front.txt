@@ -1,0 +1,855 @@
+#define EXPAND_SIZE 1024
+#define CURR_SIZE 	(total*sizeof(quad))
+#define NEW_SIZE 	(EXPAND_SIZE*sizeof(quad)+CURR_SIZE)
+
+quad* quads = (quad*) 0;
+unsigned total = 0;
+unsigned int currQuad = 0;
+
+int tempcounter = 0;
+
+void newtempname() { return "_t" + tempcounter; }
+
+void resettemp() { tempcounter = 0; }
+
+void newtemp() {
+	name = newtempname();
+	sym = lookup(name, currscope());
+	
+	if (sym = nil)
+		return newsymbol(name);
+	else
+		return sym;
+}
+
+expr* lvalue_expr (symbol *sym) {
+	assert(sym);
+	expr*  e = (expr*) malloc(sizeof(expr));
+	memset(e,0,sizeof(expr));	
+	e->next = (expr*) 0;
+	e->sym = sym;
+ 
+	switch(sym->type){
+		case var_s : e->type = var)e; break;
+		case programfunc_s : e->type = programfunc_e : break;
+		case libraryfunc_s : e->type = libraryfunc_e : break;
+		default:assert(0);
+	}
+	return e;
+}
+
+enum iopcode {
+    assign, add, sub,
+    mul, div, mod,
+    unimus, and, or,
+    not, if_eq, if_noteq,
+    if_lesseq, if_greatereq, if_less,
+    if_greater, call, param,funprefix,
+    ret, getretval, funcstart,
+    funcend, tablecreate,
+    tablegetelem, tablesetelem
+};
+
+struct expr;
+
+struct quad {
+	iopcode op;
+	expr* result;
+	expr* arg1;
+	expr* arg2;
+	unsigned label;
+	unsigned line;
+};
+
+enum expr_t {
+	var_e,
+	tableitem_e,
+
+	programfunc_e,
+	libraryfunc_e,
+
+	arithexpr_e,
+	boolexpr_e,
+	assignexpr_e,
+	newtable_e,
+
+	constnum_e,
+	constbool_e,
+	conststring_e,
+
+	nil_e
+};
+
+struct expr {
+	expr_t			type;
+	symbol*			sym;
+	expr*			index;
+	double 			numConst;
+	char*			strConst;
+	unsigned char	boolConst;
+	expr*			next;
+};
+
+void expand (void) {
+	assert(total == currQuad);
+	quad* p = (quad*) malloc(NEW_SIZE);
+	if(quads){
+		memcpy(p, quads, CURR_SIZE);
+		free(quads);
+	} 
+	quads = p;
+	total += EXPAND_SIZE;
+}
+
+void emit (
+		iopcode			op,
+		expr* 			arg1,
+		expr* 			arg2,
+		expr*			result,
+		unsigned int 	label,
+		unsigned int 	line
+		) {
+
+	if (currQuad == total) expand(); 
+
+	quad* p 	= quads+currQuad++;
+	//p->op 		= op;
+	p->arg1		= arg1;
+	p->arg2		= arg2;
+	p->result	= result;
+	p->label 	= label;
+	p->line		= line;
+}
+
+
+enum scopespace_t {
+	programVar,
+	functionLocal,
+	formalArg
+};
+
+enum sumbol_t { var_s, programfunc_s, libraryfunc_s}
+
+struct symbol {
+	symbol_t type; 
+	char* name;  //dynamic string
+	scopespace_t space; // originating scope scapce
+	unsigned offset; // offset in scope space
+	unsigned scope; // scope value
+	unsigned line; //source line of declaration
+}
+
+unsigned programVarOffset = 0;
+unsigned functionLocalOffset = 0;
+unsigned formalArgOffset = 0;
+unsigned scopeSpaceCounter = 1;
+
+scopespace_t currScopeSpace(void){
+	if(scopeSpaceCounter == 1)
+		return programVar;
+	else if(scopeSpaceCounter % 2 == 0)
+		return formalArg;
+	else
+		return functionLocal;
+}
+
+
+unsigned int currScopeOffset(void){
+	switch(currScopeSpace()){
+		case programVar		: return programVarOffset;
+		case functionLocal	: return functionLocalOffset;
+		case formalArg		: return formalArgOffset;
+		default				: assert(0);
+	}
+}
+
+
+void inCurrScopeOffset(void){
+	switch(currScopeSpace()){
+		case programVar 	: ++programVarOffset; break;
+		case functionLocal  : ++functionLocalOffset; break;
+		case formalArg 		: ++formalArgOffset; break;
+		default 			: assert(0);
+	}
+}
+
+void enterScopeSpace(void){
+	++scopeSpaceCounter;
+}
+
+void exitScopeSpace(void){
+	assert(scopeSpaceCounter > 1);
+	--scopeSpaceCounter;
+}
+
+
+lvalue : id {
+	sym = lookup(id.name);
+	if (sym == nul)
+		{
+			sym = newsymbol(id.name);
+			sym.space = currscopespace();
+			sym.offset = currscopeoffset();
+			inccurrscopeoffset();
+		}
+	lvalue.sval = lvalue_expr(sym);
+}
+lvalue : local id {
+	sym = lookup(id.name, currscope());
+	if(sym = nil then)  {
+			sym = newsymbol(id.name);
+			sym.space = currscopespace();
+			sym.offset = currscopeoffset();
+			inccurrscopeoffset();
+	}
+	else
+	{
+		// …warning if sym is a function …
+	}
+	lvalue.sval = lvalue_expr(sym);
+}
+
+
+vardecl : type varlist ;
+	{ distributetype($varlist, $type); }
+
+varlist : varlist , var
+	{ append($varlist, $var); }
+
+varlist : var
+	{ $varlist = newlist(); append($varlist, $var); }
+
+var : id
+	{ $var = newsymbol(id.name); $var.class = normalvar; }
+var : stars id
+	{ $var = newsymbol(id.name); $var.class = pointervar; $var.nest = $stars; }
+stars : stars1 *
+	{ $stars = $stars1 + 1; }
+stars : *
+	{ $stars = 1; }
+
+
+
+
+
+
+type -> int 
+	{ $type.type = int_t; $type.size = 4; }
+
+type -> unsigned int
+	{ $type.type = unsigned_int_t; $type.size = 4; }
+
+type -> float
+	{ $type.type = float_t; $type.size = 4; }
+
+type -> double
+	{ $type.type = double_t; $type.size = 8; }
+
+type -> id
+	{ sym = lookup(id.name); $type.type = userdefined_t; $type.size = sym.size; }
+
+
+var -> id array
+	{ $var = newsymbol(id.name); $var.class = arrayvar; $var.dims= $array; }
+
+array -> array [ intconst ]
+	{ append($array, intconst.value); }
+
+array -> [ intconst ]
+	{ $array = newlist(); append($array, intconst.value); }
+
+var -> stars id array
+	{ 	
+		$var = newsymbol(id.name);
+		$var.class = arraypointervar;
+		$var.dims = $array;
+		$var.nest = $stars; 
+	}
+
+
+distributetype(vars, type) {
+	for each v in vars do {   // FIX THIS LATER !!!!!!!!!!!!!
+		if (v.class = pointervar) {
+			v.size = 4;
+		}else if (v.class = arrayvar){
+			v.size = arraytotal(v.dims)*type.size;
+		}else if (v.class = arraypointervar){
+			v.size = arraytotal(v.dims)*4;
+		}else{
+			v.size = type.size;
+			v.offset =getcurroffset();
+			inccurroffset(v.size);
+		}
+}
+
+
+
+
+funcname : id
+	{ $funcname = id.value; }
+
+funcname : ε
+	{ $funcname = newtempfuncname(); }
+
+funprefix : function funcname
+	{
+		$funprefix = newsymbol($funcname, function_s);
+		$funcprefix.iaddress = nextquadlabel();
+		emit(funcstart, $funcprefix, NULL, NULL);
+		push(scopeoffsetstack, currscopeoffset()); // Save current offset
+		enterscopespace(); // Entering function arguments scope space
+		resetformalargsoffset(); // Start formals from zero
+	}
+
+funcargs : (idlist)
+	{
+		enterscopespace(); // Now entering function locals space
+		resetfunctionlocalsoffset(); // Start counting locals from zero
+	}
+funcbody : block
+	{
+		$funcbody = currscopeoffset(); // Extract #total locals
+		existscopespace(); // Exiting function locals space
+	}
+
+
+
+funcdef : funcprefix funcargs funcbody 
+{
+	existscopespace(); // Exiting function definition space
+	$funcprefix.totalLocals = $funcbody; //store #locals in symbol entry
+	int offset = pop_and_top(scopeoffsetStack); // pop and get pre scope offset
+	restorecurrscopeoffset(offset); //Restore previous scope offset
+	$funcdef = $funcprefix; // The function definition returns the symbol
+	emit(funcend, $funcprefix, NULL, NULL);
+}
+typeof<funcname> : char*
+typeof<funcbody> : unsigned
+typeof<funcprefix, funcdef> : symbol*
+
+
+
+
+void resetformalargoffset(void){
+	formalArgOffset = 0;
+}
+
+void resetfunctionlocaloffset(void){
+	functionLocalOffset = 0;
+}
+
+void restorecurrscopeoffset(unsigned n){
+	switch( currscopespace()){
+		case globalvar		: globalvarOffset = n; break;
+		case functionlocal 	: functionLocalOffset = n; break;
+		case formalarg 		: formalArgOffset = n; break;
+		default				: assert(0);
+	}
+}
+
+unsigned int nextquadlabel(void){
+	return currQuad;
+}
+
+void patchlabel(unsigned quadNo, unsigned label){
+	assert(quadNo < currQuad);
+	quads[quadNo].label = label;
+}
+
+
+function dumparguments() {
+	for (local i = 0, local n = totalarguments(); i < n; ++i) {
+		print(argument(i)); print(“\n”); }
+	}
+}
+
+dumparguments(23, true, "hello";
+dumparguments();
+dumparguments(
+	print,
+	dumparguments,
+	(function(){}),
+	[]
+);
+
+lvalue→ id
+	{ ... $lvalue = lvalue_expr(sym); }
+
+lvalue→ local id
+	{ ... $lvalue = lvalue_expr(sym); }
+
+lvalue→ global id
+	{ ... $lvalue = lvalue_expr(sym);
+
+
+lvalue : tableitem
+	{ $lvalue = $tableitem; }
+
+tableitem : lvalue.id
+	{ $tableitem = member_item($lvalue, id.name); }
+
+expr* member_item (expr* lv, char* name) {
+	lv = emit_iftableitem(lv); // Emit code if r-value use of table item
+	expr* ti = newexpr(tableitem_e); // Make a new expression
+	ti->sym = lv->sym;
+	ti->index = newexpr_conststring(name); // Const string index
+	return ti;
+}
+
+tableitem : lvalue [ expr ] {
+	$lvalue = emit_iftableitem($lvalue);
+	$tableitem = newexpr(tableitem_e);
+	$tableitem->sym = $lvalue->sym;
+	$tableitem->index = $expr; // The index is the expression
+}
+
+primary : lvalue 
+	{ $primary = emit_iftableitem($lvalue); }
+
+
+assginexpr : lvalue = expr
+{
+	if $lvalue ->type = tableitem_e then {
+		emit( // lvalue[index] = expr
+			tablesetelem,
+			$lvalue,
+			$lvalue->index,
+			$expr // Use result operand for the assigned value
+		);
+		$assignexpr = emit_iftableitem($lvalue); // Will always emit
+		$assignexpr->type = assignexpr_e;
+	}
+	else
+	{
+		emit( // that is: lvalue = expr
+			assign,
+			$expr,
+			NULL,
+			$lvalue
+		);
+		$assignexpr = newexpr(assignexpr_e);
+		$assignexpr->sym = newtemp();
+		emit(assign, $lvalue, NULL, $assignexpr);
+	}
+}
+
+expr* newexpr(expr_t t){
+  expr* e = (expr*) malloc(sizeof(expr));
+  memset(e,0,sizeof(expr));
+  e->type = t;
+  return e;
+}
+
+
+expr* emit_iftableitem(expr* e){
+	if (e->type !+ tableitem_e)
+		return e;
+	else {
+		expr* result = newexpr(var_e);
+		result->sym = newtemp();
+		emit (
+				tablegetlem,
+				e,
+				e->index,
+				result);
+		return result;
+	}
+}
+
+mexri edo kala - exoyme valei oti einai stis dialexeis
+------------------------------------------------------------------
+
+methodcall : ..id(elist)
+	{
+	$methodcall.elist = $elist;
+	$methodcall.method = 1;
+	$methodcall.name = $id.val;
+	}
+
+call : call(elist)
+ 	{
+	$call = make_call($call, $elist);
+	}
+
+call : (funcdef)(elist)
+	{
+	expr *func = newexpr(programfunc_e);
+	func->sym = $funcdef;
+	$call = make_call(func, $elist);
+	}
+
+expr *make_call(expr *lv, expr *reversed_elist)
+{
+	expr *func = emit_iftableitem(lv);
+	while (reversed_elist)
+	{
+		emit(param, reversed_elist, NULL, NULL);
+		reversed_elist = reversed_elist->next;
+	}
+	emit(call, func, NULL, NULL);
+	expr *result = newexpr(var_e);
+	result->sym = newtemp();
+	emit(getretval, NULL, NULL, result);
+	return result;
+}
+
+
+call → lvalue callsuffix {
+	$lvalue = emit_iftableitem($lvalue); in case it was a table item too
+	if (callsuffix.method ){
+		expr* t = $lvalue;
+		$lvalue = emit_iftableitem(member_item(t, $callsuffix.name));
+		$callsuffix.elist->next = t; // insert as first argument (reversed, so last)
+	}
+	$call = make_call($lvalue, $callsuffix.elist);
+}
+
+callsuffix : normcall
+	{ $callsuffix = $normcall; }
+callsuffix : methodcall
+	{ $callsuffix = $methodcall; }
+normcall : ( elist )
+	{
+	$normalcall.elist = $elist;
+	$normalcall.method = 0;
+	$ normalcall.name = NULL;
+	}
+
+typeof<callsuffix> : struct call
+typeof<normcall> : struct call
+typeof<methodcall> : struct call
+
+struct call {
+	expr* elist;
+	unsigned char method;
+	char* name;
+};
+
+
+tablemake : [elist] {
+	expr *t = newexpr(newtable_e);
+	t->sym = newtemp();
+	emit(tablecreate, t, NULL, NULL);
+	for (int i = 0; $elist; $elist = $elist->next)
+		emit(tablesetelem, t, newexpr_constnum(i++), $elist);
+	$tablemake = t;
+}
+
+exrp *newexpr_constnum(double i) {
+	expr *e = newexpr(constnum_e);
+	e->numConst = i;
+	return e;
+}
+
+tablemake : [ indexed ] {
+	expr* t = newexpr(newtable_e);
+	t->sym = newtemp();
+	emit(tablecreate, t, NULL, NULL);
+	foreach <index, value> in $indexed do
+	emit(tablesetelem, t, index, value);
+	$tablemake = t;
+}
+
+
+primary : (funcdef){
+	$primary = newexpr(programfunc_e);
+	$primary->sym = $funcdef;
+}
+
+term : ( expr ) { $term = $expr; }
+
+term : primary { $term = $expr; }
+ 
+term : - expr 
+	{
+	check_arith($expr);
+	$term = newexpr(arithexpr_e);
+	$term->sym = newtemp();
+	emit(uminus,$expr, NULL, $term);
+	}
+	term → not expr  ολική αποτίμηση bool exprs
+	{
+	$term = newexpr(boolexpr_e);
+	$term->sym = newtemp();
+	emit(not,$expr, NULL, $term);
+	}
+
+term : not expr // ολική αποτίμηση bool exprs
+{
+	$term = newexpr(boolexpr_e);
+	$term->sym = newtemp();
+	emit(not,$expr, NULL, $term);
+}
+
+void comperror (char* format, ...);
+// Use this function to check correct use of
+// of expression in arithmetic
+void check_arith (expr* e, const char* context) {
+	if ( e->type == constbool_e ||
+	e->type == conststring_e ||
+	e->type == nil_e ||
+	e->type == newtable_e ||
+	e->type == programfunc_e ||
+	e->type == libraryfunc_e ||
+	e->type == boolexpr_e )
+	comperror("Illegal expr used in %s!", context);
+}
+
+
+
+
+
+term : lvalue++ {
+	check_arith($lvalue);
+	$term = newexpr(var_e);
+	$term->sym = newtemp();
+	if ($lvalue->type == tableitem_e) {
+		expr *val = emit_iftableitem($lvalue);
+		emit(assign, val, NULL, $term);
+		emit(add, val, newexpr_constnum(1), val);
+		emit(tablesetelem, $lvalue, $lvalue->index, val);
+	}
+	else {
+		emit(assign, $lvalue, NULL, $term);
+		emit(add, $lvalue, newexpr_constnum(1), $lvalue);
+	}
+}
+
+term : ++lvalue
+	{
+	check_arith(($lvalue);
+	if ($lvalue->type == tableitem_e) {
+		$term = emit_iftableitem($lvalue);
+		emit(add, $term, newexpr_constnum(1), $term);
+		emit(tablesetelem, $lvalue, $lvalue->index, $term);
+	}
+	else {
+		emit(add, $lvalue, newexpr_constnum(1), $lvalue);
+		$term = newexpr(arithexpr_e);
+		$term->sym = newtemp();
+		emit(assign, $lvalue, NULL, $term);
+	}
+	}
+
+term : --lvalue {       }
+term : lvalue-- {       }
+
+
+
+
+unsigned int istempname(char *s) {
+	return *s == '_';
+}
+unsigned int istempexpr(expr *e) {
+	return e->sym && istempname(e->sym->name);
+}
+
+term : -expr {
+	check_arith($expr);
+	$term = newexpr(arithexpr_e);
+	$term->sym = istempexpr($expr) ? $expr->sym : newtemp();
+	emit(uminus,$expr, NULL, $term);
+}
+
+
+arithop : + { $arithop = add; }
+arithop : - { $arithop = sub; }
+arithop : * { $arithop = mul; }
+arithop : / { $arithop = div; }
+arithop : % { $arithop = mod; }
+expr : expr1 arithop expr2 {
+	$expr = newexpr(arithexpr_e);
+	$expr->sym = newtemp();
+	emit($arithop, $expr1, $expr2, $expr);
+}
+
+relop : > { $relop = if_greater; }
+relop : >= { $relop = if_greatereq; }
+relop : < { $relop = if_less; }
+relop : <= { $relop = if_lesseq; }
+relop : == { $relop = if_eq; }
+relop : != { $relop = if_noteq; }
+
+expr : expr1 relop expr2 {
+	$expr = newexpr(boolexpr_e);
+	$expr->sym = newtemp();
+	emit($relop, $expr1, $expr2, nextquad() + 3);
+	emit(assign, newexpr_constbool(0), $expr);
+	emit(jump, nextquad() + 2);
+	emit(assign, newexpr_constbool(1), $expr);
+}
+
+boolop : && { $boolop = and; }
+boolop : || { $boolop = or ; }
+
+expr : expr1 boolop expr2 
+	{
+	$expr = newexpr(boolexpr_e);
+	$expr->sym = newtemp();
+	emit($boolop, $expr1, $expr2, $expr);
+	}
+
+
+ifprefix : if (expr)
+	{
+	emit(if_eq, $expr, newexpr_constbool(1), nextquad() + 2);
+	$ifprefix = nextquad();
+	emit(jump, NULL, NULL, 0);
+	}
+
+if : ifprefix stmt
+	{
+		patchlabel($ifprefix, nextquad());
+	}
+
+
+void patchlabel(unsigned quadNo, unsigned label) {
+	assert(quadNo < currQuad && !quads[quadNo].label);
+	quads[quadNo].label = label;
+}
+expr *newexpr_constbool(unsigned int b) {
+	expr *e = newexpr(constbool_e);
+	e->boolConst = !!b;
+	return e;
+}
+unsigned nextquad(void) { return currQuad; }
+
+
+elseprefix : else
+	{
+	$elseprefix = nextquad();
+	emit(jump, NULL, NULL, 0);
+	}
+
+if : ifprefix stmt1 elseprefix stmt2
+	{
+		patchlabel($ifprefix, $elseprefix + 1);
+		patchlabel($elseprefix, nextquad());
+	}
+
+
+
+whilestart : while 
+	{
+	$whilestart = nextquad();
+	}
+
+whilecond : (expr) 
+{
+	emit(if_eq, $expr, newexpr_constbool(1), nextquad() + 2);
+	$whilecond = nextquad();
+	emit(jump, NULL, NULL, 0);
+}
+
+while : whilestart whilecond stmt 
+{
+		emit(jump, NULL, NULL, $whilestart);
+		patchlabel($whilecond, nextquad());
+		patchlist($stmt.breaklist, nextquad());
+		patchlist($stmt.contlist, $whilestart);
+}
+
+N :  { $N = nextquad(); emit(jump, NULL, NULL, 0); }
+M : { $M = nextquad(); }
+
+forprefix : for (elist; M expr; 
+{
+	$forprefix.test = $M;
+	$forprefix.enter = nextquad();
+	emit(if_eq, $expr, newexpr_constbool(1), 0);
+}
+
+for : forprefix N1 elist ) N2 stmt N3 
+{
+	patchlabel($forprefix.enter, $N2 + 1); // true jump
+	patchlabel($N1, nextquad()); // false jump
+	patchlabel($N2, $forprefix.test); // loop jump
+	patchlabel($N3, $N1 + 1); // closure jump
+
+	patchlist($stmt.breaklist, nextquad());
+	patchlist($stmt.contlist, $N1 + 1);
+}
+
+loopstart : ε { ++loopcounter; }
+loopend : ε { --loopcounter; }
+loopstmt : loopstart stmt loopend { $ loopstmt = $stmt; }
+
+whilestmt : while (expr) loopstmt
+forstmt : for (elist; expr; elist) loopstmt
+
+funcblockstart : ε
+{
+	push(loopcounterstack, loopcounter); loopcounter = 0;
+}
+
+funcblockend : ε { loopcounter = pop(loopcounterstack); }
+
+funcdef : function[id](idlist) funcblockstart block funcblockend
+
+
+break : break;
+{
+	make_stmt(&$break);
+	$break.breaklist = newlist(nextquad());
+	emit(jump, NULL, NULL, 0);
+}
+
+continue : continue;
+{
+	make_stmt(&$continue);
+	$continue.contlist = newlist(nextquad());
+	emit(jump, NULL, NULL, 0);
+}
+
+stmts : stmt { $stmts = $stmt; }
+stmts : stmts1 stmt
+{
+	$stmts.breaklist = mergelist($stmts1.breaklist, $stmt.breaklist);
+	$stmts.contlist = mergelist($stmts1.contlist, $stmt.contlist);
+}
+
+returnstmt : return ε; 
+{
+	emit(return, null);
+}
+
+returnstmt : return expr;
+{
+	emit(return, $expr);
+}
+
+
+struct stmt_t {
+	int breakList, contList;
+};
+
+void make_stmt(stmt_t *s) {
+	s->breakList = s->contList = 0;
+}
+int newlist(int i) {
+	quads[i].label = 0;
+	return i;
+}
+
+int mergelist(int l1, int l2) {
+	if (!l1)
+		return l2;
+	else if (!l2)
+		return l1;
+	else {
+		int i = l1;
+		while (quads[i].label){
+			i = quads[i].label;
+		}
+		quads[i].label = l2;
+		return l1;
+	}
+}
+
+void patchlist(int list, int label) {
+	while (list) {
+		int next = quads[list].label;
+		quads[list].label = label;
+		list = next;
+	}
+}
