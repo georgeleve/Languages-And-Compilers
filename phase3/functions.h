@@ -1,3 +1,8 @@
+#include <assert.h>
+#include <stdio.h>
+#include <string.h>
+#include<stdlib.h> 
+
 #define EXPAND_SIZE 1024
 #define CURR_SIZE 	(total*sizeof(quad))
 #define NEW_SIZE 	(EXPAND_SIZE*sizeof(quad)+CURR_SIZE)
@@ -50,7 +55,6 @@ enum iopcode {
     tablegetelem, tablesetelem
 };
 
-
 struct quad {
 	iopcode op;
 	expr* result;
@@ -58,6 +62,10 @@ struct quad {
 	expr* arg2;
 	unsigned label;
 	unsigned line;
+};
+
+struct stmt_t {
+	int breakList, contList;
 };
 
 enum expr_t {
@@ -100,7 +108,7 @@ void expand (void) {
 	total += EXPAND_SIZE;
 }
 
-void emit (iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line) {
+void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line) {
 
 	if (currQuad == total) expand(); 
 
@@ -129,7 +137,7 @@ struct symbol {
 	unsigned offset; // offset in scope space
 	unsigned scope; // scope value
 	unsigned line; //source line of declaration
-}
+};
 
 unsigned programVarOffset = 0;
 unsigned functionLocalOffset = 0;
@@ -154,7 +162,6 @@ unsigned int currScopeOffset(void){
 	}
 }
 
-
 void inCurrScopeOffset(void){
 	switch(currScopeSpace()){
 		case programVar 	: ++programVarOffset; break;
@@ -173,8 +180,9 @@ void exitScopeSpace(void){
 	--scopeSpaceCounter;
 }
 
-distributetype(vars, type) {
-	for each v in vars do {   // FIX THIS LATER !!!!!!!!!!!!!
+// FIX THIS FUNCTION LATER !!!!!!!!!!!!!
+distributetype(int vars, int type) {
+	for each v in vars do {   
 		if (v.class = pointervar) {
 			v.size = 4;
 		}else if (v.class = arrayvar){
@@ -188,11 +196,11 @@ distributetype(vars, type) {
 		}
 }
 
-void resetformalargoffset(void){
+void resetformalargoffset(){
 	formalArgOffset = 0;
 }
 
-void resetfunctionlocaloffset(void){
+void resetfunctionlocaloffset(){
 	functionLocalOffset = 0;
 }
 
@@ -214,13 +222,12 @@ void patchlabel(unsigned quadNo, unsigned label){
 	quads[quadNo].label = label;
 }
 
-
-function dumparguments() {
+// FIX THIS LATER
+void dumparguments() {
 	for (local i = 0, local n = totalarguments(); i < n; ++i) {
 		print(argument(i)); print(“\n”); }
 	}
 }
-
 
 expr* member_item (expr* lv, char* name) {
 	lv = emit_iftableitem(lv); // Emit code if r-value use of table item
@@ -230,7 +237,6 @@ expr* member_item (expr* lv, char* name) {
 	return ti;
 }
 
-
 expr* newexpr(expr_t t){
   expr* e = (expr*) malloc(sizeof(expr));
   memset(e,0,sizeof(expr));
@@ -238,22 +244,18 @@ expr* newexpr(expr_t t){
   return e;
 }
 
-
 expr* emit_iftableitem(expr* e){
 	if (e->type !+ tableitem_e)
 		return e;
 	else {
 		expr* result = newexpr(var_e);
 		result->sym = newtemp();
-		emit (
-				tablegetlem,
-				e,
-				e->index,
-				result);
+		
+		emit("tablegetlem", e, e->index, result); // do I miss a param?
+
 		return result;
 	}
 }
-
 
 expr *make_call(expr *lv, expr *reversed_elist) {
 	expr *func = emit_iftableitem(lv);
@@ -275,15 +277,14 @@ struct call {
 	char* name;
 };
 
-
 exrp *newexpr_constnum(double i) {
 	expr *e = newexpr(constnum_e);
 	e->numConst = i;
 	return e;
 }
 
-
 void comperror (char* format, ...);
+
 // Use this function to check correct use of
 // of expression in arithmetic
 void check_arith (expr* e, const char* context) {
@@ -296,7 +297,6 @@ void check_arith (expr* e, const char* context) {
 	e->type == boolexpr_e )
 	comperror("Illegal expr used in %s!", context);
 }
-
 
 unsigned int istempname(char *s) {
 	return *s == '_';
@@ -321,6 +321,7 @@ unsigned nextquad(void) { return currQuad; }
 void make_stmt(stmt_t *s) {
 	s->breakList = s->contList = 0;
 }
+
 int newlist(int i) {
 	quads[i].label = 0;
 	return i;
@@ -348,7 +349,3 @@ void patchlist(int list, int label) {
 		list = next;
 	}
 }
-
-struct stmt_t {
-	int breakList, contList;
-};
