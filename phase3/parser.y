@@ -1,5 +1,6 @@
 %{
 	#include "helper.h"
+	#include "functions.h"
 	int yyerror (char* yaccProvidedMessage);
 	extern int yylineno;
 	extern FILE* yyin;
@@ -54,7 +55,7 @@ stmt: expr SEMICOLON
 	| ifstmt 
 	| whilestmt 
 	| forstmt 
-	| returnstmt 
+	| returnstmt
 	| BREAK SEMICOLON{
 		if(!isLastTypeLoop()) printf("ERROR: No loop found in this scope. (line %d)\n",yylineno);
 	}
@@ -72,7 +73,7 @@ expr: assignexpr
 	| expr MUL expr		 {$$ = $1 * $3;}
 	| expr DIV expr		 {$$ = $1 / $3;}
 	| expr MODULO expr	 {$$ = $1 % $3;}
-	| expr GREATER expr	 {$$ = ($1 > $3)?1:0;}
+	| expr GREATER expr	 { $$ = ($1 > $3)?1:0; }
 	| expr GREATER_EQUAL expr {$$ = ($1>=$3)?1:0;}
 	| expr LESS expr	 {$$ = ($1<$3)?1:0;}
 	| expr LESS_EQUAL expr {$$ = ($1<=$3)?1:0;}
@@ -196,10 +197,9 @@ primary: lvalue
 
 lvalue: ID {
 			string var = $1;
-			
 			//lookup without taking into account if there is function in between
 			pair<int,Information> search = lookupTillGlobalScope(var,false);
-			
+		
 			if(search.first==-1){
 				//Not found at all!
 				if(shouldInsert) {
@@ -209,8 +209,8 @@ lvalue: ID {
 					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
 				}	
 			}else{
-				if(search.second.type == USERFUNC || search.second.type == LIBFUNC){
-					printf("1WWWWWe refer to the already existant function %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
+				if(search.second.type == USERFUlkNC || search.second.type == LIBFUNC){
+					printf("We refer to the already existant function %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
 				}else{
 					//In this case the variable should be a variable
 					search = lookupTillGlobalScope(var,true);
@@ -228,30 +228,17 @@ lvalue: ID {
 					}
 				}
 			}
-			/* REMOVE THIS IF EVERYTHING WORKS
-			if(insideCall){
-				pair<int,Information> scopeFound = lookupTillGlobalScope(var,false);
-				if(scopeFound.first==-1){
-					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);	
-				}else {
-					//printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
-				}
-			}else{
-				pair<int,Information> scopeFound = lookupTillGlobalScope(var,true);
-				if(scopeFound.first==-1){
-					if(shouldInsert) { 
-						insertVariable(var, yylineno);
-						//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
-					}else {
-						printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
-					}					
-				}else if(scopeFound.first==-2){
-					printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
-				}else {
-					//printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
-				}
-			}
-			*/
+			/*
+			
+			sym = lookup(id.name);
+			if (sym == nul) { sym = newsymbol(id.name);
+!!!!!!!!!   sym.space = currscopespace();
+			sym.offset = currscopeoffset();
+			inccurrscopeoffset();
+			} lvalue.sval = lvalue_expr(sym);
+
+		   */
+			
 		}
 	  | LOCAL ID { //This part is correct 100%
 			string var = $2;

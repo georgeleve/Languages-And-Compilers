@@ -22,7 +22,7 @@ bison --yacc --defines --output=parser.cpp parser.y && flex --outfile=scanner.cp
 //Makefile command:
 make && ./calc input.txt
 ---------------------------------------------------------------
-TURNIN COMMAND:                 turnin submit2@hy340 phase2
+TURNIN COMMAND:                 turnin submit3@hy340 phase3
 
-VERIFY TURNIN:                    ls -l ~hy340/TURNIN/submit2
+VERIFY TURNIN:                    ls -l ~hy340/TURNIN/submit3
 ---------------------------------------------------------------
