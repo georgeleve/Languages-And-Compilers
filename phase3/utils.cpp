@@ -1,114 +1,10 @@
-#include <assert.h>
-#include <stdio.h>
-#include <string.h>
-#include<stdlib.h>
-#include <bits/stdc++.h>
+#include "utils.h"
 
-#define EXPAND_SIZE 1024
-#define CURR_SIZE 	(total*sizeof(quad))
-#define NEW_SIZE 	(EXPAND_SIZE*sizeof(quad)+CURR_SIZE)
-
-unsigned total = 0;
-unsigned int currQuad = 0;
-
-int tempcounter = 0;
-unsigned programVarOffset = 0;
-unsigned functionLocalOffset = 0;
-unsigned formalArgOffset = 0;
-unsigned scopeSpaceCounter = 1;
-
-// na valoume ta and, or , not
-enum iopcode {
-	assign, 	add,		sub,
-	mul,		divide,		mod,
-	uminus,			if_eq,		if_not_eq,
-	if_lesseq,	if_greatereq,	if_less,
-	if_greater,	call,		param,
-	ret,		getretval,	funcstart,
-	funcend,	jump,		tablecreate,	
-	tablegetelem,	tablesetelem
-};
-
-
-enum scopespace_t {
-	programVar,
-	functionLocal,
-	formalArg
-};
-
-enum symbol_t { 
-	var_s, programfunc_s, libraryfunc_s
-};
-
-enum expr_t {
-	var_e,
-	tableitem_e,
-
-	programfunc_e,
-	libraryfunc_e,
-
-	arithexpr_e,
-	boolexpr_e,
-	assignexpr_e,
-	newtable_e,
-
-	constnum_e,
-	constbool_e,
-	conststring_e,
-
-	nil_e
-};
-
-struct symbol {
-	symbol_t type; 
-	char* name;  //dynamic string
-	scopespace_t space; // originating scope scapce
-	unsigned offset; // offset in scope space
-	unsigned scope; // scope value
-	unsigned line; //source line of declaration
-};
-
-
-// create a vector that is going to store the quad
-struct expr {
-	expr_t			type;
-	symbol*			sym;
-	expr*			index;
-	double 			numConst;
-	char*			strConst;
-	unsigned char	boolConst;
-	expr*			next;
-};
-
-struct quad { //maybe typedef struct quad
-	iopcode op;
-	expr* result;
-	expr* arg1;
-	expr* arg2;
-	unsigned label; //int
-	unsigned line; //int
-};
-
-quad* quads = (quad*) 0;
-vector<quad> quadsArray;
 
 //Call this function inside emit() after initializing the quad
 void addQuadToVector(quad q){
 	quadsArray.push_back(q);
 }
-
-
-struct stmt_t {
-	int breakList, contList;
-};
-
-struct call {
-	expr* elist;
-	unsigned char method;
-	char* name;
-};
-
-
 
 void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, unsigned int line) {
 
@@ -123,13 +19,13 @@ void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, unsigned 
 	q->label 	= label;
 	q->line		= line;
 
-	//  addQuadToVector(q);
+	//addQuadToVector(q);
 
 	// !! find how to print an enum:      https://stackoverflow.com/questions/3168306/print-text-instead-of-value-from-c-enum
 	// printf("New quad with opcode=, result=, arg1=, arg2=, label=", op, result, arg1, arg2, label, line);
 }
 
-/*
+
 
 // Dimiourgoyme kainourio onoma gia tis prosorines metavlhtes
 void newtempname() { return "_t" + tempcounter; }
@@ -364,4 +260,13 @@ void patchlist(int list, int label) {
 		list = next;
 	}
 }
-*/
+
+void newtempname();
+
+void newtemp();
+
+void resettemp();
+
+void currscope();
+
+void lookup(char * name,int scope);

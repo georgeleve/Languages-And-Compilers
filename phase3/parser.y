@@ -1,6 +1,6 @@
 %{
 	#include "helper.h"
-	#include "functions.h"
+	#include "utils.h"
 	int yyerror (char* yaccProvidedMessage);
 	extern int yylineno;
 	extern FILE* yyin;
@@ -18,6 +18,7 @@
 	char* stringval;
 	int intval;
 	float floatval;
+	struct expr* exprval;
 }
 
 %token <stringval> ID
@@ -28,9 +29,9 @@
 %token <stringval> ASSIGN PLUS MINUS MUL DIV MODULO EQUAL NOT_EQUAL PLUS_PLUS MINUS_MINUS GREATER LESS GREATER_EQUAL LESS_EQUAL 
 %token <stringval> LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_PARENTH RIGHT_PARENTH SEMICOLON COMMA COLON DOUBLE_COLON DOT DOT_DOT
 
-%type <intval> expr
 %type <stringval> stmt ifstmt whilestmt forstmt returnstmt block funcdef lvalue primary call objectdef const member
 %type <stringval> elist callsuffix normcall methodcall indexed indexedelem temp_stmt
+%type <exprval> expr
 
 %left ASSIGN
 %left OR
@@ -48,8 +49,8 @@
 %%
 
 program: stmt program 	
-	   |	{}
-       ;
+	|	{}
+    ;
 
 stmt: expr SEMICOLON
 	| ifstmt 
@@ -68,7 +69,7 @@ stmt: expr SEMICOLON
 	;
 
 expr: assignexpr
-	| expr PLUS expr	 { $$ = $1 + $3;}
+	/*| expr PLUS expr	 { $$ = $1 + $3;}
 	| expr MINUS expr	 { $$ = $1 - $3;}
 	| expr MUL expr		 { $$ = $1 * $3;}
 	| expr DIV expr		 { $$ = $1 / $3;}
@@ -80,8 +81,8 @@ expr: assignexpr
 	| expr EQUAL expr		 { $$ = ($1==$3)?1:0;}
 	| expr NOT_EQUAL expr	 {$$ = ($1!=$3)?1:0;}
 	| expr AND expr	   	 {$$ = ($1&&$3)?1:0;}
-	| expr OR expr		 {$$ = ($1||$3)?1:0;}
-	| term
+	| expr OR expr		 {$$ = ($1||$3)?1:0;} */
+	| term 
 	;
 
 term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
@@ -144,11 +145,12 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
 
 assignexpr: ID ASSIGN expr { //This should be correct - This part is done
 			string var = $1;
+			//expr* var3 = $3;
 			pair<int,Information> scopeFound = lookupTillGlobalScope(var,true);
 			//printf("playing with %s (line %d) (scopeFound: %d)\n",var.c_str(),yylineno,scopeFound.first); 
 			if(scopeFound.first==-1){
 				insertVariable(var, yylineno);
-				
+			emit(assign, $3 , NULL, $3, -1, yylineno);
 			/*  if $lvalue ->type = tableitem_e then {
 					emit(tablesetelem, $lvalue, $lvalue->index, $expr);
 					$assignexpr = emit_iftableitem($lvalue); // Will always emit
