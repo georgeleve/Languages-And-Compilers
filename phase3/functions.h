@@ -8,7 +8,6 @@
 #define CURR_SIZE 	(total*sizeof(quad))
 #define NEW_SIZE 	(EXPAND_SIZE*sizeof(quad)+CURR_SIZE)
 
-quad* quads = (quad*) 0;
 unsigned total = 0;
 unsigned int currQuad = 0;
 
@@ -18,24 +17,17 @@ unsigned functionLocalOffset = 0;
 unsigned formalArgOffset = 0;
 unsigned scopeSpaceCounter = 1;
 
-// create a vector that is going to store the quad
-
-struct quad {
-	iopcode op;
-	expr* result;
-	expr* arg1;
-	expr* arg2;
-	unsigned label;
-	unsigned line;
+// na valoume ta and, or , not
+enum iopcode {
+	assign, 	add,		sub,
+	mul,		divide,		mod,
+	uminus,			if_eq,		if_not_eq,
+	if_lesseq,	if_greatereq,	if_less,
+	if_greater,	call,		param,
+	ret,		getretval,	funcstart,
+	funcend,	jump,		tablecreate,	
+	tablegetelem,	tablesetelem
 };
-
-vector<quad> quadsArray;
-
-//Call this function inside emit() after initializing the quad
-void addQuadToVector(quad q){
-	quadsArray.push_back(q);
-}
-
 
 
 enum scopespace_t {
@@ -44,49 +36,8 @@ enum scopespace_t {
 	formalArg
 };
 
-enum sumbol_t { 
+enum symbol_t { 
 	var_s, programfunc_s, libraryfunc_s
-};
-
-enum iopcode {
-    assign, add, sub,
-    mul, div, mod,
-    unimus, and, or,
-    not, if_eq, if_noteq,
-    if_lesseq, if_greatereq, if_less,
-    if_greater, call, param,funprefix,
-    ret, getretval, funcstart,
-    funcend, tablecreate,
-    tablegetelem, tablesetelem
-};
-
-struct stmt_t {
-	int breakList, contList;
-};
-
-struct symbol {
-	symbol_t type; 
-	char* name;  //dynamic string
-	scopespace_t space; // originating scope scapce
-	unsigned offset; // offset in scope space
-	unsigned scope; // scope value
-	unsigned line; //source line of declaration
-};
-
-struct expr {
-	expr_t			type;
-	symbol*			sym;
-	expr*			index;
-	double 			numConst;
-	char*			strConst;
-	unsigned char	boolConst;
-	expr*			next;
-};
-
-struct call {
-	expr* elist;
-	unsigned char method;
-	char* name;
 };
 
 enum expr_t {
@@ -108,6 +59,79 @@ enum expr_t {
 	nil_e
 };
 
+struct symbol {
+	symbol_t type; 
+	char* name;  //dynamic string
+	scopespace_t space; // originating scope scapce
+	unsigned offset; // offset in scope space
+	unsigned scope; // scope value
+	unsigned line; //source line of declaration
+};
+
+
+// create a vector that is going to store the quad
+struct expr {
+	expr_t			type;
+	symbol*			sym;
+	expr*			index;
+	double 			numConst;
+	char*			strConst;
+	unsigned char	boolConst;
+	expr*			next;
+};
+
+struct quad { //maybe typedef struct quad
+	iopcode op;
+	expr* result;
+	expr* arg1;
+	expr* arg2;
+	unsigned label; //int
+	unsigned line; //int
+};
+
+quad* quads = (quad*) 0;
+vector<quad> quadsArray;
+
+//Call this function inside emit() after initializing the quad
+void addQuadToVector(quad q){
+	quadsArray.push_back(q);
+}
+
+
+struct stmt_t {
+	int breakList, contList;
+};
+
+struct call {
+	expr* elist;
+	unsigned char method;
+	char* name;
+};
+
+
+
+void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, unsigned int line) {
+
+	//if (currQuad == total) expand(); 
+	printf("\nmphkeeeeeee\n");
+
+	quad* q 	= quads+currQuad++;
+	q->op 		= op;
+	q->arg1		= arg1;
+	q->arg2		= arg2;
+	q->result	= result;
+	q->label 	= label;
+	q->line		= line;
+
+	//  addQuadToVector(q);
+
+	// !! find how to print an enum:      https://stackoverflow.com/questions/3168306/print-text-instead-of-value-from-c-enum
+	// printf("New quad with opcode=, result=, arg1=, arg2=, label=", op, result, arg1, arg2, label, line);
+}
+
+/*
+
+// Dimiourgoyme kainourio onoma gia tis prosorines metavlhtes
 void newtempname() { return "_t" + tempcounter; }
 
 void resettemp() { tempcounter = 0; }
@@ -149,23 +173,6 @@ void expand (void) {
 	total += EXPAND_SIZE;
 }
 
-void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line) {
-
-	if (currQuad == total) expand(); 
-
-	quad* q 	= quads+currQuad++;
-	q->op 		= op;
-	q->arg1		= arg1;
-	q->arg2		= arg2;
-	q->result	= result;
-	q->label 	= label;
-	q->line		= line;
-
-	//  addQuadToVector(q);
-
-	// !! find how to print an enum:      https://stackoverflow.com/questions/3168306/print-text-instead-of-value-from-c-enum
-	// printf("New quad with opcode=, result=, arg1=, arg2=, label=", op, result, arg1, arg2, label, line);
-}
 
 scopespace_t currScopeSpace(void){
 	if(scopeSpaceCounter == 1)
@@ -357,3 +364,4 @@ void patchlist(int list, int label) {
 		list = next;
 	}
 }
+*/

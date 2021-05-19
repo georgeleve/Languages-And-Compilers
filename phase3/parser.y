@@ -1,6 +1,6 @@
 %{
 	#include "helper.h"
-	//#include "functions.h"
+	#include "functions.h"
 	int yyerror (char* yaccProvidedMessage);
 	extern int yylineno;
 	extern FILE* yyin;
@@ -68,16 +68,16 @@ stmt: expr SEMICOLON
 	;
 
 expr: assignexpr
-	| expr PLUS expr	 {$$ = $1 + $3;}
-	| expr MINUS expr	 {$$ = $1 - $3;}
-	| expr MUL expr		 {$$ = $1 * $3;}
-	| expr DIV expr		 {$$ = $1 / $3;}
-	| expr MODULO expr	 {$$ = $1 % $3;}
+	| expr PLUS expr	 { $$ = $1 + $3;}
+	| expr MINUS expr	 { $$ = $1 - $3;}
+	| expr MUL expr		 { $$ = $1 * $3;}
+	| expr DIV expr		 { $$ = $1 / $3;}
+	| expr MODULO expr	 { $$ = $1 % $3;}
 	| expr GREATER expr	 { $$ = ($1 > $3)?1:0; }
-	| expr GREATER_EQUAL expr {$$ = ($1>=$3)?1:0;}
-	| expr LESS expr	 {$$ = ($1<$3)?1:0;}
-	| expr LESS_EQUAL expr {$$ = ($1<=$3)?1:0;}
-	| expr EQUAL expr		 {$$ = ($1==$3)?1:0;}
+	| expr GREATER_EQUAL expr { $$ = ($1>=$3)?1:0;}
+	| expr LESS expr	 { $$ = ($1<$3)?1:0;}
+	| expr LESS_EQUAL expr { $$ = ($1<=$3)?1:0;}
+	| expr EQUAL expr		 { $$ = ($1==$3)?1:0;}
 	| expr NOT_EQUAL expr	 {$$ = ($1!=$3)?1:0;}
 	| expr AND expr	   	 {$$ = ($1&&$3)?1:0;}
 	| expr OR expr		 {$$ = ($1||$3)?1:0;}
@@ -148,6 +148,23 @@ assignexpr: ID ASSIGN expr { //This should be correct - This part is done
 			//printf("playing with %s (line %d) (scopeFound: %d)\n",var.c_str(),yylineno,scopeFound.first); 
 			if(scopeFound.first==-1){
 				insertVariable(var, yylineno);
+				
+			/*  if $lvalue ->type = tableitem_e then {
+					emit(tablesetelem, $lvalue, $lvalue->index, $expr);
+					$assignexpr = emit_iftableitem($lvalue); // Will always emit
+					$assignexpr->type = assignexpr_e;
+				}
+				else
+				{ */
+					//emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line) {
+					//emit(assign, $3, NULL, $1, -1, yylineno);
+					//$assignexpr = newexpr(var_e);
+					//$assignexpr->sym = newtemp();
+					//emit(assign, $lvalue, NULL, $assignexpr);
+				//}
+
+				
+				
 				//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
 			}else if(scopeFound.first==-2){
 				printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
