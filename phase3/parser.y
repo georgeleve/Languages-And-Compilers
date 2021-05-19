@@ -1,6 +1,6 @@
 %{
 	#include "helper.h"
-	#include "functions.h"
+	//#include "functions.h"
 	int yyerror (char* yaccProvidedMessage);
 	extern int yylineno;
 	extern FILE* yyin;
@@ -209,7 +209,7 @@ lvalue: ID {
 					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
 				}	
 			}else{
-				if(search.second.type == USERFUlkNC || search.second.type == LIBFUNC){
+				if(search.second.type == USERFUNC || search.second.type == LIBFUNC){
 					printf("We refer to the already existant function %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
 				}else{
 					//In this case the variable should be a variable
@@ -224,7 +224,7 @@ lvalue: ID {
 					}else if(search.first==-2){
 						printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
 					}else {
-						printf("2WWWWWe refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
+						printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
 					}
 				}
 			}
@@ -425,7 +425,7 @@ returnstmt:	RETURN SEMICOLON {if(!isInFunction()) printf("Error: This return is 
 int yyerror (char* yaccProvidedMessage) {
 	fprintf(stderr, "%s: at line %d, before token: %s\n", yaccProvidedMessage, yylineno, yytext);
 	fprintf(stderr, "INPUT NOT VALID\n");
-	cout << "EEK, parse error on line " << yylineno << "!  Message: " << yaccProvidedMessage << endl;
+	cout << "Error: parse error on line " << yylineno << "!  Message: " << yaccProvidedMessage << endl;
 	return 0;
 }
 
