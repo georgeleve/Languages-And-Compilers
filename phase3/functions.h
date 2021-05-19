@@ -1,7 +1,8 @@
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
-#include<stdlib.h> 
+#include<stdlib.h>
+#include <bits/stdc++.h>
 
 #define EXPAND_SIZE 1024
 #define CURR_SIZE 	(total*sizeof(quad))
@@ -12,36 +13,40 @@ unsigned total = 0;
 unsigned int currQuad = 0;
 
 int tempcounter = 0;
+unsigned programVarOffset = 0;
+unsigned functionLocalOffset = 0;
+unsigned formalArgOffset = 0;
+unsigned scopeSpaceCounter = 1;
 
-void newtempname() { return "_t" + tempcounter; }
+// create a vector that is going to store the quad
 
-void resettemp() { tempcounter = 0; }
+struct quad {
+	iopcode op;
+	expr* result;
+	expr* arg1;
+	expr* arg2;
+	unsigned label;
+	unsigned line;
+};
 
-void newtemp() {
-	name = newtempname();
-	sym = lookup(name, currscope());
-	
-	if (sym = nil)
-		return newsymbol(name);
-	else
-		return sym;
+vector<quad> quadsArray;
+
+//Call this function inside emit() after initializing the quad
+void addQuadToVector(quad q){
+	quadsArray.push_back(q);
 }
 
-expr* lvalue_expr (symbol *sym) {
-	assert(sym);
-	expr*  e = (expr*) malloc(sizeof(expr));
-	memset(e,0,sizeof(expr));	
-	e->next = (expr*) 0;
-	e->sym = sym;
- 
-	switch(sym->type){
-		case var_s : e->type = var)e; break;
-		case programfunc_s : e->type = programfunc_e : break;
-		case libraryfunc_s : e->type = libraryfunc_e : break;
-		default:assert(0);
-	}
-	return e;
-}
+
+
+enum scopespace_t {
+	programVar,
+	functionLocal,
+	formalArg
+};
+
+enum sumbol_t { 
+	var_s, programfunc_s, libraryfunc_s
+};
 
 enum iopcode {
     assign, add, sub,
@@ -55,17 +60,33 @@ enum iopcode {
     tablegetelem, tablesetelem
 };
 
-struct quad {
-	iopcode op;
-	expr* result;
-	expr* arg1;
-	expr* arg2;
-	unsigned label;
-	unsigned line;
-};
-
 struct stmt_t {
 	int breakList, contList;
+};
+
+struct symbol {
+	symbol_t type; 
+	char* name;  //dynamic string
+	scopespace_t space; // originating scope scapce
+	unsigned offset; // offset in scope space
+	unsigned scope; // scope value
+	unsigned line; //source line of declaration
+};
+
+struct expr {
+	expr_t			type;
+	symbol*			sym;
+	expr*			index;
+	double 			numConst;
+	char*			strConst;
+	unsigned char	boolConst;
+	expr*			next;
+};
+
+struct call {
+	expr* elist;
+	unsigned char method;
+	char* name;
 };
 
 enum expr_t {
@@ -87,15 +108,35 @@ enum expr_t {
 	nil_e
 };
 
-struct expr {
-	expr_t			type;
-	symbol*			sym;
-	expr*			index;
-	double 			numConst;
-	char*			strConst;
-	unsigned char	boolConst;
-	expr*			next;
-};
+void newtempname() { return "_t" + tempcounter; }
+
+void resettemp() { tempcounter = 0; }
+
+void newtemp() {
+	char *name = newtempname();
+	sym = lookup(name, currscope());
+	
+	if (sym == nil)
+		return newsymbol(name);
+	else
+		return sym;
+}
+
+expr* lvalue_expr (symbol *sym) {
+	assert(sym);
+	expr*  e = (expr*) malloc(sizeof(expr));
+	memset(e,0,sizeof(expr));	
+	e->next = (expr*) 0;
+	e->sym = sym;
+ 
+	switch(sym->type){
+		case var_s : e->type = var)e; break;
+		case programfunc_s : e->type = programfunc_e : break;
+		case libraryfunc_s : e->type = libraryfunc_e : break;
+		default:assert(0);
+	}
+	return e;
+}
 
 void expand (void) {
 	assert(total == currQuad);
@@ -112,37 +153,19 @@ void emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, 
 
 	if (currQuad == total) expand(); 
 
-	quad* p 	= quads+currQuad++;
-	//p->op 		= op;
-	p->arg1		= arg1;
-	p->arg2		= arg2;
-	p->result	= result;
-	p->label 	= label;
-	p->line		= line;
+	quad* q 	= quads+currQuad++;
+	q->op 		= op;
+	q->arg1		= arg1;
+	q->arg2		= arg2;
+	q->result	= result;
+	q->label 	= label;
+	q->line		= line;
+
+	//  addQuadToVector(q);
+
+	// !! find how to print an enum:      https://stackoverflow.com/questions/3168306/print-text-instead-of-value-from-c-enum
+	// printf("New quad with opcode=, result=, arg1=, arg2=, label=", op, result, arg1, arg2, label, line);
 }
-
-
-enum scopespace_t {
-	programVar,
-	functionLocal,
-	formalArg
-};
-
-enum sumbol_t { var_s, programfunc_s, libraryfunc_s}
-
-struct symbol {
-	symbol_t type; 
-	char* name;  //dynamic string
-	scopespace_t space; // originating scope scapce
-	unsigned offset; // offset in scope space
-	unsigned scope; // scope value
-	unsigned line; //source line of declaration
-};
-
-unsigned programVarOffset = 0;
-unsigned functionLocalOffset = 0;
-unsigned formalArgOffset = 0;
-unsigned scopeSpaceCounter = 1;
 
 scopespace_t currScopeSpace(void){
 	if(scopeSpaceCounter == 1)
@@ -181,7 +204,7 @@ void exitScopeSpace(void){
 }
 
 // FIX THIS FUNCTION LATER !!!!!!!!!!!!!
-distributetype(int vars, int type) {
+void distributetype(int vars, int type) {
 	for each v in vars do {   
 		if (v.class = pointervar) {
 			v.size = 4;
@@ -191,18 +214,14 @@ distributetype(int vars, int type) {
 			v.size = arraytotal(v.dims)*4;
 		}else{
 			v.size = type.size;
-			v.offset =getcurroffset();
+			v.offset = getcurroffset();
 			inccurroffset(v.size);
 		}
 }
 
-void resetformalargoffset(){
-	formalArgOffset = 0;
-}
+void resetformalargoffset(){ formalArgOffset = 0; };
 
-void resetfunctionlocaloffset(){
-	functionLocalOffset = 0;
-}
+void resetfunctionlocaloffset(){ functionLocalOffset = 0; };
 
 void restorecurrscopeoffset(unsigned n){
 	switch( currscopespace()){
@@ -213,9 +232,7 @@ void restorecurrscopeoffset(unsigned n){
 	}
 }
 
-unsigned int nextquadlabel(void){
-	return currQuad;
-}
+unsigned int nextquadlabel(void){ return currQuad; }
 
 void patchlabel(unsigned quadNo, unsigned label){
 	assert(quadNo < currQuad);
@@ -225,7 +242,8 @@ void patchlabel(unsigned quadNo, unsigned label){
 // FIX THIS LATER
 void dumparguments() {
 	for (local i = 0, local n = totalarguments(); i < n; ++i) {
-		print(argument(i)); print(“\n”); }
+		printf(argument(i));
+		printf("\n"); };
 	}
 }
 
@@ -239,19 +257,19 @@ expr* member_item (expr* lv, char* name) {
 
 expr* newexpr(expr_t t){
   expr* e = (expr*) malloc(sizeof(expr));
-  memset(e,0,sizeof(expr));
+  memset(e, 0, sizeof(expr));
   e->type = t;
   return e;
 }
 
 expr* emit_iftableitem(expr* e){
-	if (e->type !+ tableitem_e)
+	if (e->type != tableitem_e)
 		return e;
 	else {
 		expr* result = newexpr(var_e);
 		result->sym = newtemp();
 		
-		emit("tablegetlem", e, e->index, result); // do I miss a param?
+		emit(tablegetlem, e, e->index, result); // do I miss some params?
 
 		return result;
 	}
@@ -259,8 +277,7 @@ expr* emit_iftableitem(expr* e){
 
 expr *make_call(expr *lv, expr *reversed_elist) {
 	expr *func = emit_iftableitem(lv);
-	while (reversed_elist)
-	{
+	while (reversed_elist) {
 		emit(param, reversed_elist, NULL, NULL);
 		reversed_elist = reversed_elist->next;
 	}
@@ -271,13 +288,7 @@ expr *make_call(expr *lv, expr *reversed_elist) {
 	return result;
 }
 
-struct call {
-	expr* elist;
-	unsigned char method;
-	char* name;
-};
-
-exrp *newexpr_constnum(double i) {
+expr *newexpr_constnum(double i) {
 	expr *e = newexpr(constnum_e);
 	e->numConst = i;
 	return e;
@@ -298,12 +309,9 @@ void check_arith (expr* e, const char* context) {
 	comperror("Illegal expr used in %s!", context);
 }
 
-unsigned int istempname(char *s) {
-	return *s == '_';
-}
-unsigned int istempexpr(expr *e) {
-	return e->sym && istempname(e->sym->name);
-}
+unsigned int istempname(char *s) { return *s == '_'; }
+
+unsigned int istempexpr(expr *e) { return e->sym && istempname(e->sym->name); }
 
 void patchlabel(unsigned quadNo, unsigned label) {
 	assert(quadNo < currQuad && !quads[quadNo].label);
