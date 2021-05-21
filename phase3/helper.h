@@ -11,6 +11,7 @@ enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC};
 typedef struct Information{
 	enum SymbolType type;
 	unsigned int line;
+	//unsigned int offset;
 } Information;
 
 typedef struct PrintToken{
@@ -101,45 +102,55 @@ void insertVariable(string name, unsigned int line){
 	info.type = scope==0?GLOBAL:LOC;
 	info.line = line;
 	activeSymTable[scope].insert({name, info});
+	//info.offset = ?;
 	
 	Information info2;
 	info2.type = scope==0?GLOBAL:LOC;
 	info2.line = line;
 	fullSymTable[scope].push_back({name, info2});
+	//return info;
 }
 
+//Information
 void insertArgument(string name, unsigned int line){
 	Information info;
 	info.type = FORMAL;
 	info.line = line;
 	activeSymTable[scope].insert({name, info});
-	
+	//info.offset = ?;
+
 	Information info2;
 	info2.type = FORMAL;
 	info2.line = line;
 	fullSymTable[scope].push_back({name, info2});
+	//return info;
 }
 
+//Information
 void insertUserFunction(string name, unsigned int line){
 	Information info;
 	info.type = USERFUNC;
 	info.line = line;
 	activeSymTable[scope].insert({name, info});
-	
+	//info.offset = ?;
+
 	Information info2;
 	info2.type = USERFUNC;
 	info2.line = line;
 	fullSymTable[scope].push_back({name, info2});
+	//return info;
 }
 
 bool isSystemFunction(string name){
 	return systemFunctions.find(name) != systemFunctions.end();
 }
 
+// Information
 void globalInsert(string name, enum SymbolType type, unsigned int line){
 	Information info;
 	info.type = type;
 	info.line = line;
+	//info.offset = ;
 	activeSymTable[0].insert({name, info});
 	
 	Information info2;

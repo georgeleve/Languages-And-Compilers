@@ -15,7 +15,10 @@ Terminals unused in grammar
     UMINUS
 
 
+State 32 conflicts: 1 shift/reduce
 State 38 conflicts: 1 shift/reduce
+State 52 conflicts: 5 reduce/reduce
+State 70 conflicts: 5 reduce/reduce
 
 
 Grammar
@@ -48,12 +51,12 @@ Grammar
    21     | lvalue MINUS_MINUS
    22     | primary
 
-   23 assignexpr: ID ASSIGN expr
-   24           | LOCAL ID ASSIGN expr
-   25           | DOUBLE_COLON ID ASSIGN expr
-   26           | ID ASSIGN funcdef
-   27           | LOCAL ID ASSIGN funcdef
-   28           | DOUBLE_COLON ID ASSIGN funcdef
+   23 assignexpr: lvalue ASSIGN expr
+   24           | LOCAL lvalue ASSIGN expr
+   25           | DOUBLE_COLON lvalue ASSIGN expr
+   26           | lvalue ASSIGN funcdef
+   27           | LOCAL lvalue ASSIGN funcdef
+   28           | DOUBLE_COLON lvalue ASSIGN funcdef
    29           | member ASSIGN expr
 
    30 primary: lvalue
@@ -162,7 +165,7 @@ Terminals, with rules where they appear
 
     $end (0) 0
     error (256)
-    ID <stringval> (258) 23 24 25 26 27 28 35 36 37 39 41 49 67 77 78
+    ID <stringval> (258) 35 36 37 39 41 49 67 77 78
     STRING <stringval> (259) 73
     INTEGER <intval> (260) 71
     FLOAT <floatval> (261) 72
@@ -226,15 +229,15 @@ Nonterminals, with rules where they appear
     term (53)
         on left: 15 16 17 18 19 20 21 22
         on right: 14
-    assignexpr (54)
+    assignexpr <stringval> (54)
         on left: 23 24 25 26 27 28 29
         on right: 13
     primary <stringval> (55)
         on left: 30 31 32 33 34
         on right: 22
-    lvalue <stringval> (56)
+    lvalue <exprval> (56)
         on left: 35 36 37 38
-        on right: 18 19 20 21 30 39 40 44
+        on right: 18 19 20 21 23 24 25 26 27 28 30 39 40 44
     member <stringval> (57)
         on left: 39 40 41 42
         on right: 29 38
@@ -388,11 +391,7 @@ State 0
 
 State 1
 
-   23 assignexpr: ID . ASSIGN expr
-   26           | ID . ASSIGN funcdef
    35 lvalue: ID .
-
-    ASSIGN  shift, and go to state 42
 
     $default  reduce using rule 35 (lvalue)
 
@@ -422,7 +421,7 @@ State 5
 
    81 ifstmt: IF . LEFT_PARENTH expr RIGHT_PARENTH $@9 stmt
 
-    LEFT_PARENTH  shift, and go to state 43
+    LEFT_PARENTH  shift, and go to state 42
 
 
 State 6
@@ -431,7 +430,7 @@ State 6
 
     $default  reduce using rule 84 ($@11)
 
-    $@11  go to state 44
+    $@11  go to state 43
 
 
 State 7
@@ -440,7 +439,7 @@ State 7
 
     $default  reduce using rule 87 ($@13)
 
-    $@13  go to state 45
+    $@13  go to state 44
 
 
 State 8
@@ -448,11 +447,11 @@ State 8
    67 funcdef: FUNCTION . ID $@5 LEFT_PARENTH $@6 idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
    70        | FUNCTION . $@7 LEFT_PARENTH $@8 idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
 
-    ID  shift, and go to state 46
+    ID  shift, and go to state 45
 
     $default  reduce using rule 68 ($@7)
 
-    $@7  go to state 47
+    $@7  go to state 46
 
 
 State 9
@@ -460,25 +459,25 @@ State 9
    90 returnstmt: RETURN . SEMICOLON
    92           | RETURN . $@15 expr SEMICOLON
 
-    SEMICOLON  shift, and go to state 48
+    SEMICOLON  shift, and go to state 47
 
     $default  reduce using rule 91 ($@15)
 
-    $@15  go to state 49
+    $@15  go to state 48
 
 
 State 10
 
     8 stmt: BREAK . SEMICOLON
 
-    SEMICOLON  shift, and go to state 50
+    SEMICOLON  shift, and go to state 49
 
 
 State 11
 
     9 stmt: CONTINUE . SEMICOLON
 
-    SEMICOLON  shift, and go to state 51
+    SEMICOLON  shift, and go to state 50
 
 
 State 12
@@ -501,7 +500,7 @@ State 12
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
-    expr        go to state 52
+    expr        go to state 51
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
@@ -514,11 +513,18 @@ State 12
 
 State 13
 
-   24 assignexpr: LOCAL . ID ASSIGN expr
-   27           | LOCAL . ID ASSIGN funcdef
+   24 assignexpr: LOCAL . lvalue ASSIGN expr
+   27           | LOCAL . lvalue ASSIGN funcdef
    36 lvalue: LOCAL . ID
 
-    ID  shift, and go to state 53
+    ID            shift, and go to state 52
+    LOCAL         shift, and go to state 53
+    LEFT_PARENTH  shift, and go to state 54
+    DOUBLE_COLON  shift, and go to state 55
+
+    lvalue  go to state 56
+    member  go to state 57
+    call    go to state 58
 
 
 State 14
@@ -562,7 +568,7 @@ State 17
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
-    expr        go to state 54
+    expr        go to state 59
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
@@ -577,28 +583,28 @@ State 18
 
    18 term: PLUS_PLUS . lvalue
 
-    ID            shift, and go to state 55
-    LOCAL         shift, and go to state 56
-    LEFT_PARENTH  shift, and go to state 57
-    DOUBLE_COLON  shift, and go to state 58
+    ID            shift, and go to state 1
+    LOCAL         shift, and go to state 53
+    LEFT_PARENTH  shift, and go to state 54
+    DOUBLE_COLON  shift, and go to state 55
 
-    lvalue  go to state 59
-    member  go to state 60
-    call    go to state 61
+    lvalue  go to state 60
+    member  go to state 57
+    call    go to state 58
 
 
 State 19
 
    20 term: MINUS_MINUS . lvalue
 
-    ID            shift, and go to state 55
-    LOCAL         shift, and go to state 56
-    LEFT_PARENTH  shift, and go to state 57
-    DOUBLE_COLON  shift, and go to state 58
+    ID            shift, and go to state 1
+    LOCAL         shift, and go to state 53
+    LEFT_PARENTH  shift, and go to state 54
+    DOUBLE_COLON  shift, and go to state 55
 
-    lvalue  go to state 62
-    member  go to state 60
-    call    go to state 61
+    lvalue  go to state 61
+    member  go to state 57
+    call    go to state 58
 
 
 State 20
@@ -607,7 +613,7 @@ State 20
 
     $default  reduce using rule 62 ($@3)
 
-    $@3  go to state 63
+    $@3  go to state 62
 
 
 State 21
@@ -627,24 +633,24 @@ State 21
     MINUS         shift, and go to state 17
     PLUS_PLUS     shift, and go to state 18
     MINUS_MINUS   shift, and go to state 19
-    LEFT_BRACE    shift, and go to state 64
+    LEFT_BRACE    shift, and go to state 63
     LEFT_BRACKET  shift, and go to state 21
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
     $default  reduce using rule 52 (elist)
 
-    expr         go to state 65
+    expr         go to state 64
     term         go to state 28
     assignexpr   go to state 29
     primary      go to state 30
     lvalue       go to state 31
     member       go to state 32
     call         go to state 33
-    elist        go to state 66
+    elist        go to state 65
     objectdef    go to state 34
-    indexed      go to state 67
-    indexedelem  go to state 68
+    indexed      go to state 66
+    indexedelem  go to state 67
     const        go to state 37
 
 
@@ -671,7 +677,7 @@ State 22
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
-    expr        go to state 69
+    expr        go to state 68
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
@@ -679,7 +685,7 @@ State 22
     member      go to state 32
     call        go to state 33
     objectdef   go to state 34
-    funcdef     go to state 70
+    funcdef     go to state 69
     const       go to state 37
 
 
@@ -692,11 +698,18 @@ State 23
 
 State 24
 
-   25 assignexpr: DOUBLE_COLON . ID ASSIGN expr
-   28           | DOUBLE_COLON . ID ASSIGN funcdef
+   25 assignexpr: DOUBLE_COLON . lvalue ASSIGN expr
+   28           | DOUBLE_COLON . lvalue ASSIGN funcdef
    37 lvalue: DOUBLE_COLON . ID
 
-    ID  shift, and go to state 71
+    ID            shift, and go to state 70
+    LOCAL         shift, and go to state 53
+    LEFT_PARENTH  shift, and go to state 54
+    DOUBLE_COLON  shift, and go to state 55
+
+    lvalue  go to state 71
+    member  go to state 57
+    call    go to state 58
 
 
 State 25
@@ -788,23 +801,26 @@ State 31
 
    19 term: lvalue . PLUS_PLUS
    21     | lvalue . MINUS_MINUS
+   23 assignexpr: lvalue . ASSIGN expr
+   26           | lvalue . ASSIGN funcdef
    30 primary: lvalue .
    39 member: lvalue . DOT ID
    40       | lvalue . LEFT_BRACKET expr RIGHT_BRACKET
    44 call: lvalue . callsuffix
 
-    PLUS_PLUS     shift, and go to state 75
-    MINUS_MINUS   shift, and go to state 76
-    LEFT_BRACKET  shift, and go to state 77
-    LEFT_PARENTH  shift, and go to state 78
-    DOT           shift, and go to state 79
-    DOT_DOT       shift, and go to state 80
+    ASSIGN        shift, and go to state 75
+    PLUS_PLUS     shift, and go to state 76
+    MINUS_MINUS   shift, and go to state 77
+    LEFT_BRACKET  shift, and go to state 78
+    LEFT_PARENTH  shift, and go to state 79
+    DOT           shift, and go to state 80
+    DOT_DOT       shift, and go to state 81
 
     $default  reduce using rule 30 (primary)
 
-    callsuffix  go to state 81
-    normcall    go to state 82
-    methodcall  go to state 83
+    callsuffix  go to state 82
+    normcall    go to state 83
+    methodcall  go to state 84
 
 
 State 32
@@ -812,8 +828,9 @@ State 32
    29 assignexpr: member . ASSIGN expr
    38 lvalue: member .
 
-    ASSIGN  shift, and go to state 84
+    ASSIGN  shift, and go to state 85
 
+    ASSIGN    [reduce using rule 38 (lvalue)]
     $default  reduce using rule 38 (lvalue)
 
 
@@ -824,9 +841,9 @@ State 33
    42       | call . LEFT_BRACKET expr RIGHT_BRACKET
    43 call: call . LEFT_PARENTH elist RIGHT_PARENTH
 
-    LEFT_BRACKET  shift, and go to state 85
-    LEFT_PARENTH  shift, and go to state 86
-    DOT           shift, and go to state 87
+    LEFT_BRACKET  shift, and go to state 86
+    LEFT_PARENTH  shift, and go to state 87
+    DOT           shift, and go to state 88
 
     $default  reduce using rule 31 (primary)
 
@@ -864,7 +881,7 @@ State 38
     4 stmt: ifstmt .
    83 ifstmt: ifstmt . ELSE $@10 stmt
 
-    ELSE  shift, and go to state 88
+    ELSE  shift, and go to state 89
 
     ELSE      [reduce using rule 4 (stmt)]
     $default  reduce using rule 4 (stmt)
@@ -893,40 +910,6 @@ State 41
 
 State 42
 
-   23 assignexpr: ID ASSIGN . expr
-   26           | ID ASSIGN . funcdef
-
-    ID            shift, and go to state 1
-    STRING        shift, and go to state 2
-    INTEGER       shift, and go to state 3
-    FLOAT         shift, and go to state 4
-    FUNCTION      shift, and go to state 8
-    NOT           shift, and go to state 12
-    LOCAL         shift, and go to state 13
-    TRUE          shift, and go to state 14
-    FALSE         shift, and go to state 15
-    NIL           shift, and go to state 16
-    MINUS         shift, and go to state 17
-    PLUS_PLUS     shift, and go to state 18
-    MINUS_MINUS   shift, and go to state 19
-    LEFT_BRACKET  shift, and go to state 21
-    LEFT_PARENTH  shift, and go to state 22
-    DOUBLE_COLON  shift, and go to state 24
-
-    expr        go to state 89
-    term        go to state 28
-    assignexpr  go to state 29
-    primary     go to state 30
-    lvalue      go to state 31
-    member      go to state 32
-    call        go to state 33
-    objectdef   go to state 34
-    funcdef     go to state 90
-    const       go to state 37
-
-
-State 43
-
    81 ifstmt: IF LEFT_PARENTH . expr RIGHT_PARENTH $@9 stmt
 
     ID            shift, and go to state 1
@@ -945,7 +928,7 @@ State 43
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
-    expr        go to state 91
+    expr        go to state 90
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
@@ -956,44 +939,44 @@ State 43
     const       go to state 37
 
 
-State 44
+State 43
 
    86 whilestmt: WHILE $@11 . LEFT_PARENTH expr RIGHT_PARENTH $@12 stmt
+
+    LEFT_PARENTH  shift, and go to state 91
+
+
+State 44
+
+   89 forstmt: FOR $@13 . LEFT_PARENTH elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTH $@14 stmt
 
     LEFT_PARENTH  shift, and go to state 92
 
 
 State 45
 
-   89 forstmt: FOR $@13 . LEFT_PARENTH elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTH $@14 stmt
-
-    LEFT_PARENTH  shift, and go to state 93
-
-
-State 46
-
    67 funcdef: FUNCTION ID . $@5 LEFT_PARENTH $@6 idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
 
     $default  reduce using rule 65 ($@5)
 
-    $@5  go to state 94
+    $@5  go to state 93
 
 
-State 47
+State 46
 
    70 funcdef: FUNCTION $@7 . LEFT_PARENTH $@8 idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
 
-    LEFT_PARENTH  shift, and go to state 95
+    LEFT_PARENTH  shift, and go to state 94
 
 
-State 48
+State 47
 
    90 returnstmt: RETURN SEMICOLON .
 
     $default  reduce using rule 90 (returnstmt)
 
 
-State 49
+State 48
 
    92 returnstmt: RETURN $@15 . expr SEMICOLON
 
@@ -1013,7 +996,7 @@ State 49
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
-    expr        go to state 96
+    expr        go to state 95
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
@@ -1024,205 +1007,250 @@ State 49
     const       go to state 37
 
 
-State 50
+State 49
 
     8 stmt: BREAK SEMICOLON .
 
     $default  reduce using rule 8 (stmt)
 
 
-State 51
+State 50
 
     9 stmt: CONTINUE SEMICOLON .
 
     $default  reduce using rule 9 (stmt)
 
 
-State 52
+State 51
 
    17 term: NOT expr .
 
     $default  reduce using rule 17 (term)
 
 
-State 53
-
-   24 assignexpr: LOCAL ID . ASSIGN expr
-   27           | LOCAL ID . ASSIGN funcdef
-   36 lvalue: LOCAL ID .
-
-    ASSIGN  shift, and go to state 97
-
-    $default  reduce using rule 36 (lvalue)
-
-
-State 54
-
-   16 term: MINUS expr .
-
-    $default  reduce using rule 16 (term)
-
-
-State 55
+State 52
 
    35 lvalue: ID .
+   36       | LOCAL ID .
 
-    $default  reduce using rule 35 (lvalue)
+    ASSIGN        reduce using rule 35 (lvalue)
+    ASSIGN        [reduce using rule 36 (lvalue)]
+    LEFT_BRACKET  reduce using rule 35 (lvalue)
+    LEFT_BRACKET  [reduce using rule 36 (lvalue)]
+    LEFT_PARENTH  reduce using rule 35 (lvalue)
+    LEFT_PARENTH  [reduce using rule 36 (lvalue)]
+    DOT           reduce using rule 35 (lvalue)
+    DOT           [reduce using rule 36 (lvalue)]
+    DOT_DOT       reduce using rule 35 (lvalue)
+    DOT_DOT       [reduce using rule 36 (lvalue)]
+    $default      reduce using rule 36 (lvalue)
 
 
-State 56
+State 53
 
    36 lvalue: LOCAL . ID
 
-    ID  shift, and go to state 98
+    ID  shift, and go to state 96
 
 
-State 57
+State 54
 
    45 call: LEFT_PARENTH . funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH
 
     FUNCTION  shift, and go to state 8
 
-    funcdef  go to state 99
+    funcdef  go to state 97
 
 
-State 58
+State 55
 
    37 lvalue: DOUBLE_COLON . ID
 
-    ID  shift, and go to state 100
+    ID  shift, and go to state 98
 
 
-State 59
+State 56
 
-   18 term: PLUS_PLUS lvalue .
+   24 assignexpr: LOCAL lvalue . ASSIGN expr
+   27           | LOCAL lvalue . ASSIGN funcdef
    39 member: lvalue . DOT ID
    40       | lvalue . LEFT_BRACKET expr RIGHT_BRACKET
    44 call: lvalue . callsuffix
 
-    LEFT_BRACKET  shift, and go to state 77
-    LEFT_PARENTH  shift, and go to state 78
-    DOT           shift, and go to state 79
-    DOT_DOT       shift, and go to state 80
+    ASSIGN        shift, and go to state 99
+    LEFT_BRACKET  shift, and go to state 78
+    LEFT_PARENTH  shift, and go to state 79
+    DOT           shift, and go to state 80
+    DOT_DOT       shift, and go to state 81
 
-    $default  reduce using rule 18 (term)
-
-    callsuffix  go to state 81
-    normcall    go to state 82
-    methodcall  go to state 83
+    callsuffix  go to state 82
+    normcall    go to state 83
+    methodcall  go to state 84
 
 
-State 60
+State 57
 
    38 lvalue: member .
 
     $default  reduce using rule 38 (lvalue)
 
 
-State 61
+State 58
 
    41 member: call . DOT ID
    42       | call . LEFT_BRACKET expr RIGHT_BRACKET
    43 call: call . LEFT_PARENTH elist RIGHT_PARENTH
 
-    LEFT_BRACKET  shift, and go to state 85
-    LEFT_PARENTH  shift, and go to state 86
-    DOT           shift, and go to state 87
+    LEFT_BRACKET  shift, and go to state 86
+    LEFT_PARENTH  shift, and go to state 87
+    DOT           shift, and go to state 88
 
 
-State 62
+State 59
+
+   16 term: MINUS expr .
+
+    $default  reduce using rule 16 (term)
+
+
+State 60
+
+   18 term: PLUS_PLUS lvalue .
+   39 member: lvalue . DOT ID
+   40       | lvalue . LEFT_BRACKET expr RIGHT_BRACKET
+   44 call: lvalue . callsuffix
+
+    LEFT_BRACKET  shift, and go to state 78
+    LEFT_PARENTH  shift, and go to state 79
+    DOT           shift, and go to state 80
+    DOT_DOT       shift, and go to state 81
+
+    $default  reduce using rule 18 (term)
+
+    callsuffix  go to state 82
+    normcall    go to state 83
+    methodcall  go to state 84
+
+
+State 61
 
    20 term: MINUS_MINUS lvalue .
    39 member: lvalue . DOT ID
    40       | lvalue . LEFT_BRACKET expr RIGHT_BRACKET
    44 call: lvalue . callsuffix
 
-    LEFT_BRACKET  shift, and go to state 77
-    LEFT_PARENTH  shift, and go to state 78
-    DOT           shift, and go to state 79
-    DOT_DOT       shift, and go to state 80
+    LEFT_BRACKET  shift, and go to state 78
+    LEFT_PARENTH  shift, and go to state 79
+    DOT           shift, and go to state 80
+    DOT_DOT       shift, and go to state 81
 
     $default  reduce using rule 20 (term)
 
-    callsuffix  go to state 81
-    normcall    go to state 82
-    methodcall  go to state 83
+    callsuffix  go to state 82
+    normcall    go to state 83
+    methodcall  go to state 84
 
 
-State 63
+State 62
 
    64 block: LEFT_BRACE $@3 . temp_stmt $@4 RIGHT_BRACE
 
     $default  reduce using rule 61 (temp_stmt)
 
-    temp_stmt  go to state 101
+    temp_stmt  go to state 100
 
 
-State 64
+State 63
 
    59 indexedelem: LEFT_BRACE . $@1 expr COLON $@2 expr RIGHT_BRACE
 
     $default  reduce using rule 57 ($@1)
 
-    $@1  go to state 102
+    $@1  go to state 101
 
 
-State 65
+State 64
 
    50 elist: expr .
 
     $default  reduce using rule 50 (elist)
 
 
-State 66
+State 65
 
    51 elist: elist . COMMA expr
    53 objectdef: LEFT_BRACKET elist . RIGHT_BRACKET
 
-    RIGHT_BRACKET  shift, and go to state 103
-    COMMA          shift, and go to state 104
+    RIGHT_BRACKET  shift, and go to state 102
+    COMMA          shift, and go to state 103
 
 
-State 67
+State 66
 
    54 objectdef: LEFT_BRACKET indexed . RIGHT_BRACKET
    56 indexed: indexed . COMMA indexedelem
 
-    RIGHT_BRACKET  shift, and go to state 105
-    COMMA          shift, and go to state 106
+    RIGHT_BRACKET  shift, and go to state 104
+    COMMA          shift, and go to state 105
 
 
-State 68
+State 67
 
    55 indexed: indexedelem .
 
     $default  reduce using rule 55 (indexed)
 
 
-State 69
+State 68
 
    15 term: LEFT_PARENTH expr . RIGHT_PARENTH
+
+    RIGHT_PARENTH  shift, and go to state 106
+
+
+State 69
+
+   33 primary: LEFT_PARENTH funcdef . RIGHT_PARENTH
+   45 call: LEFT_PARENTH funcdef . RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH
 
     RIGHT_PARENTH  shift, and go to state 107
 
 
 State 70
 
-   33 primary: LEFT_PARENTH funcdef . RIGHT_PARENTH
-   45 call: LEFT_PARENTH funcdef . RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH
+   35 lvalue: ID .
+   37       | DOUBLE_COLON ID .
 
-    RIGHT_PARENTH  shift, and go to state 108
+    ASSIGN        reduce using rule 35 (lvalue)
+    ASSIGN        [reduce using rule 37 (lvalue)]
+    LEFT_BRACKET  reduce using rule 35 (lvalue)
+    LEFT_BRACKET  [reduce using rule 37 (lvalue)]
+    LEFT_PARENTH  reduce using rule 35 (lvalue)
+    LEFT_PARENTH  [reduce using rule 37 (lvalue)]
+    DOT           reduce using rule 35 (lvalue)
+    DOT           [reduce using rule 37 (lvalue)]
+    DOT_DOT       reduce using rule 35 (lvalue)
+    DOT_DOT       [reduce using rule 37 (lvalue)]
+    $default      reduce using rule 37 (lvalue)
 
 
 State 71
 
-   25 assignexpr: DOUBLE_COLON ID . ASSIGN expr
-   28           | DOUBLE_COLON ID . ASSIGN funcdef
-   37 lvalue: DOUBLE_COLON ID .
+   25 assignexpr: DOUBLE_COLON lvalue . ASSIGN expr
+   28           | DOUBLE_COLON lvalue . ASSIGN funcdef
+   39 member: lvalue . DOT ID
+   40       | lvalue . LEFT_BRACKET expr RIGHT_BRACKET
+   44 call: lvalue . callsuffix
 
-    ASSIGN  shift, and go to state 109
+    ASSIGN        shift, and go to state 108
+    LEFT_BRACKET  shift, and go to state 78
+    LEFT_PARENTH  shift, and go to state 79
+    DOT           shift, and go to state 80
+    DOT_DOT       shift, and go to state 81
 
-    $default  reduce using rule 37 (lvalue)
+    callsuffix  go to state 82
+    normcall    go to state 83
+    methodcall  go to state 84
 
 
 State 72
@@ -1248,19 +1276,53 @@ State 74
 
 State 75
 
+   23 assignexpr: lvalue ASSIGN . expr
+   26           | lvalue ASSIGN . funcdef
+
+    ID            shift, and go to state 1
+    STRING        shift, and go to state 2
+    INTEGER       shift, and go to state 3
+    FLOAT         shift, and go to state 4
+    FUNCTION      shift, and go to state 8
+    NOT           shift, and go to state 12
+    LOCAL         shift, and go to state 13
+    TRUE          shift, and go to state 14
+    FALSE         shift, and go to state 15
+    NIL           shift, and go to state 16
+    MINUS         shift, and go to state 17
+    PLUS_PLUS     shift, and go to state 18
+    MINUS_MINUS   shift, and go to state 19
+    LEFT_BRACKET  shift, and go to state 21
+    LEFT_PARENTH  shift, and go to state 22
+    DOUBLE_COLON  shift, and go to state 24
+
+    expr        go to state 109
+    term        go to state 28
+    assignexpr  go to state 29
+    primary     go to state 30
+    lvalue      go to state 31
+    member      go to state 32
+    call        go to state 33
+    objectdef   go to state 34
+    funcdef     go to state 110
+    const       go to state 37
+
+
+State 76
+
    19 term: lvalue PLUS_PLUS .
 
     $default  reduce using rule 19 (term)
 
 
-State 76
+State 77
 
    21 term: lvalue MINUS_MINUS .
 
     $default  reduce using rule 21 (term)
 
 
-State 77
+State 78
 
    40 member: lvalue LEFT_BRACKET . expr RIGHT_BRACKET
 
@@ -1280,7 +1342,7 @@ State 77
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
-    expr        go to state 110
+    expr        go to state 111
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
@@ -1291,7 +1353,7 @@ State 77
     const       go to state 37
 
 
-State 78
+State 79
 
    48 normcall: LEFT_PARENTH . elist RIGHT_PARENTH
 
@@ -1313,87 +1375,56 @@ State 78
 
     $default  reduce using rule 52 (elist)
 
-    expr        go to state 65
+    expr        go to state 64
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
     lvalue      go to state 31
     member      go to state 32
     call        go to state 33
-    elist       go to state 111
+    elist       go to state 112
     objectdef   go to state 34
     const       go to state 37
 
 
-State 79
-
-   39 member: lvalue DOT . ID
-
-    ID  shift, and go to state 112
-
-
 State 80
 
-   49 methodcall: DOT_DOT . ID LEFT_PARENTH elist RIGHT_PARENTH
+   39 member: lvalue DOT . ID
 
     ID  shift, and go to state 113
 
 
 State 81
 
+   49 methodcall: DOT_DOT . ID LEFT_PARENTH elist RIGHT_PARENTH
+
+    ID  shift, and go to state 114
+
+
+State 82
+
    44 call: lvalue callsuffix .
 
     $default  reduce using rule 44 (call)
 
 
-State 82
+State 83
 
    46 callsuffix: normcall .
 
     $default  reduce using rule 46 (callsuffix)
 
 
-State 83
+State 84
 
    47 callsuffix: methodcall .
 
     $default  reduce using rule 47 (callsuffix)
 
 
-State 84
-
-   29 assignexpr: member ASSIGN . expr
-
-    ID            shift, and go to state 1
-    STRING        shift, and go to state 2
-    INTEGER       shift, and go to state 3
-    FLOAT         shift, and go to state 4
-    NOT           shift, and go to state 12
-    LOCAL         shift, and go to state 13
-    TRUE          shift, and go to state 14
-    FALSE         shift, and go to state 15
-    NIL           shift, and go to state 16
-    MINUS         shift, and go to state 17
-    PLUS_PLUS     shift, and go to state 18
-    MINUS_MINUS   shift, and go to state 19
-    LEFT_BRACKET  shift, and go to state 21
-    LEFT_PARENTH  shift, and go to state 22
-    DOUBLE_COLON  shift, and go to state 24
-
-    expr        go to state 114
-    term        go to state 28
-    assignexpr  go to state 29
-    primary     go to state 30
-    lvalue      go to state 31
-    member      go to state 32
-    call        go to state 33
-    objectdef   go to state 34
-    const       go to state 37
-
-
 State 85
 
-   42 member: call LEFT_BRACKET . expr RIGHT_BRACKET
+   29 assignexpr: member ASSIGN . expr
 
     ID            shift, and go to state 1
     STRING        shift, and go to state 2
@@ -1424,6 +1455,37 @@ State 85
 
 State 86
 
+   42 member: call LEFT_BRACKET . expr RIGHT_BRACKET
+
+    ID            shift, and go to state 1
+    STRING        shift, and go to state 2
+    INTEGER       shift, and go to state 3
+    FLOAT         shift, and go to state 4
+    NOT           shift, and go to state 12
+    LOCAL         shift, and go to state 13
+    TRUE          shift, and go to state 14
+    FALSE         shift, and go to state 15
+    NIL           shift, and go to state 16
+    MINUS         shift, and go to state 17
+    PLUS_PLUS     shift, and go to state 18
+    MINUS_MINUS   shift, and go to state 19
+    LEFT_BRACKET  shift, and go to state 21
+    LEFT_PARENTH  shift, and go to state 22
+    DOUBLE_COLON  shift, and go to state 24
+
+    expr        go to state 116
+    term        go to state 28
+    assignexpr  go to state 29
+    primary     go to state 30
+    lvalue      go to state 31
+    member      go to state 32
+    call        go to state 33
+    objectdef   go to state 34
+    const       go to state 37
+
+
+State 87
+
    43 call: call LEFT_PARENTH . elist RIGHT_PARENTH
 
     ID            shift, and go to state 1
@@ -1444,56 +1506,42 @@ State 86
 
     $default  reduce using rule 52 (elist)
 
-    expr        go to state 65
+    expr        go to state 64
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
     lvalue      go to state 31
     member      go to state 32
     call        go to state 33
-    elist       go to state 116
+    elist       go to state 117
     objectdef   go to state 34
     const       go to state 37
 
 
-State 87
+State 88
 
    41 member: call DOT . ID
 
-    ID  shift, and go to state 117
+    ID  shift, and go to state 118
 
 
-State 88
+State 89
 
    83 ifstmt: ifstmt ELSE . $@10 stmt
 
     $default  reduce using rule 82 ($@10)
 
-    $@10  go to state 118
-
-
-State 89
-
-   23 assignexpr: ID ASSIGN expr .
-
-    $default  reduce using rule 23 (assignexpr)
+    $@10  go to state 119
 
 
 State 90
 
-   26 assignexpr: ID ASSIGN funcdef .
+   81 ifstmt: IF LEFT_PARENTH expr . RIGHT_PARENTH $@9 stmt
 
-    $default  reduce using rule 26 (assignexpr)
+    RIGHT_PARENTH  shift, and go to state 120
 
 
 State 91
-
-   81 ifstmt: IF LEFT_PARENTH expr . RIGHT_PARENTH $@9 stmt
-
-    RIGHT_PARENTH  shift, and go to state 119
-
-
-State 92
 
    86 whilestmt: WHILE $@11 LEFT_PARENTH . expr RIGHT_PARENTH $@12 stmt
 
@@ -1513,7 +1561,7 @@ State 92
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
-    expr        go to state 120
+    expr        go to state 121
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
@@ -1524,7 +1572,7 @@ State 92
     const       go to state 37
 
 
-State 93
+State 92
 
    89 forstmt: FOR $@13 LEFT_PARENTH . elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTH $@14 stmt
 
@@ -1546,45 +1594,66 @@ State 93
 
     $default  reduce using rule 52 (elist)
 
-    expr        go to state 65
+    expr        go to state 64
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
     lvalue      go to state 31
     member      go to state 32
     call        go to state 33
-    elist       go to state 121
+    elist       go to state 122
     objectdef   go to state 34
     const       go to state 37
 
 
-State 94
+State 93
 
    67 funcdef: FUNCTION ID $@5 . LEFT_PARENTH $@6 idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
 
-    LEFT_PARENTH  shift, and go to state 122
+    LEFT_PARENTH  shift, and go to state 123
 
 
-State 95
+State 94
 
    70 funcdef: FUNCTION $@7 LEFT_PARENTH . $@8 idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
 
     $default  reduce using rule 69 ($@8)
 
-    $@8  go to state 123
+    $@8  go to state 124
+
+
+State 95
+
+   92 returnstmt: RETURN $@15 expr . SEMICOLON
+
+    SEMICOLON  shift, and go to state 125
 
 
 State 96
 
-   92 returnstmt: RETURN $@15 expr . SEMICOLON
+   36 lvalue: LOCAL ID .
 
-    SEMICOLON  shift, and go to state 124
+    $default  reduce using rule 36 (lvalue)
 
 
 State 97
 
-   24 assignexpr: LOCAL ID ASSIGN . expr
-   27           | LOCAL ID ASSIGN . funcdef
+   45 call: LEFT_PARENTH funcdef . RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH
+
+    RIGHT_PARENTH  shift, and go to state 126
+
+
+State 98
+
+   37 lvalue: DOUBLE_COLON ID .
+
+    $default  reduce using rule 37 (lvalue)
+
+
+State 99
+
+   24 assignexpr: LOCAL lvalue ASSIGN . expr
+   27           | LOCAL lvalue ASSIGN . funcdef
 
     ID            shift, and go to state 1
     STRING        shift, and go to state 2
@@ -1603,7 +1672,7 @@ State 97
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
-    expr        go to state 125
+    expr        go to state 127
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
@@ -1611,32 +1680,11 @@ State 97
     member      go to state 32
     call        go to state 33
     objectdef   go to state 34
-    funcdef     go to state 126
+    funcdef     go to state 128
     const       go to state 37
 
 
-State 98
-
-   36 lvalue: LOCAL ID .
-
-    $default  reduce using rule 36 (lvalue)
-
-
-State 99
-
-   45 call: LEFT_PARENTH funcdef . RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH
-
-    RIGHT_PARENTH  shift, and go to state 127
-
-
 State 100
-
-   37 lvalue: DOUBLE_COLON ID .
-
-    $default  reduce using rule 37 (lvalue)
-
-
-State 101
 
    60 temp_stmt: temp_stmt . stmt
    64 block: LEFT_BRACE $@3 temp_stmt . $@4 RIGHT_BRACE
@@ -1668,7 +1716,7 @@ State 101
 
     $default  reduce using rule 63 ($@4)
 
-    stmt        go to state 128
+    stmt        go to state 129
     expr        go to state 27
     term        go to state 28
     assignexpr  go to state 29
@@ -1678,7 +1726,7 @@ State 101
     call        go to state 33
     objectdef   go to state 34
     block       go to state 35
-    $@4         go to state 129
+    $@4         go to state 130
     funcdef     go to state 36
     const       go to state 37
     ifstmt      go to state 38
@@ -1687,47 +1735,9 @@ State 101
     returnstmt  go to state 41
 
 
-State 102
+State 101
 
    59 indexedelem: LEFT_BRACE $@1 . expr COLON $@2 expr RIGHT_BRACE
-
-    ID            shift, and go to state 1
-    STRING        shift, and go to state 2
-    INTEGER       shift, and go to state 3
-    FLOAT         shift, and go to state 4
-    NOT           shift, and go to state 12
-    LOCAL         shift, and go to state 13
-    TRUE          shift, and go to state 14
-    FALSE         shift, and go to state 15
-    NIL           shift, and go to state 16
-    MINUS         shift, and go to state 17
-    PLUS_PLUS     shift, and go to state 18
-    MINUS_MINUS   shift, and go to state 19
-    LEFT_BRACKET  shift, and go to state 21
-    LEFT_PARENTH  shift, and go to state 22
-    DOUBLE_COLON  shift, and go to state 24
-
-    expr        go to state 130
-    term        go to state 28
-    assignexpr  go to state 29
-    primary     go to state 30
-    lvalue      go to state 31
-    member      go to state 32
-    call        go to state 33
-    objectdef   go to state 34
-    const       go to state 37
-
-
-State 103
-
-   53 objectdef: LEFT_BRACKET elist RIGHT_BRACKET .
-
-    $default  reduce using rule 53 (objectdef)
-
-
-State 104
-
-   51 elist: elist COMMA . expr
 
     ID            shift, and go to state 1
     STRING        shift, and go to state 2
@@ -1756,43 +1766,81 @@ State 104
     const       go to state 37
 
 
-State 105
+State 102
+
+   53 objectdef: LEFT_BRACKET elist RIGHT_BRACKET .
+
+    $default  reduce using rule 53 (objectdef)
+
+
+State 103
+
+   51 elist: elist COMMA . expr
+
+    ID            shift, and go to state 1
+    STRING        shift, and go to state 2
+    INTEGER       shift, and go to state 3
+    FLOAT         shift, and go to state 4
+    NOT           shift, and go to state 12
+    LOCAL         shift, and go to state 13
+    TRUE          shift, and go to state 14
+    FALSE         shift, and go to state 15
+    NIL           shift, and go to state 16
+    MINUS         shift, and go to state 17
+    PLUS_PLUS     shift, and go to state 18
+    MINUS_MINUS   shift, and go to state 19
+    LEFT_BRACKET  shift, and go to state 21
+    LEFT_PARENTH  shift, and go to state 22
+    DOUBLE_COLON  shift, and go to state 24
+
+    expr        go to state 132
+    term        go to state 28
+    assignexpr  go to state 29
+    primary     go to state 30
+    lvalue      go to state 31
+    member      go to state 32
+    call        go to state 33
+    objectdef   go to state 34
+    const       go to state 37
+
+
+State 104
 
    54 objectdef: LEFT_BRACKET indexed RIGHT_BRACKET .
 
     $default  reduce using rule 54 (objectdef)
 
 
-State 106
+State 105
 
    56 indexed: indexed COMMA . indexedelem
 
-    LEFT_BRACE  shift, and go to state 64
+    LEFT_BRACE  shift, and go to state 63
 
-    indexedelem  go to state 132
+    indexedelem  go to state 133
 
 
-State 107
+State 106
 
    15 term: LEFT_PARENTH expr RIGHT_PARENTH .
 
     $default  reduce using rule 15 (term)
 
 
-State 108
+State 107
 
    33 primary: LEFT_PARENTH funcdef RIGHT_PARENTH .
    45 call: LEFT_PARENTH funcdef RIGHT_PARENTH . LEFT_PARENTH elist RIGHT_PARENTH
 
-    LEFT_PARENTH  shift, and go to state 133
+    LEFT_PARENTH  shift, and go to state 134
 
     $default  reduce using rule 33 (primary)
 
 
-State 109
+State 108
 
-   25 assignexpr: DOUBLE_COLON ID ASSIGN . expr
-   28           | DOUBLE_COLON ID ASSIGN . funcdef
+   25 assignexpr: DOUBLE_COLON lvalue ASSIGN . expr
+   28           | DOUBLE_COLON lvalue ASSIGN . funcdef
 
     ID            shift, and go to state 1
     STRING        shift, and go to state 2
@@ -1811,7 +1859,7 @@ State 109
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
-    expr        go to state 134
+    expr        go to state 135
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
@@ -1819,71 +1867,85 @@ State 109
     member      go to state 32
     call        go to state 33
     objectdef   go to state 34
-    funcdef     go to state 135
+    funcdef     go to state 136
     const       go to state 37
+
+
+State 109
+
+   23 assignexpr: lvalue ASSIGN expr .
+
+    $default  reduce using rule 23 (assignexpr)
 
 
 State 110
 
-   40 member: lvalue LEFT_BRACKET expr . RIGHT_BRACKET
+   26 assignexpr: lvalue ASSIGN funcdef .
 
-    RIGHT_BRACKET  shift, and go to state 136
+    $default  reduce using rule 26 (assignexpr)
 
 
 State 111
 
-   48 normcall: LEFT_PARENTH elist . RIGHT_PARENTH
-   51 elist: elist . COMMA expr
+   40 member: lvalue LEFT_BRACKET expr . RIGHT_BRACKET
 
-    RIGHT_PARENTH  shift, and go to state 137
-    COMMA          shift, and go to state 104
+    RIGHT_BRACKET  shift, and go to state 137
 
 
 State 112
+
+   48 normcall: LEFT_PARENTH elist . RIGHT_PARENTH
+   51 elist: elist . COMMA expr
+
+    RIGHT_PARENTH  shift, and go to state 138
+    COMMA          shift, and go to state 103
+
+
+State 113
 
    39 member: lvalue DOT ID .
 
     $default  reduce using rule 39 (member)
 
 
-State 113
+State 114
 
    49 methodcall: DOT_DOT ID . LEFT_PARENTH elist RIGHT_PARENTH
 
-    LEFT_PARENTH  shift, and go to state 138
+    LEFT_PARENTH  shift, and go to state 139
 
 
-State 114
+State 115
 
    29 assignexpr: member ASSIGN expr .
 
     $default  reduce using rule 29 (assignexpr)
 
 
-State 115
+State 116
 
    42 member: call LEFT_BRACKET expr . RIGHT_BRACKET
 
-    RIGHT_BRACKET  shift, and go to state 139
+    RIGHT_BRACKET  shift, and go to state 140
 
 
-State 116
+State 117
 
    43 call: call LEFT_PARENTH elist . RIGHT_PARENTH
    51 elist: elist . COMMA expr
 
-    RIGHT_PARENTH  shift, and go to state 140
-    COMMA          shift, and go to state 104
+    RIGHT_PARENTH  shift, and go to state 141
+    COMMA          shift, and go to state 103
 
 
-State 117
+State 118
 
    41 member: call DOT ID .
 
     $default  reduce using rule 41 (member)
 
 
-State 118
+State 119
 
    83 ifstmt: ifstmt ELSE $@10 . stmt
 
@@ -1912,7 +1974,7 @@ State 118
     SEMICOLON     shift, and go to state 23
     DOUBLE_COLON  shift, and go to state 24
 
-    stmt        go to state 141
+    stmt        go to state 142
     expr        go to state 27
     term        go to state 28
     assignexpr  go to state 29
@@ -1930,115 +1992,115 @@ State 118
     returnstmt  go to state 41
 
 
-State 119
+State 120
 
    81 ifstmt: IF LEFT_PARENTH expr RIGHT_PARENTH . $@9 stmt
 
     $default  reduce using rule 80 ($@9)
 
-    $@9  go to state 142
-
-
-State 120
-
-   86 whilestmt: WHILE $@11 LEFT_PARENTH expr . RIGHT_PARENTH $@12 stmt
-
-    RIGHT_PARENTH  shift, and go to state 143
+    $@9  go to state 143
 
 
 State 121
 
-   51 elist: elist . COMMA expr
-   89 forstmt: FOR $@13 LEFT_PARENTH elist . SEMICOLON expr SEMICOLON elist RIGHT_PARENTH $@14 stmt
+   86 whilestmt: WHILE $@11 LEFT_PARENTH expr . RIGHT_PARENTH $@12 stmt
 
-    SEMICOLON  shift, and go to state 144
-    COMMA      shift, and go to state 104
+    RIGHT_PARENTH  shift, and go to state 144
 
 
 State 122
+
+   51 elist: elist . COMMA expr
+   89 forstmt: FOR $@13 LEFT_PARENTH elist . SEMICOLON expr SEMICOLON elist RIGHT_PARENTH $@14 stmt
+
+    SEMICOLON  shift, and go to state 145
+    COMMA      shift, and go to state 103
+
+
+State 123
 
    67 funcdef: FUNCTION ID $@5 LEFT_PARENTH . $@6 idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
 
     $default  reduce using rule 66 ($@6)
 
-    $@6  go to state 145
-
-
-State 123
-
-   70 funcdef: FUNCTION $@7 LEFT_PARENTH $@8 . idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
-
-    ID  shift, and go to state 146
-
-    $default  reduce using rule 79 (idlist)
-
-    idlist  go to state 147
+    $@6  go to state 146
 
 
 State 124
+
+   70 funcdef: FUNCTION $@7 LEFT_PARENTH $@8 . idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
+
+    ID  shift, and go to state 147
+
+    $default  reduce using rule 79 (idlist)
+
+    idlist  go to state 148
+
+
+State 125
 
    92 returnstmt: RETURN $@15 expr SEMICOLON .
 
     $default  reduce using rule 92 (returnstmt)
 
 
-State 125
-
-   24 assignexpr: LOCAL ID ASSIGN expr .
-
-    $default  reduce using rule 24 (assignexpr)
-
-
 State 126
 
-   27 assignexpr: LOCAL ID ASSIGN funcdef .
+   45 call: LEFT_PARENTH funcdef RIGHT_PARENTH . LEFT_PARENTH elist RIGHT_PARENTH
 
-    $default  reduce using rule 27 (assignexpr)
+    LEFT_PARENTH  shift, and go to state 134
 
 
 State 127
 
-   45 call: LEFT_PARENTH funcdef RIGHT_PARENTH . LEFT_PARENTH elist RIGHT_PARENTH
+   24 assignexpr: LOCAL lvalue ASSIGN expr .
 
-    LEFT_PARENTH  shift, and go to state 133
+    $default  reduce using rule 24 (assignexpr)
 
 
 State 128
+
+   27 assignexpr: LOCAL lvalue ASSIGN funcdef .
+
+    $default  reduce using rule 27 (assignexpr)
+
+
+State 129
 
    60 temp_stmt: temp_stmt stmt .
 
     $default  reduce using rule 60 (temp_stmt)
 
 
-State 129
+State 130
 
    64 block: LEFT_BRACE $@3 temp_stmt $@4 . RIGHT_BRACE
 
-    RIGHT_BRACE  shift, and go to state 148
-
-
-State 130
-
-   59 indexedelem: LEFT_BRACE $@1 expr . COLON $@2 expr RIGHT_BRACE
-
-    COLON  shift, and go to state 149
+    RIGHT_BRACE  shift, and go to state 149
 
 
 State 131
+
+   59 indexedelem: LEFT_BRACE $@1 expr . COLON $@2 expr RIGHT_BRACE
+
+    COLON  shift, and go to state 150
+
+
+State 132
 
    51 elist: elist COMMA expr .
 
     $default  reduce using rule 51 (elist)
 
 
-State 132
+State 133
 
    56 indexed: indexed COMMA indexedelem .
 
     $default  reduce using rule 56 (indexed)
 
 
-State 133
+State 134
 
    45 call: LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH . elist RIGHT_PARENTH
 
@@ -2060,47 +2122,47 @@ State 133
 
     $default  reduce using rule 52 (elist)
 
-    expr        go to state 65
+    expr        go to state 64
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
     lvalue      go to state 31
     member      go to state 32
     call        go to state 33
-    elist       go to state 150
+    elist       go to state 151
     objectdef   go to state 34
     const       go to state 37
 
 
-State 134
+State 135
 
-   25 assignexpr: DOUBLE_COLON ID ASSIGN expr .
+   25 assignexpr: DOUBLE_COLON lvalue ASSIGN expr .
 
     $default  reduce using rule 25 (assignexpr)
 
 
-State 135
+State 136
 
-   28 assignexpr: DOUBLE_COLON ID ASSIGN funcdef .
+   28 assignexpr: DOUBLE_COLON lvalue ASSIGN funcdef .
 
     $default  reduce using rule 28 (assignexpr)
 
 
-State 136
+State 137
 
    40 member: lvalue LEFT_BRACKET expr RIGHT_BRACKET .
 
     $default  reduce using rule 40 (member)
 
 
-State 137
+State 138
 
    48 normcall: LEFT_PARENTH elist RIGHT_PARENTH .
 
     $default  reduce using rule 48 (normcall)
 
 
-State 138
+State 139
 
    49 methodcall: DOT_DOT ID LEFT_PARENTH . elist RIGHT_PARENTH
 
@@ -2122,40 +2184,40 @@ State 138
 
     $default  reduce using rule 52 (elist)
 
-    expr        go to state 65
+    expr        go to state 64
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
     lvalue      go to state 31
     member      go to state 32
     call        go to state 33
-    elist       go to state 151
+    elist       go to state 152
     objectdef   go to state 34
     const       go to state 37
 
 
-State 139
+State 140
 
    42 member: call LEFT_BRACKET expr RIGHT_BRACKET .
 
     $default  reduce using rule 42 (member)
 
 
-State 140
+State 141
 
    43 call: call LEFT_PARENTH elist RIGHT_PARENTH .
 
     $default  reduce using rule 43 (call)
 
 
-State 141
+State 142
 
    83 ifstmt: ifstmt ELSE $@10 stmt .
 
     $default  reduce using rule 83 (ifstmt)
 
 
-State 142
+State 143
 
    81 ifstmt: IF LEFT_PARENTH expr RIGHT_PARENTH $@9 . stmt
 
@@ -2184,7 +2246,7 @@ State 142
     SEMICOLON     shift, and go to state 23
     DOUBLE_COLON  shift, and go to state 24
 
-    stmt        go to state 152
+    stmt        go to state 153
     expr        go to state 27
     term        go to state 28
     assignexpr  go to state 29
@@ -2202,16 +2264,16 @@ State 142
     returnstmt  go to state 41
 
 
-State 143
+State 144
 
    86 whilestmt: WHILE $@11 LEFT_PARENTH expr RIGHT_PARENTH . $@12 stmt
 
     $default  reduce using rule 85 ($@12)
 
-    $@12  go to state 153
+    $@12  go to state 154
 
 
-State 144
+State 145
 
    89 forstmt: FOR $@13 LEFT_PARENTH elist SEMICOLON . expr SEMICOLON elist RIGHT_PARENTH $@14 stmt
 
@@ -2231,7 +2293,7 @@ State 144
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
-    expr        go to state 154
+    expr        go to state 155
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
@@ -2242,75 +2304,75 @@ State 144
     const       go to state 37
 
 
-State 145
+State 146
 
    67 funcdef: FUNCTION ID $@5 LEFT_PARENTH $@6 . idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
 
-    ID  shift, and go to state 146
+    ID  shift, and go to state 147
 
     $default  reduce using rule 79 (idlist)
 
-    idlist  go to state 155
+    idlist  go to state 156
 
 
-State 146
+State 147
 
    77 idlist: ID .
 
     $default  reduce using rule 77 (idlist)
 
 
-State 147
+State 148
 
    70 funcdef: FUNCTION $@7 LEFT_PARENTH $@8 idlist . RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
    78 idlist: idlist . COMMA ID
 
-    RIGHT_PARENTH  shift, and go to state 156
-    COMMA          shift, and go to state 157
+    RIGHT_PARENTH  shift, and go to state 157
+    COMMA          shift, and go to state 158
 
 
-State 148
+State 149
 
    64 block: LEFT_BRACE $@3 temp_stmt $@4 RIGHT_BRACE .
 
     $default  reduce using rule 64 (block)
 
 
-State 149
+State 150
 
    59 indexedelem: LEFT_BRACE $@1 expr COLON . $@2 expr RIGHT_BRACE
 
     $default  reduce using rule 58 ($@2)
 
-    $@2  go to state 158
-
-
-State 150
-
-   45 call: LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist . RIGHT_PARENTH
-   51 elist: elist . COMMA expr
-
-    RIGHT_PARENTH  shift, and go to state 159
-    COMMA          shift, and go to state 104
+    $@2  go to state 159
 
 
 State 151
 
-   49 methodcall: DOT_DOT ID LEFT_PARENTH elist . RIGHT_PARENTH
+   45 call: LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist . RIGHT_PARENTH
    51 elist: elist . COMMA expr
 
     RIGHT_PARENTH  shift, and go to state 160
-    COMMA          shift, and go to state 104
+    COMMA          shift, and go to state 103
 
 
 State 152
+
+   49 methodcall: DOT_DOT ID LEFT_PARENTH elist . RIGHT_PARENTH
+   51 elist: elist . COMMA expr
+
+    RIGHT_PARENTH  shift, and go to state 161
+    COMMA          shift, and go to state 103
+
+
+State 153
 
    81 ifstmt: IF LEFT_PARENTH expr RIGHT_PARENTH $@9 stmt .
 
     $default  reduce using rule 81 (ifstmt)
 
 
-State 153
+State 154
 
    86 whilestmt: WHILE $@11 LEFT_PARENTH expr RIGHT_PARENTH $@12 . stmt
 
@@ -2339,7 +2401,7 @@ State 153
     SEMICOLON     shift, and go to state 23
     DOUBLE_COLON  shift, and go to state 24
 
-    stmt        go to state 161
+    stmt        go to state 162
     expr        go to state 27
     term        go to state 28
     assignexpr  go to state 29
@@ -2357,37 +2419,37 @@ State 153
     returnstmt  go to state 41
 
 
-State 154
+State 155
 
    89 forstmt: FOR $@13 LEFT_PARENTH elist SEMICOLON expr . SEMICOLON elist RIGHT_PARENTH $@14 stmt
 
-    SEMICOLON  shift, and go to state 162
-
-
-State 155
-
-   67 funcdef: FUNCTION ID $@5 LEFT_PARENTH $@6 idlist . RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
-   78 idlist: idlist . COMMA ID
-
-    RIGHT_PARENTH  shift, and go to state 163
-    COMMA          shift, and go to state 157
+    SEMICOLON  shift, and go to state 163
 
 
 State 156
 
-   70 funcdef: FUNCTION $@7 LEFT_PARENTH $@8 idlist RIGHT_PARENTH . LEFT_BRACE temp_stmt RIGHT_BRACE
+   67 funcdef: FUNCTION ID $@5 LEFT_PARENTH $@6 idlist . RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE
+   78 idlist: idlist . COMMA ID
 
-    LEFT_BRACE  shift, and go to state 164
+    RIGHT_PARENTH  shift, and go to state 164
+    COMMA          shift, and go to state 158
 
 
 State 157
 
-   78 idlist: idlist COMMA . ID
+   70 funcdef: FUNCTION $@7 LEFT_PARENTH $@8 idlist RIGHT_PARENTH . LEFT_BRACE temp_stmt RIGHT_BRACE
 
-    ID  shift, and go to state 165
+    LEFT_BRACE  shift, and go to state 165
 
 
 State 158
+
+   78 idlist: idlist COMMA . ID
+
+    ID  shift, and go to state 166
+
+
+State 159
 
    59 indexedelem: LEFT_BRACE $@1 expr COLON $@2 . expr RIGHT_BRACE
 
@@ -2407,7 +2469,7 @@ State 158
     LEFT_PARENTH  shift, and go to state 22
     DOUBLE_COLON  shift, and go to state 24
 
-    expr        go to state 166
+    expr        go to state 167
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
@@ -2418,28 +2480,28 @@ State 158
     const       go to state 37
 
 
-State 159
+State 160
 
    45 call: LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH .
 
     $default  reduce using rule 45 (call)
 
 
-State 160
+State 161
 
    49 methodcall: DOT_DOT ID LEFT_PARENTH elist RIGHT_PARENTH .
 
     $default  reduce using rule 49 (methodcall)
 
 
-State 161
+State 162
 
    86 whilestmt: WHILE $@11 LEFT_PARENTH expr RIGHT_PARENTH $@12 stmt .
 
     $default  reduce using rule 86 (whilestmt)
 
 
-State 162
+State 163
 
    89 forstmt: FOR $@13 LEFT_PARENTH elist SEMICOLON expr SEMICOLON . elist RIGHT_PARENTH $@14 stmt
 
@@ -2461,67 +2523,67 @@ State 162
 
     $default  reduce using rule 52 (elist)
 
-    expr        go to state 65
+    expr        go to state 64
     term        go to state 28
     assignexpr  go to state 29
     primary     go to state 30
     lvalue      go to state 31
     member      go to state 32
     call        go to state 33
-    elist       go to state 167
+    elist       go to state 168
     objectdef   go to state 34
     const       go to state 37
 
 
-State 163
+State 164
 
    67 funcdef: FUNCTION ID $@5 LEFT_PARENTH $@6 idlist RIGHT_PARENTH . LEFT_BRACE temp_stmt RIGHT_BRACE
 
-    LEFT_BRACE  shift, and go to state 168
+    LEFT_BRACE  shift, and go to state 169
 
 
-State 164
+State 165
 
    70 funcdef: FUNCTION $@7 LEFT_PARENTH $@8 idlist RIGHT_PARENTH LEFT_BRACE . temp_stmt RIGHT_BRACE
 
     $default  reduce using rule 61 (temp_stmt)
 
-    temp_stmt  go to state 169
+    temp_stmt  go to state 170
 
 
-State 165
+State 166
 
    78 idlist: idlist COMMA ID .
 
     $default  reduce using rule 78 (idlist)
 
 
-State 166
+State 167
 
    59 indexedelem: LEFT_BRACE $@1 expr COLON $@2 expr . RIGHT_BRACE
 
-    RIGHT_BRACE  shift, and go to state 170
+    RIGHT_BRACE  shift, and go to state 171
 
 
-State 167
+State 168
 
    51 elist: elist . COMMA expr
    89 forstmt: FOR $@13 LEFT_PARENTH elist SEMICOLON expr SEMICOLON elist . RIGHT_PARENTH $@14 stmt
 
-    RIGHT_PARENTH  shift, and go to state 171
-    COMMA          shift, and go to state 104
+    RIGHT_PARENTH  shift, and go to state 172
+    COMMA          shift, and go to state 103
 
 
-State 168
+State 169
 
    67 funcdef: FUNCTION ID $@5 LEFT_PARENTH $@6 idlist RIGHT_PARENTH LEFT_BRACE . temp_stmt RIGHT_BRACE
 
     $default  reduce using rule 61 (temp_stmt)
 
-    temp_stmt  go to state 172
+    temp_stmt  go to state 173
 
 
-State 169
+State 170
 
    60 temp_stmt: temp_stmt . stmt
    70 funcdef: FUNCTION $@7 LEFT_PARENTH $@8 idlist RIGHT_PARENTH LEFT_BRACE temp_stmt . RIGHT_BRACE
@@ -2546,13 +2608,13 @@ State 169
     PLUS_PLUS     shift, and go to state 18
     MINUS_MINUS   shift, and go to state 19
     LEFT_BRACE    shift, and go to state 20
-    RIGHT_BRACE   shift, and go to state 173
+    RIGHT_BRACE   shift, and go to state 174
     LEFT_BRACKET  shift, and go to state 21
     LEFT_PARENTH  shift, and go to state 22
     SEMICOLON     shift, and go to state 23
     DOUBLE_COLON  shift, and go to state 24
 
-    stmt        go to state 128
+    stmt        go to state 129
     expr        go to state 27
     term        go to state 28
     assignexpr  go to state 29
@@ -2570,23 +2632,23 @@ State 169
     returnstmt  go to state 41
 
 
-State 170
+State 171
 
    59 indexedelem: LEFT_BRACE $@1 expr COLON $@2 expr RIGHT_BRACE .
 
     $default  reduce using rule 59 (indexedelem)
 
 
-State 171
+State 172
 
    89 forstmt: FOR $@13 LEFT_PARENTH elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTH . $@14 stmt
 
     $default  reduce using rule 88 ($@14)
 
-    $@14  go to state 174
+    $@14  go to state 175
 
 
-State 172
+State 173
 
    60 temp_stmt: temp_stmt . stmt
    67 funcdef: FUNCTION ID $@5 LEFT_PARENTH $@6 idlist RIGHT_PARENTH LEFT_BRACE temp_stmt . RIGHT_BRACE
@@ -2611,13 +2673,13 @@ State 172
     PLUS_PLUS     shift, and go to state 18
     MINUS_MINUS   shift, and go to state 19
     LEFT_BRACE    shift, and go to state 20
-    RIGHT_BRACE   shift, and go to state 175
+    RIGHT_BRACE   shift, and go to state 176
     LEFT_BRACKET  shift, and go to state 21
     LEFT_PARENTH  shift, and go to state 22
     SEMICOLON     shift, and go to state 23
     DOUBLE_COLON  shift, and go to state 24
 
-    stmt        go to state 128
+    stmt        go to state 129
     expr        go to state 27
     term        go to state 28
     assignexpr  go to state 29
@@ -2635,14 +2697,14 @@ State 172
     returnstmt  go to state 41
 
 
-State 173
+State 174
 
    70 funcdef: FUNCTION $@7 LEFT_PARENTH $@8 idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE .
 
     $default  reduce using rule 70 (funcdef)
 
 
-State 174
+State 175
 
    89 forstmt: FOR $@13 LEFT_PARENTH elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTH $@14 . stmt
 
@@ -2671,7 +2733,7 @@ State 174
     SEMICOLON     shift, and go to state 23
     DOUBLE_COLON  shift, and go to state 24
 
-    stmt        go to state 176
+    stmt        go to state 177
     expr        go to state 27
     term        go to state 28
     assignexpr  go to state 29
@@ -2689,14 +2751,14 @@ State 174
     returnstmt  go to state 41
 
 
-State 175
+State 176
 
    67 funcdef: FUNCTION ID $@5 LEFT_PARENTH $@6 idlist RIGHT_PARENTH LEFT_BRACE temp_stmt RIGHT_BRACE .
 
     $default  reduce using rule 67 (funcdef)
 
 
-State 176
+State 177
 
    89 forstmt: FOR $@13 LEFT_PARENTH elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTH $@14 stmt .
 

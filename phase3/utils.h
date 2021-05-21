@@ -27,10 +27,9 @@ enum iopcode {
 	if_lesseq,	if_greatereq,	if_less,
 	if_greater,	call,		param,
 	ret,		getretval,	funcstart,
-	funcend,	jump,		tablecreate,	
+	funcend,	jump,		tablecreate,
 	tablegetelem,	tablesetelem
 };
-
 
 enum scopespace_t {
 	programVar,
@@ -58,19 +57,19 @@ enum expr_t {
 };
 
 struct symbol {
-	symbol_t type; 
+	symbol_t type;                                 //to xoyme hdh
 	char* name;  //dynamic string
 	scopespace_t space; // originating scope scapce
-	unsigned offset; // offset in scope space
-	unsigned scope; // scope value
-	unsigned line; //source line of declaration
+	unsigned offset; // offset in scope space      //prepei na to kratame san extra pedio 
+	unsigned scope; // scope value                // to xoume hdh
+	unsigned line; //source line of declaration   //yylineno?
 };
 
 
 // create a vector that is going to store the quad
 struct expr {
 	expr_t			type;
-	symbol*			sym;
+	Information*	sym;
 	expr*			index;
 	double 			numConst;
 	char*			strConst;
@@ -87,8 +86,7 @@ struct quad { //maybe typedef struct quad
 	unsigned line; //int
 };
 
-quad* quads = (quad*) 0;
-vector<quad> quadsArray;
+vector<quad*> quads;
 
 
 struct stmt_t {
@@ -101,22 +99,10 @@ struct call {
 	char* name;
 };
 
-void expand (void) {
-	assert(total == currQuad);
-	quad* p = (quad*) malloc(NEW_SIZE);
-	if(quads){
-		memcpy(p, quads, CURR_SIZE);
-		free(quads);
-	} 
-	quads = p;
-	total += EXPAND_SIZE;
-}
-
 void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, int line) {
-	if (currQuad == total) expand(); 
 	printf("\nMphke sthn emit()\n");
 
-	quad* q		= quads +currQuad++;
+	quad* q = (quad*) malloc(sizeof(quad));
 	
 	q->op 		= op;
 	q->arg1		= arg1;
@@ -126,26 +112,27 @@ void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, int line)
 	q->line		= line;
 
 	quadsCounter++;
-
-	//quadsArray.push_back(q);     
+	quads.push_back(q);
 	// !! find how to print an enum:      https://stackoverflow.com/questions/3168306/print-text-instead-of-value-from-c-enum
 	printf("\n#quad		opcode		result		arg1		arg2		label\n");
 	printf("%d:	  	 %s		 %d		  %d		 %d 		%d\n\n\n", quadsCounter, op, result, arg1, arg2, label);
 }
 
 // Dimiourgoyme kainourio onoma gia tis prosorines metavlhtes
-const char* newtempname() { return "_t" + tempcounter; }
+const string newtempname() { 
+	return "_t" + tempcounter++;
+}
 
 void resettemp() { tempcounter = 0; }
 
-void newtemp() {
-	//char *name = newtempname();
-	//sym = lookup(name, currscope());
-	
-	//if (sym == nil)
-	//	return newsymbol(name);
-	//else
-	//	return sym;
+pair<int,Information> newtemp() {
+	string name = newtempname();
+	pair<int,Information> sym = lookup(name);
+	if (sym.first==-1){
+		insertVariable(name,0);
+		sym = lookup(name);
+	}
+	return sym;
 }
 
 expr* lvalue_expr (symbol *sym) {
@@ -297,8 +284,8 @@ unsigned int istempname(char *s) { return *s == '_'; }
 unsigned int istempexpr(expr *e) { return e->sym && istempname(e->sym->name); }
 
 void patchlabel(unsigned quadNo, unsigned label) {
-	assert(quadNo < currQuad && !quads[quadNo].label);
-	quads[quadNo].label = label;
+	assert(quadNo < currQuad && !quads[quadNo]->label);
+	quads[quadNo]->label = label;
 }
 
 expr *newexpr_constbool(unsigned int b) {
@@ -314,7 +301,7 @@ void make_stmt(stmt_t *s) {
 }
 
 int newlist(int i) {
-	quads[i].label = 0;
+	quads[i]->label = 0;
 	return i;
 }
 
@@ -325,18 +312,18 @@ int mergelist(int l1, int l2) {
 		return l1;
 	else {
 		int i = l1;
-		while (quads[i].label){
-			i = quads[i].label;
+		while (quads[i]->label){
+			i = quads[i]->label;
 		}
-		quads[i].label = l2;
+		quads[i]->label = l2;
 		return l1;
 	}
 }
 
 void patchlist(int list, int label) {
 	while (list) {
-		int next = quads[list].label;
-		quads[list].label = label;
+		int next = quads[list]->label;
+		quads[list]->label = label;
 		list = next;
 	}
 }
