@@ -17,6 +17,8 @@ unsigned functionLocalOffset = 0;
 unsigned formalArgOffset = 0;
 unsigned scopeSpaceCounter = 1;
 
+int quadsCounter = 0;
+
 // na valoume ta and, or , not
 enum iopcode {
 	assign, 	add,		sub,
@@ -99,24 +101,36 @@ struct call {
 	char* name;
 };
 
-//void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, int line);
+void expand (void) {
+	assert(total == currQuad);
+	quad* p = (quad*) malloc(NEW_SIZE);
+	if(quads){
+		memcpy(p, quads, CURR_SIZE);
+		free(quads);
+	} 
+	quads = p;
+	total += EXPAND_SIZE;
+}
 
 void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, int line) {
-	//if (currQuad == total) expand(); 
-	printf("\nmphkeeeeeee\n");
+	if (currQuad == total) expand(); 
+	printf("\nMphke sthn emit()\n");
 
 	quad* q		= quads +currQuad++;
-	/*
+	
 	q->op 		= op;
 	q->arg1		= arg1;
 	q->arg2		= arg2;
 	q->result	= result;
 	q->label 	= label;
-	q->line		= line; */
+	q->line		= line;
+
+	quadsCounter++;
 
 	//quadsArray.push_back(q);     
 	// !! find how to print an enum:      https://stackoverflow.com/questions/3168306/print-text-instead-of-value-from-c-enum
-	// printf("New quad with opcode=, result=, arg1=, arg2=, label=", op, result, arg1, arg2, label, line);
+	printf("\n#quad		opcode		result		arg1		arg2		label\n");
+	printf("%d:	  	 %s		 %d		  %d		 %d 		%d\n\n\n", quadsCounter, op, result, arg1, arg2, label);
 }
 
 // Dimiourgoyme kainourio onoma gia tis prosorines metavlhtes
@@ -149,18 +163,6 @@ expr* lvalue_expr (symbol *sym) {
 	}
 	return e;
 }
-
-void expand (void) {
-	assert(total == currQuad);
-	quad* p = (quad*) malloc(NEW_SIZE);
-	if(quads){
-		memcpy(p, quads, CURR_SIZE);
-		free(quads);
-	} 
-	quads = p;
-	total += EXPAND_SIZE;
-}
-
 
 scopespace_t currScopeSpace(void){
 	if(scopeSpaceCounter == 1)
