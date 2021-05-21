@@ -1,13 +1,6 @@
-#include "utils.h"
+// #include "utils.h"
 
-
-//Call this function inside emit() after initializing the quad
-void addQuadToVector(quad q){
-	quadsArray.push_back(q);
-}
-
-void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, unsigned int line) {
-
+void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, int line) {
 	//if (currQuad == total) expand(); 
 	printf("\nmphkeeeeeee\n");
 
@@ -19,11 +12,11 @@ void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, unsigned 
 	q->label 	= label;
 	q->line		= line;
 
-	//addQuadToVector(q);
-
+	//quadsArray.push_back(q);     
 	// !! find how to print an enum:      https://stackoverflow.com/questions/3168306/print-text-instead-of-value-from-c-enum
 	// printf("New quad with opcode=, result=, arg1=, arg2=, label=", op, result, arg1, arg2, label, line);
 }
+
 
 
 
@@ -261,12 +254,22 @@ void patchlist(int list, int label) {
 	}
 }
 
-void newtempname();
+void newtempname(){
 
-void newtemp();
+}
 
-void resettemp();
+void newtemp(){
 
-void currscope();
+}
 
-void lookup(char * name,int scope);
+void resettemp(){
+
+}
+
+void currscope(){
+
+}
+
+void lookup(char * name, int scope){
+
+}

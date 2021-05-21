@@ -29,6 +29,7 @@
 %token <stringval> ASSIGN PLUS MINUS MUL DIV MODULO EQUAL NOT_EQUAL PLUS_PLUS MINUS_MINUS GREATER LESS GREATER_EQUAL LESS_EQUAL 
 %token <stringval> LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_PARENTH RIGHT_PARENTH SEMICOLON COMMA COLON DOUBLE_COLON DOT DOT_DOT
 
+//%type <intval> expr
 %type <stringval> stmt ifstmt whilestmt forstmt returnstmt block funcdef lvalue primary call objectdef const member
 %type <stringval> elist callsuffix normcall methodcall indexed indexedelem temp_stmt
 %type <exprval> expr
@@ -150,16 +151,9 @@ assignexpr: ID ASSIGN expr { //This should be correct - This part is done
 			//printf("playing with %s (line %d) (scopeFound: %d)\n",var.c_str(),yylineno,scopeFound.first); 
 			if(scopeFound.first==-1){
 				insertVariable(var, yylineno);
-			emit(assign, $3 , NULL, $3, -1, yylineno);
-			/*  if $lvalue ->type = tableitem_e then {
-					emit(tablesetelem, $lvalue, $lvalue->index, $expr);
-					$assignexpr = emit_iftableitem($lvalue); // Will always emit
-					$assignexpr->type = assignexpr_e;
-				}
-				else
-				{ */
-					//emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line) {
-					//emit(assign, $3, NULL, $1, -1, yylineno);
+				//{
+					//emit(iopcode op, expr* arg1, expr* arg2, expr* result, unsigned int label, unsigned int line);
+				    emit(assign, $3, NULL, $3, -1, yylineno);
 					//$assignexpr = newexpr(var_e);
 					//$assignexpr->sym = newtemp();
 					//emit(assign, $lvalue, NULL, $assignexpr);
