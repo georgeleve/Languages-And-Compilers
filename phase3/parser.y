@@ -1,6 +1,5 @@
 %{
 	#include "helper.h"
-	#include "utils.h"
 	int yyerror (char* yaccProvidedMessage);
 	extern int yylineno;
 	extern FILE* yyin;
@@ -30,9 +29,9 @@
 %token <stringval> LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_PARENTH RIGHT_PARENTH SEMICOLON COMMA COLON DOUBLE_COLON DOT DOT_DOT
 
 //%type <intval> expr
-%type <stringval> ifstmt whilestmt forstmt block funcdef
+%type <stringval> ifstmt whilestmt forstmt block
 %type <stringval> callsuffix normcall methodcall temp_stmt
-%type <exprval> expr lvalue assignexpr stmt const primary term member indexedelem indexed objectdef elist call returnstmt
+%type <exprval> expr lvalue assignexpr stmt const primary term member indexedelem indexed objectdef elist returnstmt funcdef funcprefix call
 
 %left ASSIGN
 %left OR
@@ -70,25 +69,92 @@ stmt: expr SEMICOLON
 	;
 
 expr: assignexpr
-/*	| expr PLUS expr	 { $$ = $1 + $3;}
-	| expr MINUS expr	 { $$ = $1 - $3;}
-	| expr MUL expr		 { $$ = $1 * $3;}
-	| expr DIV expr		 { $$ = $1 / $3;}
-	| expr MODULO expr	 { $$ = $1 % $3;}
-	| expr GREATER expr	 { $$ = ($1 > $3)?1:0; }
-	| expr GREATER_EQUAL expr { $$ = ($1>=$3)?1:0;}
-	| expr LESS expr	 { $$ = ($1<$3)?1:0;}
-	| expr LESS_EQUAL expr { $$ = ($1<=$3)?1:0;}
-	| expr EQUAL expr		 { $$ = ($1==$3)?1:0;}
-	| expr NOT_EQUAL expr	 {$$ = ($1!=$3)?1:0;}
-	| expr AND expr	   	 {$$ = ($1&&$3)?1:0;}
-	| expr OR expr		 {$$ = ($1||$3)?1:0;} */
+	| expr PLUS expr	 { 
+		$$ = newexpr(arithexpr_e);
+		$$->sym = newtemp();
+		emit(add, $$, $1, $3, -1 , yylineno);
+	}
+	| expr MINUS expr	 {
+		$$ = newexpr(arithexpr_e);
+		$$->sym = newtemp();
+		emit(sub, $$, $1, $3, -1 , yylineno);
+	}
+	| expr MUL expr		 { 
+		$$ = newexpr(arithexpr_e);
+		$$->sym = newtemp();
+		emit(mul, $$, $1, $3, -1 , yylineno);
+	}
+	| expr DIV expr		 { 
+		$$ = newexpr(arithexpr_e);
+		$$->sym = newtemp();
+		emit(divide, $$, $1, $3, -1, yylineno);
+	}
+	| expr MODULO expr	 { 
+		$$ = newexpr(arithexpr_e);
+		$$->sym = newtemp();
+		emit(mod, $$, $1, $3, -1 , yylineno);
+	}
+	| expr GREATER expr	 { 
+		$$ = newexpr(boolexpr_e);
+		$$->sym = newtemp();
+		emit(if_greater, $$, $1, $3, nextQuad()+3 , yylineno);
+		emit(assign, $$, newexpr_constbool(false), NULL, -1 , yylineno);
+		emit(jump,NULL,NULL,NULL,nextQuad()+2, yylineno);
+		emit(assign, $$, newexpr_constbool(true), NULL, -1 , yylineno);
+	}
+	| expr GREATER_EQUAL expr { 
+		$$ = newexpr(boolexpr_e);
+		$$->sym = newtemp();
+		emit(if_greatereq, $$, $1, $3, nextQuad()+3 , yylineno);
+		emit(assign, $$, newexpr_constbool(false), NULL, -1 , yylineno);
+		emit(jump,NULL,NULL,NULL,nextQuad()+2, yylineno);
+		emit(assign, $$, newexpr_constbool(true), NULL, -1 , yylineno);
+	}
+	| expr LESS expr	 {
+		$$ = newexpr(boolexpr_e);
+		$$->sym = newtemp();
+		emit(if_less, $$, $1, $3, -1 , yylineno);
+	}
+	| expr LESS_EQUAL expr { 
+		$$ = newexpr(boolexpr_e);
+		$$->sym = newtemp();
+		emit(if_lesseq, $$, $1, $3, -1 , yylineno);
+	}
+	| expr EQUAL expr		{ 
+		$$ = newexpr(boolexpr_e);
+		$$->sym = newtemp();
+		emit(if_eq, $$, $1, $3, -1 , yylineno);
+	}
+	| expr NOT_EQUAL expr	 { 
+		$$ = newexpr(boolexpr_e);
+		$$->sym = newtemp();
+		emit(if_not_eq, $$, $1, $3, -1 , yylineno);
+	}
+	| expr AND expr	   	 { 
+		$$ = newexpr(boolexpr_e);
+		$$->sym = newtemp();
+		emit(and_c, $$, $1, $3, -1 , yylineno);
+	}
+	| expr OR expr		 { 
+		$$ = newexpr(boolexpr_e);
+		$$->sym = newtemp();
+		emit(or_c, $$, $1, $3, -1 , yylineno);
+	}
 	| term 
 	;
 
-term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
-	| MINUS expr { printf(" - ");}
-	| NOT expr { printf(" != "); }
+term: LEFT_PARENTH expr RIGHT_PARENTH { $$ = $2;}
+	| MINUS expr { 
+		check_arith($expr,"Minus");
+		$$ = newexpr(arithexpr_e);
+		$$->sym = newtemp();
+		emit(uminus, $$, $expr, NULL, -1 , yylineno);
+	}
+	| NOT expr { 
+		$$ = newexpr(boolexpr_e);
+		$$->sym = newtemp();
+		emit(not_c, $$, $expr, NULL, -1 , yylineno);
+	}
 	| PLUS_PLUS lvalue { 
 				string var = $lvalue->sym->name;///////////////CHECK IF THIS IS VALID!!!!
 				Information* scopeFound = lookupTillGlobalScope(var,true);
@@ -99,7 +165,17 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						printf("Error: Can't use increment operator on function! (line %d)\n", yylineno);
-					} //else printf("Prefix increment operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+					}else{
+						//else printf("Prefix increment operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+						if($lvalue->type == tableitem_e){
+							//complete
+						}else{
+							emit(add, $lvalue, $lvalue, newexpr_constnum(1), -1 , yylineno);
+							$$ = newexpr(arithexpr_e);
+							$$->sym = newtemp();
+							emit(assign, $$, $lvalue, NULL, -1 , yylineno);
+						}
+					}
 				}
 			}
 	| lvalue PLUS_PLUS { 
@@ -112,7 +188,17 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						printf("Error: Can't use increment operator on function! (line %d)\n", yylineno);
-					} //else printf("Suffix increment operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+					} else{
+						//else printf("Suffix increment operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+						$$ = newexpr(arithexpr_e);
+						$$->sym = newtemp();
+						if($lvalue->type == tableitem_e){
+							//complete
+						}else{
+							emit(assign, $$, $lvalue, NULL, -1 , yylineno);
+							emit(add, $lvalue, $lvalue, newexpr_constnum(1), -1 , yylineno);
+						}	
+					}
 				}
 			}
 	| MINUS_MINUS lvalue { 
@@ -125,7 +211,17 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						printf("Error: Can't use decrement operator on function! (line %d)\n", yylineno);
-					} //else printf("Prefix decrement operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+					}else{
+						//else printf("Prefix decrement operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+						if($lvalue->type == tableitem_e){
+							//complete
+						}else{
+							emit(sub, $lvalue, $lvalue, newexpr_constnum(1), -1 , yylineno);
+							$$ = newexpr(arithexpr_e);
+							$$->sym = newtemp();
+							emit(assign, $$, $lvalue, NULL, -1 , yylineno);
+						}
+					}
 				}
 			}
 	| lvalue MINUS_MINUS {
@@ -138,7 +234,17 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						printf("Error: Can't use decrement operator on function! (line %d)\n", yylineno);
-					} //else printf("Suffix decrement operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+					} else{
+						//else printf("Suffix decrement operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+						$$ = newexpr(arithexpr_e);
+						$$->sym = newtemp();
+						if($lvalue->type == tableitem_e){
+							//complete
+						}else{
+							emit(assign, $$, $lvalue, NULL, -1 , yylineno);
+							emit(sub, $lvalue, $lvalue, newexpr_constnum(1), -1 , yylineno);
+						}	
+					}
 				}
 			}
 	| primary
@@ -146,7 +252,7 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
 
 assignexpr: lvalue ASSIGN expr {
 			//expr* var = $lvalue;
-			string var = $lvalue->sym->name;
+			string var = $1->sym->name;
 			Information* scopeFound = lookupTillGlobalScope(var,true);
 			//printf("playing with %s (line %d) (scopeFound: %d)\n",var.c_str(),yylineno,scopeFound.first); 
 			if(scopeFound==NULL){
@@ -157,72 +263,22 @@ assignexpr: lvalue ASSIGN expr {
 				if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 					printf("Error: Can not assign value to function! (line %d)\n", yylineno);
 				}else{
-					emit(assign, $expr, NULL, $lvalue, -1, yylineno);
+					emit(assign, $lvalue, $expr, NULL, -1, yylineno);
 					$assignexpr = newexpr(assignexpr_e);
 					$assignexpr->sym = newtemp();
-					emit(assign, $lvalue, NULL, $assignexpr, -1, yylineno);
+					emit(assign, $assignexpr, $lvalue, NULL, -1, yylineno);
 				}
 			}
 		}
 		 | lvalue ASSIGN funcdef
 		 ;
-/*
-PREVIOUS:
-assignexpr: lvalue ASSIGN expr { //This should be correct - This part is done
-			expr* var = $1;
-			//expr* var3 = $3;
-			pair<int,Information> scopeFound = lookupTillGlobalScope(var,true);
-			//printf("playing with %s (line %d) (scopeFound: %d)\n",var.c_str(),yylineno,scopeFound.first); 
-			if(scopeFound.first==-1){
-				insertVariable(var, yylineno);
-				emit(assign, $expr, NULL, $lvalue, -1, yylineno);
-				$assignexpr = newexpr(assignexpr_e);
-				$assignexpr->sym = newtemp();
-				emit(assign, $lvalue, NULL, $assignexpr);
-			}else if(scopeFound.first==-2){
-				printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
-			}else {
-				if(scopeFound.second.type == USERFUNC || scopeFound.second.type == LIBFUNC){
-					printf("Error: Can not assign value to function! (line %d)\n", yylineno);
-				} //else printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
-			}
-		}
-		 | LOCAL lvalue ASSIGN expr {
-			string var = $2;
-			pair<int,Information> lk = lookup(var);
-			if(lk.first==-1){
-				if(!isSystemFunction(var)){
-					insertVariable(var,yylineno);
-					//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
-				}else printf("Error: %s is a system function. (line %d)\n",var.c_str(),yylineno); 
-			}else {
-				if(lk.second.type == USERFUNC || lk.second.type == LIBFUNC){
-					printf("Error: Can not assign value to function! (line %d)\n",yylineno);
-				} //else printf("We refer to the already existant %s (line %d)\n",var.c_str(),yylineno);
-			}
-	   	 }
-		 | DOUBLE_COLON lvalue ASSIGN expr { 
-				string var = $2;
-				pair<int,Information> lk = globalLookup(var);
-				if(lk.first!=-1){
-					if(lk.second.type == USERFUNC || lk.second.type == LIBFUNC){
-						printf("Error: Can not assign value to function! (line %d)\n",yylineno);
-					} //else printf("We refer to the global %s (line %d)\n",var.c_str(),yylineno);
-				}else{
-					printf("Error: Could not find a global variable/function %s (line %d)\n",var.c_str(),yylineno);
-				}
-	   	 }
-		 | lvalue ASSIGN funcdef
-		 | LOCAL lvalue ASSIGN funcdef
-		 | DOUBLE_COLON lvalue ASSIGN funcdef
-		 | member ASSIGN expr
-		 ;
-		 */
-
-primary: lvalue
-	   | call
+primary: lvalue{
+		$$ = emit_iftableitem($lvalue,yylineno);
+	}| call
 	   | objectdef
-	   | LEFT_PARENTH funcdef RIGHT_PARENTH
+	   | LEFT_PARENTH funcdef RIGHT_PARENTH{
+	   		$$ = $funcdef;
+	   }
 	   | const
 	   ;
 
@@ -241,7 +297,7 @@ lvalue: ID {
 				}	
 			}else{
 				if(search->type == USERFUNC || search->type == LIBFUNC){
-					printf("We refer to the already existant function %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
+					//printf("We refer to the already existant function %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
 				}else{
 					//In this case the variable should be a variable
 					search = lookupTillGlobalScope(var,true);
@@ -255,16 +311,16 @@ lvalue: ID {
 					}else if(search->type==-2){
 						printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
 					}else {
-						printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
+						//printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
 					}
 				}
 			}
-			$lvalue->sym = lookupTillGlobalScope(var,false);
-			$lvalue->type = var_e;
-			$lvalue->sym->name = var;
-			
+			$$ = newexpr(var_e);
+			$$->sym = lookupTillGlobalScope(var,false);
+			$$->type = var_e;
+			$$->sym->name = var;
 		}
-	  | LOCAL ID { //This part is correct 100%
+	  | LOCAL ID { 
 			string var = $2;
 			if(lookup(var)==NULL){
 				if(!isSystemFunction(var)){
@@ -272,42 +328,65 @@ lvalue: ID {
 					//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
 				}else printf("Error: %s is a system function. (line %d)\n",var.c_str(),yylineno); 
 			}//else printf("We refer to the already existant %s (line %d)\n",var.c_str(),yylineno); 
-		
+			$$ = newexpr(var_e);
+			$$->sym = lookup(var);
+			$$->type = var_e;
+			$$->sym->name = var;
+			//EDOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO an paixtei kana segmentation
 		}
 	  | DOUBLE_COLON ID { //This part is correct 100%
 			string var = $2;
 			Information* lk = globalLookup(var);
-			if(lk == NULL)
-				printf("Error: Could not find global variable %s (line %d)\n", var.c_str(), yylineno);
-			//else printf("We refer to the already existant global %s (line %d)\n", var.c_str(), yylineno); 
+			if(lk == NULL) printf("Error: Could not find global variable %s (line %d)\n", var.c_str(), yylineno);
+			else{
+				$$ = newexpr(var_e);
+				$$->sym = globalLookup(var);
+				$$->type = var_e;
+				$$->sym->name = var;
+			}
 		}
 
    	  | member
   	  ;
 
-member: lvalue DOT ID
-	  | lvalue LEFT_BRACKET expr RIGHT_BRACKET
-      | call DOT ID
+member: lvalue DOT ID{
+		$member = member_item($lvalue, $<exprval>3->sym->name, yylineno);
+
+	}| lvalue LEFT_BRACKET expr RIGHT_BRACKET{
+
+		$lvalue = emit_iftableitem($lvalue, yylineno);
+		$$ = newexpr(tableitem_e);
+		$$->sym = $lvalue->sym;
+		$$->index = $expr;
+
+	}| call DOT ID
 	  | call LEFT_BRACKET expr RIGHT_BRACKET
    	  ;
 
-call: call LEFT_PARENTH elist RIGHT_PARENTH
-	| lvalue callsuffix;
-	| LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH
+call: call {$<exprval>$ = $1; emit(call,$1,NULL,NULL,-1,yylineno);} normcall {expr* r = newexpr(var_e); r->sym = newtemp(); emit(getretval,r,NULL,NULL,-1,yylineno); $<exprval>$ = r;}
+	| lvalue {$<exprval>$ = $lvalue; emit(call,$lvalue,NULL,NULL,-1,yylineno);} callsuffix {expr* r = newexpr(var_e); r->sym = newtemp(); emit(getretval,r,NULL,NULL,-1,yylineno); $<exprval>$ = r;}
+	| LEFT_PARENTH funcdef RIGHT_PARENTH {$<exprval>$ = $funcdef; emit(call,$funcdef,NULL,NULL,-1,yylineno);} normcall {expr* r = newexpr(var_e); r->sym = newtemp(); emit(getretval,r,NULL,NULL,-1,yylineno); $<exprval>$ = r;}
 	;
 
 callsuffix: normcall
 		  | methodcall
 	      ;
 
-normcall: LEFT_PARENTH elist RIGHT_PARENTH
+normcall: LEFT_PARENTH{insideCall=true;} elist {insideCall=false;}RIGHT_PARENTH
 		;
 
-methodcall: DOT_DOT ID LEFT_PARENTH elist RIGHT_PARENTH 
+methodcall: DOT_DOT ID LEFT_PARENTH {insideCall=true;} elist {insideCall=false;} RIGHT_PARENTH 
 		  ;
 
-elist: expr
-	 | elist COMMA expr
+elist: expr{
+	if(insideCall){
+		emit(param, $expr, NULL, NULL, -1 , yylineno);
+	}
+}| elist COMMA expr{
+	if(insideCall){
+		emit(param, $expr, NULL, NULL, -1 , yylineno);
+	}
+}
 	 | {}
 	 ;
 
@@ -330,37 +409,44 @@ block: LEFT_BRACE {increaseScope();}
 	   temp_stmt{}
 	   RIGHT_BRACE {decreaseScope();}
 	 ;
-	 
-funcdef: FUNCTION ID { 
-			string fName = $2; 
-			Information* lk = lookup(fName);
-			if(lk == NULL){
-				printf("Error: %s already declared in this scope (line %d).\n",fName.c_str(),yylineno);
-			}else{
-				if(isSystemFunction(fName)){
-					printf("Error: %s it is already defined as a lib function. (line %d)\n",fName.c_str(),yylineno);
-				} else insertUserFunction(fName, yylineno);
-			}
-		}
-		LEFT_PARENTH  { increaseScope(); pushType(1);}
+
+funcdef: funcprefix {scopeSpaceIncrease();}
+		LEFT_PARENTH  { enterScopeSpace(); increaseScope(); pushType(1);}
 		idlist
 		RIGHT_PARENTH
-		LEFT_BRACE
+		LEFT_BRACE {enterScopeSpace();}
 		temp_stmt
-		RIGHT_BRACE {decreaseScope();popType();}
-		| FUNCTION { 
-			string fName = ("_f"+to_string(fID++));
-			while(lookup(fName)!=NULL || isSystemFunction(fName)) fName = ("_f"+to_string(fID++));
-			insertUserFunction(fName, yylineno);
-			//printf("Inserted function with name %s\n", fName.c_str());
+		RIGHT_BRACE {
+			$funcdef = $funcprefix;
+			emit(funcend, $funcprefix, NULL, NULL , -1 ,yylineno);
+			exitScopeSpace(); scopeSpaceDecrease(); decreaseScope();popType();
 		}
-		LEFT_PARENTH  { increaseScope(); pushType(1);}
-		idlist
-		RIGHT_PARENTH
-		LEFT_BRACE
-		temp_stmt
-		RIGHT_BRACE {decreaseScope();popType();}
 	    ;
+
+funcprefix: FUNCTION ID{
+		string fName = $2; 
+		Information* lk = lookup(fName);
+		if(lk != NULL){
+			printf("Error: %s already declared in this scope (line %d).\n",fName.c_str(),yylineno);
+		}else{
+			if(isSystemFunction(fName)){
+				printf("Error: %s it is already defined as a lib function. (line %d)\n",fName.c_str(),yylineno);
+			} else insertUserFunction(fName, yylineno);
+		}
+		$$ = newexpr(programfunc_e);
+		$$->sym = lookup(fName);
+		$$->iaddress = nextQuad();
+		emit(funcstart, $$, NULL, NULL , -1 ,yylineno);
+}| FUNCTION {
+		string fName = ("_f"+to_string(fID++));
+		while(lookup(fName)!=NULL || isSystemFunction(fName)) fName = ("_f"+to_string(fID++));
+		insertUserFunction(fName, yylineno);
+		$$ = newexpr(programfunc_e);
+		$$->sym = lookup(fName);
+		$$->iaddress = nextQuad();
+		emit(funcstart, $$, NULL, NULL , -1 ,yylineno);
+};
+
 
 const:	INTEGER{
 			$$ = newexpr(constnum_e);
@@ -458,8 +544,21 @@ forstmt:	FOR
 		} 
 		;	 
 
-returnstmt:	RETURN SEMICOLON {if(!isInFunction()) printf("Error: This return is not part of a function. (line %d)\n",yylineno); }
-		  | RETURN{shouldInsert = false;} expr SEMICOLON{ if(!isInFunction()) printf("Error: This return is not part of a function. (line %d)\n",yylineno); shouldInsert = true;}
+returnstmt:	RETURN SEMICOLON {
+				if(!isInFunction()) {
+					printf("Error: This return is not part of a function. (line %d)\n",yylineno); 
+					exit(0);
+				}
+				emit(ret, NULL, NULL, NULL, -1, yylineno);
+			}
+		  | RETURN{shouldInsert = false;} expr SEMICOLON{
+		   		if(!isInFunction()) {
+		   			printf("Error: This return is not part of a function. (line %d)\n",yylineno); 
+		   			exit(0);
+		   		}
+		   		emit(ret, $expr, NULL, NULL, -1, yylineno);
+		   		shouldInsert = true;
+			}
 		  ;	 
 %%
 
@@ -487,7 +586,9 @@ int main(int argc, char** argv) {
             return 1;
         }
     }
+    printf("\n%-15s %-20s %-20s %-20s %-20s %-20s\n","#quad","opcode","result","arg1","arg2","label");
 	initializeSymTable();
+	scopeSpaceIncrease();//Inserts 0,0,0 at cur scope space
 	yyparse(); /* Parse through the input - the function generated by yacc */
 	printFullSymTable();
 	
