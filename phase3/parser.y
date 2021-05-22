@@ -30,9 +30,9 @@
 %token <stringval> LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_PARENTH RIGHT_PARENTH SEMICOLON COMMA COLON DOUBLE_COLON DOT DOT_DOT
 
 //%type <intval> expr
-%type <stringval> stmt ifstmt whilestmt forstmt returnstmt block funcdef primary call objectdef const member
-%type <stringval> elist callsuffix normcall methodcall indexed indexedelem temp_stmt assignexpr
-%type <exprval> expr lvalue
+%type <stringval> ifstmt whilestmt forstmt block funcdef
+%type <stringval> callsuffix normcall methodcall temp_stmt
+%type <exprval> expr lvalue assignexpr stmt const primary term member indexedelem indexed objectdef elist call returnstmt
 
 %left ASSIGN
 %left OR
@@ -70,7 +70,7 @@ stmt: expr SEMICOLON
 	;
 
 expr: assignexpr
-	/*| expr PLUS expr	 { $$ = $1 + $3;}
+/*	| expr PLUS expr	 { $$ = $1 + $3;}
 	| expr MINUS expr	 { $$ = $1 - $3;}
 	| expr MUL expr		 { $$ = $1 * $3;}
 	| expr DIV expr		 { $$ = $1 / $3;}
@@ -90,53 +90,53 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
 	| MINUS expr { printf(" - ");}
 	| NOT expr { printf(" != "); }
 	| PLUS_PLUS lvalue { 
-				string var = $2;
-				pair<int,Information> scopeFound = lookupTillGlobalScope(var,true);
-				if(scopeFound.first==-1){
+				string var = $lvalue->sym->name;///////////////CHECK IF THIS IS VALID!!!!
+				Information* scopeFound = lookupTillGlobalScope(var,true);
+				if(scopeFound==NULL){
 					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
-				}else if(scopeFound.first==-2){
+				}else if(scopeFound->scope==-2){
 					printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
 				}else {
-					if(scopeFound.second.type == USERFUNC || scopeFound.second.type == LIBFUNC){
+					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						printf("Error: Can't use increment operator on function! (line %d)\n", yylineno);
 					} //else printf("Prefix increment operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
 				}
 			}
 	| lvalue PLUS_PLUS { 
-				string var = $1;
-				pair<int,Information> scopeFound = lookupTillGlobalScope(var,true);
-				if(scopeFound.first==-1){
+				string var = $lvalue->sym->name;
+				Information* scopeFound = lookupTillGlobalScope(var,true);
+				if(scopeFound==NULL){
 					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
-				}else if(scopeFound.first==-2){
+				}else if(scopeFound->scope==-2){
 					printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
 				}else {
-					if(scopeFound.second.type == USERFUNC || scopeFound.second.type == LIBFUNC){
+					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						printf("Error: Can't use increment operator on function! (line %d)\n", yylineno);
 					} //else printf("Suffix increment operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
 				}
 			}
 	| MINUS_MINUS lvalue { 
-				string var = $2;
-				pair<int,Information> scopeFound = lookupTillGlobalScope(var,true);
-				if(scopeFound.first==-1){
+				string var = $lvalue->sym->name;
+				Information* scopeFound = lookupTillGlobalScope(var,true);
+				if(scopeFound==NULL){
 					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
-				}else if(scopeFound.first==-2){
+				}else if(scopeFound->scope==-2){
 					printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
 				}else {
-					if(scopeFound.second.type == USERFUNC || scopeFound.second.type == LIBFUNC){
+					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						printf("Error: Can't use decrement operator on function! (line %d)\n", yylineno);
 					} //else printf("Prefix decrement operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
 				}
 			}
 	| lvalue MINUS_MINUS {
-				string var = $2;
-				pair<int,Information> scopeFound = lookupTillGlobalScope(var,true);
-				if(scopeFound.first==-1){
+				string var = $lvalue->sym->name;
+				Information* scopeFound = lookupTillGlobalScope(var,true);
+				if(scopeFound==NULL){
 					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
-				}else if(scopeFound.first==-2){
+				}else if(scopeFound->scope==-2){
 					printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
 				}else {
-					if(scopeFound.second.type == USERFUNC || scopeFound.second.type == LIBFUNC){
+					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						printf("Error: Can't use decrement operator on function! (line %d)\n", yylineno);
 					} //else printf("Suffix decrement operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
 				}
@@ -144,6 +144,30 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { printf( "(" ); }
 	| primary
 	;
 
+assignexpr: lvalue ASSIGN expr {
+			//expr* var = $lvalue;
+			string var = $lvalue->sym->name;
+			Information* scopeFound = lookupTillGlobalScope(var,true);
+			//printf("playing with %s (line %d) (scopeFound: %d)\n",var.c_str(),yylineno,scopeFound.first); 
+			if(scopeFound==NULL){
+				printf("Error var not inserted! \n");
+			}else if(scopeFound->scope==-2){
+				printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+			}else {
+				if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
+					printf("Error: Can not assign value to function! (line %d)\n", yylineno);
+				}else{
+					emit(assign, $expr, NULL, $lvalue, -1, yylineno);
+					$assignexpr = newexpr(assignexpr_e);
+					$assignexpr->sym = newtemp();
+					emit(assign, $lvalue, NULL, $assignexpr, -1, yylineno);
+				}
+			}
+		}
+		 | lvalue ASSIGN funcdef
+		 ;
+/*
+PREVIOUS:
 assignexpr: lvalue ASSIGN expr { //This should be correct - This part is done
 			expr* var = $1;
 			//expr* var3 = $3;
@@ -193,6 +217,7 @@ assignexpr: lvalue ASSIGN expr { //This should be correct - This part is done
 		 | DOUBLE_COLON lvalue ASSIGN funcdef
 		 | member ASSIGN expr
 		 ;
+		 */
 
 primary: lvalue
 	   | call
@@ -204,9 +229,9 @@ primary: lvalue
 lvalue: ID {
 			string var = $1;
 			//lookup without taking into account if there is function in between
-			pair<int,Information> search = lookupTillGlobalScope(var,false);
+			Information* search = lookupTillGlobalScope(var,false);
 		
-			if(search.first==-1){
+			if(search==NULL){
 				//Not found at all!
 				if(shouldInsert) {
 					insertVariable(var, yylineno);
@@ -215,40 +240,33 @@ lvalue: ID {
 					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
 				}	
 			}else{
-				if(search.second.type == USERFUNC || search.second.type == LIBFUNC){
+				if(search->type == USERFUNC || search->type == LIBFUNC){
 					printf("We refer to the already existant function %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
 				}else{
 					//In this case the variable should be a variable
 					search = lookupTillGlobalScope(var,true);
-					if(search.first==-1){
+					if(search==NULL){
 						if(shouldInsert) {
 							insertVariable(var, yylineno);
 							//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
 						}else {
 							printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
 						}					
-					}else if(search.first==-2){
+					}else if(search->type==-2){
 						printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
 					}else {
 						printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
 					}
 				}
 			}
-			/*
-			
-			sym = lookup(id.name);
-			if (sym == nul) { sym = newsymbol(id.name);
-!!!!!!!!!   sym.space = currscopespace();
-			sym.offset = currscopeoffset();
-			inccurrscopeoffset();
-			} lvalue.sval = lvalue_expr(sym);
-
-		   */
+			$lvalue->sym = lookupTillGlobalScope(var,false);
+			$lvalue->type = var_e;
+			$lvalue->sym->name = var;
 			
 		}
 	  | LOCAL ID { //This part is correct 100%
 			string var = $2;
-			if(lookup(var).first==-1){
+			if(lookup(var)==NULL){
 				if(!isSystemFunction(var)){
 					if(shouldInsert) insertVariable(var,yylineno);
 					//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
@@ -258,8 +276,8 @@ lvalue: ID {
 		}
 	  | DOUBLE_COLON ID { //This part is correct 100%
 			string var = $2;
-			pair<int,Information> lk = globalLookup(var);
-			if(lk.first==-1)
+			Information* lk = globalLookup(var);
+			if(lk == NULL)
 				printf("Error: Could not find global variable %s (line %d)\n", var.c_str(), yylineno);
 			//else printf("We refer to the already existant global %s (line %d)\n", var.c_str(), yylineno); 
 		}
@@ -315,8 +333,8 @@ block: LEFT_BRACE {increaseScope();}
 	 
 funcdef: FUNCTION ID { 
 			string fName = $2; 
-			pair<int,Information> lk = lookup(fName);
-			if(lk.first!=-1){
+			Information* lk = lookup(fName);
+			if(lk == NULL){
 				printf("Error: %s already declared in this scope (line %d).\n",fName.c_str(),yylineno);
 			}else{
 				if(isSystemFunction(fName)){
@@ -332,7 +350,7 @@ funcdef: FUNCTION ID {
 		RIGHT_BRACE {decreaseScope();popType();}
 		| FUNCTION { 
 			string fName = ("_f"+to_string(fID++));
-			while(lookup(fName).first!=-1 || isSystemFunction(fName)) fName = ("_f"+to_string(fID++));
+			while(lookup(fName)!=NULL || isSystemFunction(fName)) fName = ("_f"+to_string(fID++));
 			insertUserFunction(fName, yylineno);
 			//printf("Inserted function with name %s\n", fName.c_str());
 		}
@@ -344,18 +362,36 @@ funcdef: FUNCTION ID {
 		RIGHT_BRACE {decreaseScope();popType();}
 	    ;
 
-const:	INTEGER
-	 | FLOAT
-	 | STRING
-	 | NIL
-	 | TRUE
-	 | FALSE
+const:	INTEGER{
+			$$ = newexpr(constnum_e);
+			$$->numConst = $1;
+		} 
+	 | FLOAT{
+			$$ = newexpr(assignexpr_e);
+			$$->numConst = $1;
+			$$->type = constnum_e;
+		} 
+	 | STRING{
+			$$ = newexpr(conststring_e);
+			$$->strConst = $1;
+		} 
+	 | NIL{
+			$$ = newexpr(nil_e);
+		} 
+	 | TRUE{
+			$$ = newexpr(constbool_e);
+			$$->boolConst = true;
+		} 
+	 | FALSE{
+			$$ = newexpr(constbool_e);
+			$$->boolConst = false;
+		} 
 	 ;
 
 idlist:	ID 					{	
 			string varName = yytext; 
-			pair<int,Information> lk = lookup(varName);
-			if(lk.first!=-1){
+			Information* lk = lookup(varName);
+			if(lk!=NULL){
 				printf("Error: %s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
 			}else{
 				if(isSystemFunction(varName)){
@@ -365,8 +401,8 @@ idlist:	ID 					{
 		}
 		|idlist COMMA ID	{	
 			string varName = yytext; 
-			pair<int,Information> lk = lookup(varName);
-			if(lk.first!=-1){
+			Information* lk = lookup(varName);
+			if(lk!=NULL){
 				printf("Error: %s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
 			}else{
 				if(isSystemFunction(varName)){
@@ -453,7 +489,6 @@ int main(int argc, char** argv) {
     }
 	initializeSymTable();
 	yyparse(); /* Parse through the input - the function generated by yacc */
-	
 	printFullSymTable();
 	
 	fclose(yyin);

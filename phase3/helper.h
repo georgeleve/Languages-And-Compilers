@@ -10,10 +10,22 @@ enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC};
 
 typedef struct Information{
 	enum SymbolType type;
+	string name;
 	unsigned int line;
-	//unsigned int offset;
+	unsigned int offset;
+	unsigned int scope;
 } Information;
 
+Information* allocInfo(SymbolType type, string name, int line, int offset, int scope){
+	//Information* info = (Information*) malloc(sizeof(Information));
+	Information* info = new Information;
+	info->type = type;
+	info->name = name;
+	info->line = line;
+	info->offset = offset;
+	info->scope = scope;
+	return info;
+}
 typedef struct PrintToken{
 	string value;
 	Information info;
@@ -24,7 +36,7 @@ bool comparator(PrintToken a, PrintToken b){
 }
 
 set<string> systemFunctions;
-vector<map<string,Information>> activeSymTable;
+vector<map<string,Information*>> activeSymTable;
 vector<vector<PrintToken>> fullSymTable;
 stack<int> lastType; //Top of stack is 0 if the latest thing we found between a function and a loop is a function
 
@@ -55,7 +67,7 @@ bool isInFunction(){
 }
 void increaseScope(){
 	scope++;
-	map<string, Information> tp;
+	map<string, Information*> tp;
 	activeSymTable.push_back(tp);
 	if(fullSymTable.size()<=scope){
 		vector<PrintToken> tp2;
@@ -68,75 +80,74 @@ void decreaseScope(){
 	activeSymTable.pop_back();
 }
 
-pair<int, Information> lookup(string s){
-	if(activeSymTable.back().find(s) != activeSymTable.back().end()) return {scope,activeSymTable.back().find(s)->second};
-	return {-1,{GLOBAL,0}};
+Information* lookup(string s){
+	if(activeSymTable.back().find(s) != activeSymTable.back().end()) return activeSymTable.back().find(s)->second;
+	return NULL;
 }
 
-pair<int, Information> globalLookup(string s){
-	if(activeSymTable[0].find(s) != activeSymTable[0].end()) return {0,activeSymTable[0].find(s)->second};
-	return {-1,{GLOBAL,0}};
+Information* globalLookup(string s){
+	if(activeSymTable[0].find(s) != activeSymTable[0].end()) return activeSymTable[0].find(s)->second;
+	return NULL;
 }
 
-pair<int, Information> generalLookup(string s){
-	if(lookup(s).first!=-1) return lookup(s);
+Information* generalLookup(string s){
+	if(lookup(s)!=NULL) return lookup(s);
 	return globalLookup(s);
 }
 
-pair<int, Information> lookupTillGlobalScope(string s, bool careAboutFunctionInBetween){ 
-	if(lookup(s).first!=-1) return {scope,activeSymTable[scope].find(s)->second};
+Information* lookupTillGlobalScope(string s, bool careAboutFunctionInBetween){ 
+	if(lookup(s)!=NULL) return activeSymTable[scope].find(s)->second;
 	bool functionInBetween = false;
 	for(int i = scope-1; i>=0; i--) {
-		for(auto v : activeSymTable[i]) if(v.second.type == USERFUNC) functionInBetween = true;
+		for(auto v : activeSymTable[i]) if(v.second->type == USERFUNC) functionInBetween = true;
 		if(activeSymTable[i].find(s) != activeSymTable[i].end()){
-			if(i==0) return {i,activeSymTable[i].find(s)->second};
-			if(functionInBetween && careAboutFunctionInBetween) return {-2,{GLOBAL,0}}; //Not accesible.
-			return {i,activeSymTable[i].find(s)->second};
+			if(i==0) return activeSymTable[i].find(s)->second;
+			if(functionInBetween && careAboutFunctionInBetween) return allocInfo(GLOBAL, "", 0, 0, -2); //Not accesible.
+			return activeSymTable[i].find(s)->second;
 		}
 	}
-	return {-1,{GLOBAL,0}}; //Not found at all
+	return NULL; //Not found at all
 }
 
 void insertVariable(string name, unsigned int line){
-	Information info;
-	info.type = scope==0?GLOBAL:LOC;
-	info.line = line;
+	Information* info = allocInfo(scope==0?GLOBAL:LOC, name, line, 0, scope);
 	activeSymTable[scope].insert({name, info});
 	//info.offset = ?;
-	
 	Information info2;
 	info2.type = scope==0?GLOBAL:LOC;
 	info2.line = line;
+	info2.name = name;
+	info2.scope = scope;
 	fullSymTable[scope].push_back({name, info2});
 	//return info;
 }
 
 //Information
 void insertArgument(string name, unsigned int line){
-	Information info;
-	info.type = FORMAL;
-	info.line = line;
+	Information* info = allocInfo(FORMAL, name, line, 0, scope);
 	activeSymTable[scope].insert({name, info});
 	//info.offset = ?;
 
 	Information info2;
 	info2.type = FORMAL;
 	info2.line = line;
+	info2.name = name;
+	info2.scope = scope;
 	fullSymTable[scope].push_back({name, info2});
 	//return info;
 }
 
 //Information
 void insertUserFunction(string name, unsigned int line){
-	Information info;
-	info.type = USERFUNC;
-	info.line = line;
+	Information* info = allocInfo(USERFUNC, name, line, 0, scope);
 	activeSymTable[scope].insert({name, info});
 	//info.offset = ?;
 
 	Information info2;
 	info2.type = USERFUNC;
 	info2.line = line;
+	info2.name = name;
+	info2.scope = scope;
 	fullSymTable[scope].push_back({name, info2});
 	//return info;
 }
@@ -147,22 +158,22 @@ bool isSystemFunction(string name){
 
 // Information
 void globalInsert(string name, enum SymbolType type, unsigned int line){
-	Information info;
-	info.type = type;
-	info.line = line;
-	//info.offset = ;
+	Information* info = allocInfo(type, name, line, 0, 0);
 	activeSymTable[0].insert({name, info});
+	//info.offset = ?;
 	
 	Information info2;
 	info2.type = type;
 	info2.line = line;
+	info2.name = name;
+	info2.scope = scope;
 	fullSymTable[0].push_back({name, info2});
 	
 	if(type == LIBFUNC) systemFunctions.insert(name);
 }
 
 void initializeSymTable(){
-	map<string,Information> tp;
+	map<string,Information*> tp;
 	activeSymTable.push_back(tp);
 	vector<PrintToken> tp2;
 	fullSymTable.push_back(tp2);

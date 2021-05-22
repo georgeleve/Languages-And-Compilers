@@ -56,6 +56,7 @@ enum expr_t {
 	nil_e
 };
 
+
 struct symbol {
 	symbol_t type;                                 //to xoyme hdh
 	char* name;  //dynamic string
@@ -72,8 +73,8 @@ struct expr {
 	Information*	sym;
 	expr*			index;
 	double 			numConst;
-	char*			strConst;
-	unsigned char	boolConst;
+	string			strConst;
+	bool			boolConst;
 	expr*			next;
 };
 
@@ -99,9 +100,47 @@ struct call {
 	char* name;
 };
 
-void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, int line) {
-	printf("\nMphke sthn emit()\n");
+string exprToString(expr* e){
+	if(e==NULL) return "NULL";
+	if(e->type == var_e)  return e->sym->name;
+	if(e->type == constnum_e) return to_string(e->numConst);
+	if(e->type==constbool_e) return e->boolConst?"TRUE":"FALSE";
+	if(e->type == tableitem_e) return e->sym->name;
+	if(e->type == libraryfunc_e) return e->sym->name;
+	if(e->type==arithexpr_e) return e->sym->name;
+	if(e->type==conststring_e) return e->strConst;
+	if(e->type==newtable_e) return e->sym->name;
+	if(e->type==nil_e) return "NIL";
+	if(e->type==programfunc_e) return e->sym->name;
+	if(e->type==boolexpr_e) return e->sym->name;
+	if(e->type==assignexpr_e) return e->sym->name;
+	return ("inv");
+}
 
+string opToString(iopcode op){
+	if(op == assign) return "assign";
+	else if(op == add) return "add";
+	else if(op == sub) return "sub";
+	else if(op == mul) return "mul";
+	else if(op == mod) return "mod";
+	else if(op == if_eq) return "if_eq";
+	else if(op == if_not_eq) return "if_not_eq";
+	else if(op == if_lesseq) return "if_lesseq";
+	else if(op == if_greatereq) return "if_greatereq";
+	else if(op == if_greater) return "if_greater";
+	else if(op == if_less) return "if_less";
+	else if(op == call) return "call";
+	else if(op == ret) return "ret";
+	else if(op == getretval) return "getretval";
+	else if(op == funcstart) return "funcstart";
+	else if(op == funcend) return "funcend";
+	else if(op == jump) return "jump";
+	else if(op == tablecreate) return "tablecreate";
+	else if(op == tablegetelem) return "tablegetelem";
+	return "NULL";
+}
+
+void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, int line) {
 	quad* q = (quad*) malloc(sizeof(quad));
 	
 	q->op 		= op;
@@ -113,29 +152,26 @@ void emit(iopcode op, expr *arg1, expr *arg2, expr *result, int label, int line)
 
 	quadsCounter++;
 	quads.push_back(q);
-	// !! find how to print an enum:      https://stackoverflow.com/questions/3168306/print-text-instead-of-value-from-c-enum
-	printf("\n#quad		opcode		result		arg1		arg2		label\n");
-	printf("%d:	  	 %s		 %d		  %d		 %d 		%d\n\n\n", quadsCounter, op, result, arg1, arg2, label);
+	printf("%d:	  	 %s		 %s	  %s		 %s 		%d\n\n\n", quadsCounter, opToString(op).c_str(), exprToString(result).c_str(), exprToString(arg1).c_str(), exprToString(arg2).c_str(), label);
 }
 
 // Dimiourgoyme kainourio onoma gia tis prosorines metavlhtes
-const string newtempname() { 
-	return "_t" + tempcounter++;
+string newtempname() { 
+	return "_t" + to_string(tempcounter++);
 }
-
 void resettemp() { tempcounter = 0; }
 
-pair<int,Information> newtemp() {
+Information* newtemp() {
 	string name = newtempname();
-	pair<int,Information> sym = lookup(name);
-	if (sym.first==-1){
+	Information* sym = lookup(name);
+	if (sym==NULL){
 		insertVariable(name,0);
 		sym = lookup(name);
 	}
 	return sym;
 }
 
-expr* lvalue_expr (symbol *sym) {
+expr* lvalue_expr(Information* sym) {
 	assert(sym);
 	expr*  e = (expr*) malloc(sizeof(expr));
 	memset(e,0,sizeof(expr));	
@@ -279,9 +315,9 @@ expr *newexpr_constnum(double i) {
 
 void comperror (char* format, ...);
 
-unsigned int istempname(char *s) { return *s == '_'; }
+bool istempname(string s) { return s[0] == '_'; }
 
-unsigned int istempexpr(expr *e) { return e->sym && istempname(e->sym->name); }
+bool istempexpr(expr *e) { return e->sym && istempname(e->sym->name); }
 
 void patchlabel(unsigned quadNo, unsigned label) {
 	assert(quadNo < currQuad && !quads[quadNo]->label);
