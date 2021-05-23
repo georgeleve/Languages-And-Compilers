@@ -106,8 +106,8 @@ struct quad { //maybe typedef struct quad
 	expr* result;
 	expr* arg1;
 	expr* arg2;
-	unsigned label; //int
-	unsigned line; //int
+	int label; //int
+	int line; //int
 };
 
 vector<quad*> quads;
@@ -179,13 +179,16 @@ void emit(iopcode op, expr *result, expr *arg1, expr *arg2, int label, int line)
 	q->arg2		= arg2;
 	q->result	= result;
 	q->label 	= label;
-	q->line		= line;
+	q->line		= quadsCounter++;
 
-	quadsCounter++;
 	quads.push_back(q);
-	printf("%-15s %-20s %-20s %-20s %-20s %-20d\n", (to_string(quadsCounter)+":").c_str(), opToString(op).c_str(), exprToString(result).c_str(), exprToString(arg1).c_str(), exprToString(arg2).c_str(), label);
 }
-
+void printEmits(){
+	int idx = 1;
+	for(auto q : quads){
+		printf("%-15s %-20s %-20s %-20s %-20s %-20d\n", (to_string(idx++)+":").c_str(), opToString(q->op).c_str(), exprToString(q->result).c_str(), exprToString(q->arg1).c_str(), exprToString(q->arg2).c_str(), q->label);
+	}
+}
 // Dimiourgoyme kainourio onoma gia tis prosorines metavlhtes
 string newtempname() { 
 	return "_t" + to_string(tempcounter++);
@@ -353,9 +356,8 @@ bool istempname(string s) { return s[0] == '_'; }
 
 bool istempexpr(expr *e) { return e->sym && istempname(e->sym->name); }
 
-void patchlabel(unsigned quadNo, unsigned label) {
-	assert(quadNo < currQuad && !quads[quadNo]->label);
-	quads[quadNo]->label = label;
+void patchlabel(int quadNo, int label) {
+	quads[quadNo-1]->label = label;
 }
 
 expr* newexpr_constbool(bool val) {
