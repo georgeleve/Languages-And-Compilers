@@ -63,6 +63,7 @@ enum symbol_t {
 enum expr_t {
 	var_e,
 	tableitem_e,
+	mapitem_e,
 	programfunc_e,
 	libraryfunc_e,
 	arithexpr_e,
@@ -91,6 +92,8 @@ struct expr {
 	expr_t			type;
 	Information*	sym;
 	expr*			index;
+	expr*			mapKey;
+	expr*			mapValue;
 	int 			iaddress;
 	double 			numConst;
 	string			strConst;
@@ -160,6 +163,7 @@ string opToString(iopcode op){
 	else if(op == jump) return "jump";
 	else if(op == tablecreate) return "tablecreate";
 	else if(op == tablegetelem) return "tablegetelem";
+	else if(op == tablesetelem) return "tablesetelem";
 	else if(op == param) return "param";
 	else if(op == not_c) return "not";
 	else if(op == or_c) return "or";
@@ -198,21 +202,21 @@ Information* newtemp() {
 	return sym;
 }
 
-expr* lvalue_expr(Information* sym) {
-	assert(sym);
-	expr*  e = (expr*) malloc(sizeof(expr));
-	memset(e,0,sizeof(expr));	
-	e->next = (expr*) 0;
-	e->sym = sym;
+// expr* lvalue_expr(Information* sym) {
+// 	assert(sym);
+// 	expr*  e = (expr*) malloc(sizeof(expr));
+// 	memset(e,0,sizeof(expr));	
+// 	e->next = (expr*) 0;
+// 	e->sym = sym;
  
-	switch(sym->type){
-		//case var_s : e->type = var_s) break;
-		//case programfunc_s : e->type = programfunc_e : break;
-		//case libraryfunc_s : e->type = libraryfunc_e : break;
-		default:assert(0);
-	}
-	return e;
-}
+// 	switch(sym->type){
+// 		//case var_s : e->type = var_s) break;
+// 		//case programfunc_s : e->type = programfunc_e : break;
+// 		//case libraryfunc_s : e->type = libraryfunc_e : break;
+// 		default:assert(0);
+// 	}
+// 	return e;
+// }
 
 scopespace_t currScopeSpace(void){
 	if(scopeSpaceCounter == 1) return programVar;
@@ -285,7 +289,7 @@ void dumparguments() {
 }*/
 
 expr* newexpr(expr_t t){
-  expr* e = (expr*) malloc(sizeof(expr));
+  expr* e = new expr;
   memset(e, 0, sizeof(expr));
   e->type = t;
   return e;
@@ -315,20 +319,30 @@ expr* member_item (expr* e, string name, int yylineno) {
 	ti->index = newexpr_conststring(name); // Const string index
 	return ti;
 }
-/*
-expr *make_call(expr *lv, expr *reversed_elist, int yylineno) {
-	expr *func = emit_iftableitem(lv);
-	while (reversed_elist) {
-		//emit(param, reversed_elist, NULL, NULL);
-		reversed_elist = reversed_elist->next;
+
+expr *make_call(expr *lv, expr* elist, int yylineno) {
+	expr* current = elist;
+  	expr *prev = NULL, *next = NULL;
+  	while (current != NULL) {
+       	next = current->next;
+       	current->next = prev;
+       	prev = current;
+      	current = next;
+    }
+   	expr* head = prev;
+
+	expr *func = emit_iftableitem(lv,yylineno);
+	while (head) {
+		emit(param, head, NULL, NULL, -1,yylineno);
+		head = head->next;
 	}
-	//emit(call, func, NULL, NULL);
+	emit(call, NULL, func, NULL, -1, yylineno);
 	expr *result = newexpr(var_e);
-	//result->sym = newtemp();
-	//emit(getretval, NULL, NULL, result);
+	result->sym = newtemp();
+	emit(getretval, result, NULL, NULL, -1, yylineno);
 	return result;
 }
-*/
+
 expr* newexpr_constnum(double i) {
 	expr *e = newexpr(constnum_e);
 	e->numConst = i;
@@ -395,8 +409,8 @@ void check_arith(expr* e, string context) {
 	e->type == programfunc_e ||
 	e->type == libraryfunc_e ||
 	e->type == boolexpr_e ){
-		printf("Illegal expr used in %s!", context.c_str());
-		exit(0);
+		//printf("Illegal expr used in %s!", context.c_str());
+		//exit(0);
 	}
 }
 

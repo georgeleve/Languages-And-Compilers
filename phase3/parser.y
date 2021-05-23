@@ -9,7 +9,6 @@
 	
 	int fID = 1;
 	bool shouldInsert = true;
-	bool insideCall = false;
 %}
 %start program
 
@@ -30,7 +29,7 @@
 
 //%type <intval> expr
 %type <stringval> ifstmt whilestmt forstmt block
-%type <stringval> callsuffix normcall methodcall temp_stmt
+%type <stringval> temp_stmt
 %type <exprval> expr lvalue assignexpr stmt const primary term member indexedelem indexed objectdef elist returnstmt funcdef funcprefix call
 
 %left ASSIGN
@@ -263,22 +262,28 @@ assignexpr: lvalue ASSIGN expr {
 				if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 					printf("Error: Can not assign value to function! (line %d)\n", yylineno);
 				}else{
-					emit(assign, $lvalue, $expr, NULL, -1, yylineno);
-					$assignexpr = newexpr(assignexpr_e);
-					$assignexpr->sym = newtemp();
-					emit(assign, $assignexpr, $lvalue, NULL, -1, yylineno);
+					if($lvalue->type == tableitem_e){
+						emit(tablesetelem, $lvalue, $lvalue->index, $expr, -1, yylineno);
+						$$ = emit_iftableitem($lvalue,yylineno);
+						$$->type = assignexpr_e;
+					}else{
+						emit(assign, $lvalue, $expr, NULL, -1, yylineno);
+						$assignexpr = newexpr(assignexpr_e);
+						$assignexpr->sym = newtemp();
+						emit(assign, $assignexpr, $lvalue, NULL, -1, yylineno);
+					}
 				}
 			}
 		}
 		 | lvalue ASSIGN funcdef
 		 ;
-primary: lvalue{
+primary: lvalue {
 		$$ = emit_iftableitem($lvalue,yylineno);
 	}| call
-	   | objectdef
-	   | LEFT_PARENTH funcdef RIGHT_PARENTH{
-	   		$$ = $funcdef;
-	   }
+	 | objectdef{
+	   	$$ = $objectdef;
+	 }
+	   | LEFT_PARENTH funcdef RIGHT_PARENTH{$$ = $funcdef;}
 	   | const
 	   ;
 
@@ -350,8 +355,7 @@ lvalue: ID {
   	  ;
 
 member: lvalue DOT ID{
-		$member = member_item($lvalue, $<exprval>3->sym->name, yylineno);
-
+		$member = member_item($lvalue, $ID, yylineno);
 	}| lvalue LEFT_BRACKET expr RIGHT_BRACKET{
 
 		$lvalue = emit_iftableitem($lvalue, yylineno);
@@ -363,43 +367,90 @@ member: lvalue DOT ID{
 	  | call LEFT_BRACKET expr RIGHT_BRACKET
    	  ;
 
-call: call {$<exprval>$ = $1; emit(call,$1,NULL,NULL,-1,yylineno);} normcall {expr* r = newexpr(var_e); r->sym = newtemp(); emit(getretval,r,NULL,NULL,-1,yylineno); $<exprval>$ = r;}
-	| lvalue {$<exprval>$ = $lvalue; emit(call,$lvalue,NULL,NULL,-1,yylineno);} callsuffix {expr* r = newexpr(var_e); r->sym = newtemp(); emit(getretval,r,NULL,NULL,-1,yylineno); $<exprval>$ = r;}
-	| LEFT_PARENTH funcdef RIGHT_PARENTH {$<exprval>$ = $funcdef; emit(call,$funcdef,NULL,NULL,-1,yylineno);} normcall {expr* r = newexpr(var_e); r->sym = newtemp(); emit(getretval,r,NULL,NULL,-1,yylineno); $<exprval>$ = r;}
+call: call LEFT_PARENTH elist RIGHT_PARENTH {								//OK
+		$<exprval>$ = make_call($<exprval>1, $<exprval>3, yylineno);
+	}
+
+	| lvalue LEFT_PARENTH elist RIGHT_PARENTH {
+		$lvalue = emit_iftableitem($lvalue,yylineno);
+		$<exprval>$ = make_call($lvalue, $elist, yylineno); 
+	}
+
+	| lvalue DOT_DOT ID LEFT_PARENTH elist RIGHT_PARENTH {
+		$lvalue = emit_iftableitem($lvalue,yylineno);
+		expr* t = $lvalue;
+		$lvalue = emit_iftableitem(member_item(t,$ID,yylineno),yylineno);
+		t->next = $elist;
+
+		$<exprval>$ = make_call($<exprval>1, t, yylineno); 
+	}
+
+	| LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH { //OK
+		expr* func = newexpr(programfunc_e);
+		func->sym = $funcdef->sym;
+		$<exprval>$ = make_call(func, $<exprval>5, yylineno); 
+	}
 	;
 
-callsuffix: normcall
-		  | methodcall
+	/*
+callsuffix: normcall{
+			$$ = $1;
+		}| methodcall{
+		  	$$ = $1;
+		  }
 	      ;
 
-normcall: LEFT_PARENTH{insideCall=true;} elist {insideCall=false;}RIGHT_PARENTH
-		;
-
-methodcall: DOT_DOT ID LEFT_PARENTH {insideCall=true;} elist {insideCall=false;} RIGHT_PARENTH 
-		  ;
-
-elist: expr{
-	if(insideCall){
-		emit(param, $expr, NULL, NULL, -1 , yylineno);
-	}
-}| elist COMMA expr{
-	if(insideCall){
-		emit(param, $expr, NULL, NULL, -1 , yylineno);
-	}
+normcall: LEFT_PARENTH elist RIGHT_PARENTH{
+	$$ = $2;
 }
-	 | {}
+;
+
+methodcall: DOT_DOT ID LEFT_PARENTH elist RIGHT_PARENTH{
+	$$ = $4;
+}
+		  ;
+*/
+elist: expr{
+	$$ = $1;
+}| elist COMMA expr{
+	expr* tmp = $1;
+	while(tmp->next!=NULL) tmp = tmp->next;
+	tmp->next = $expr;
+	$$ = $1;
+}| {}
 	 ;
 
-objectdef: LEFT_BRACKET elist RIGHT_BRACKET
-		 | LEFT_BRACKET indexed RIGHT_BRACKET
-		 ;
+objectdef: LEFT_BRACKET elist RIGHT_BRACKET{
+			expr* t = newexpr(newtable_e);
+			t->sym = newtemp();
+			emit(tablecreate, t, NULL, NULL, -1, yylineno);
+			int num = 0;
+			for(expr* i = $elist; i!=NULL; i = i->next) emit(tablesetelem, t, newexpr_constnum(num++), i,-1,yylineno);
+			$$ = t;
 
-indexed: indexedelem
-	   |indexed COMMA indexedelem 
-	   ;
+		}| LEFT_BRACKET indexed RIGHT_BRACKET{
+			expr* t = newexpr(newtable_e);
+			t->sym = newtemp();
+			emit(tablecreate, t, NULL, NULL, -1, yylineno);
+			for(expr* i = $indexed; i!=NULL; i = i->next) emit(tablesetelem, t, i->mapKey, i->mapValue,-1,yylineno);
+			$$ = t;
+		};
 
-indexedelem: LEFT_BRACE{shouldInsert = false;} expr COLON{shouldInsert = true;} expr RIGHT_BRACE
-		   ;
+indexed: indexedelem{
+	$$ = $1;
+}| indexed COMMA indexedelem{
+	expr* tmp = $1;
+	while(tmp->next!=NULL) tmp = tmp->next;
+	tmp->next = $indexedelem;
+	$$ = $1;
+}
+;
+
+indexedelem: LEFT_BRACE{shouldInsert = false;} expr COLON{shouldInsert = true;} expr RIGHT_BRACE{
+	$$ = newexpr(mapitem_e);
+	$$->mapKey = $3;
+	$$->mapValue = $6;
+};
 
 temp_stmt:	temp_stmt stmt	{;} 
 	| {;}
@@ -453,9 +504,8 @@ const:	INTEGER{
 			$$->numConst = $1;
 		} 
 	 | FLOAT{
-			$$ = newexpr(assignexpr_e);
+			$$ = newexpr(constnum_e);
 			$$->numConst = $1;
-			$$->type = constnum_e;
 		} 
 	 | STRING{
 			$$ = newexpr(conststring_e);
@@ -474,7 +524,7 @@ const:	INTEGER{
 		} 
 	 ;
 
-idlist:	ID 					{	
+idlist:	ID {	
 			string varName = yytext; 
 			Information* lk = lookup(varName);
 			if(lk!=NULL){
@@ -485,7 +535,7 @@ idlist:	ID 					{
 				} else insertArgument(varName, yylineno);
 			}
 		}
-		|idlist COMMA ID	{	
+		|idlist COMMA ID{	
 			string varName = yytext; 
 			Information* lk = lookup(varName);
 			if(lk!=NULL){

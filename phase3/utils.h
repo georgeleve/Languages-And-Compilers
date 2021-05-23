@@ -1,6 +1,7 @@
 enum expr_t {
 	var_e,
 	tableitem_e,
+	mapitem_e,
 	programfunc_e,
 	libraryfunc_e,
 	arithexpr_e,
@@ -40,11 +41,14 @@ typedef struct Information{
 	unsigned int offset;
 	unsigned int scope;
 } Information;
+c
 // create a vector that is going to store the quad
 struct expr {
 	expr_t			type;
 	Information*	sym;
 	expr*			index;
+	expr*			mapKey;
+	expr*			mapValue;
 	int 			iaddress;
 	double 			numConst;
 	string			strConst;
