@@ -3,7 +3,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <bits/stdc++.h>
 
 using namespace std;
 #pragma GCC diagnostic ignored "-Wenum-compare"
@@ -320,8 +319,6 @@ expr* newexpr_constbool(bool val) {
 	e->boolConst = val;
 	return e;
 }
-
-unsigned nextquad(void) { return currQuad; }
 
 void make_stmt(stmt_t *s) {
 	s->breakList = s->contList = 0;

@@ -1,29 +1,35 @@
--------------sossssss------------
+na kanoyme epanaxrhsimopoihsh metavlhton (pote kanoume)
 
-local id    id  ..id
+na kanoyme to double se int 
 
-na mhn tiponoume ta scopes
+na kanoyme to arxeio se quads.txt
+
+na typonoume tis grammes
+
+na kanoyme ena readme.md
+
+na kanoume thn merikh apothmhsh
+
+thelei kai sthn teleytaia grammh na exoyme ena poy na legetai no op??
+
+4-9; // mas petaei error eno to  4- 9;  kai to t-s; den petane
+
+tablegetelem kai tablesetelem    pername sosta tis parametrous??????
+
+
+Na arxisoyme thn 4-5 fash apo noris
+
+
 
 dialexh 11 slide 2
 
 dialexh 10 telaytaio slide
 
-
-Na valoyme check_arith($expr); opou opou den to exoyme valei
-
-Εκφράσεις (4/4)     Βασικές εκφράσεις (2/9)          Βασικές εκφράσεις (3/9)       Βασικές εκφράσεις (4/9)  Βασικές εκφράσεις (5/9)
-
-ta quads na mpainoyn se ena arxeio quads.txt
-
-for
-while
-return
-continue
-break
-backpatching
-
-otan vlepoume error na kanoume exit h telospanton na stamatame to proograma kapos
-
-na vgaloyme oti extra sxolia yaprxoyn
+backpatching??
 
 na testaroume me ta test pou hdh exoyme
+
+
+
+
+

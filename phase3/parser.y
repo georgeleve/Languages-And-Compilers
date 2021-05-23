@@ -6,16 +6,18 @@
 	extern int yylex(void);
 	extern char* yytext;
 	extern FILE* yyout;
-	
+	int loopcounter = 0;
 	int fID = 1;
 	bool shouldInsert = true;
 %}
+
 %start program
 
 %union {
 	char* stringval;
 	int intval;
 	float floatval;
+	struct forstruct* forval;
 	struct expr* exprval;
 }
 
@@ -28,9 +30,10 @@
 %token <stringval> LEFT_BRACE RIGHT_BRACE LEFT_BRACKET RIGHT_BRACKET LEFT_PARENTH RIGHT_PARENTH SEMICOLON COMMA COLON DOUBLE_COLON DOT DOT_DOT
 
 //%type <intval> expr
-%type <stringval> whilestmt forstmt block
+%type <stringval> whilestmt block
 %type <stringval> temp_stmt
-%type <intval> ifprefix elseprefix
+%type <intval> ifprefix elseprefix whilestart whilecond N M
+%type <forval> forprefix
 %type <exprval> expr lvalue assignexpr stmt const primary term member indexedelem indexed objectdef elist returnstmt funcdef funcprefix call
 
 %left ASSIGN
@@ -45,23 +48,26 @@
 %left LEFT_BRACKET RIGHT_BRACKET
 %left LEFT_PARENTH RIGHT_PARENTH
 
-/* This is the actual grammar that bison will parse */
+
 %%
 
 program: stmt program 	
 	|	{}
     ;
-
 stmt: expr SEMICOLON
 	| ifstmt 
 	| whilestmt 
 	| forstmt 
 	| returnstmt
 	| BREAK SEMICOLON{
-		if(!isLastTypeLoop()) printf("ERROR: No loop found in this scope. (line %d)\n",yylineno);
+		if(!isLastTypeLoop()) {fprintf(stderr,"ERROR: No loop found in this scope. (line %d)\n",yylineno);exit(-1);}
+		insertBreak(nextQuad());
+		emit(jump, NULL, NULL, 0, -1, yylineno);
 	}
 	| CONTINUE SEMICOLON{
-		if(!isLastTypeLoop()) printf("ERROR: No loop found in this scope. (line %d)\n",yylineno);
+		if(!isLastTypeLoop()) {fprintf(stderr,"ERROR: No loop found in this scope. (line %d)\n",yylineno);exit(-1);}
+		insertCont(nextQuad());
+		emit(jump, NULL, NULL, 0, -1, yylineno);
 	}
 	| block
 	| funcdef
@@ -113,39 +119,57 @@ expr: assignexpr
 	| expr LESS expr	 {
 		$$ = newexpr(boolexpr_e);
 		$$->sym = newtemp();
-		emit(if_less, $$, $1, $3, -1 , yylineno);
+		emit(if_less, $$, $1, $3, nextQuad()+3 , yylineno);
+		emit(assign, $$, newexpr_constbool(false), NULL, -1 , yylineno);
+		emit(jump,NULL,NULL,NULL,nextQuad()+2, yylineno);
+		emit(assign, $$, newexpr_constbool(true), NULL, -1 , yylineno);
 	}
 	| expr LESS_EQUAL expr { 
 		$$ = newexpr(boolexpr_e);
 		$$->sym = newtemp();
-		emit(if_lesseq, $$, $1, $3, -1 , yylineno);
+		emit(if_lesseq, $$, $1, $3, nextQuad()+3 , yylineno);
+		emit(assign, $$, newexpr_constbool(false), NULL, -1 , yylineno);
+		emit(jump,NULL,NULL,NULL,nextQuad()+2, yylineno);
+		emit(assign, $$, newexpr_constbool(true), NULL, -1 , yylineno);
 	}
 	| expr EQUAL expr		{ 
 		$$ = newexpr(boolexpr_e);
 		$$->sym = newtemp();
-		emit(if_eq, $$, $1, $3, -1 , yylineno);
+		emit(if_eq, $$, $1, $3, nextQuad()+3 , yylineno);
+		emit(assign, $$, newexpr_constbool(false), NULL, -1 , yylineno);
+		emit(jump,NULL,NULL,NULL,nextQuad()+2, yylineno);
+		emit(assign, $$, newexpr_constbool(true), NULL, -1 , yylineno);
 	}
 	| expr NOT_EQUAL expr	 { 
 		$$ = newexpr(boolexpr_e);
 		$$->sym = newtemp();
-		emit(if_not_eq, $$, $1, $3, -1 , yylineno);
+		emit(if_not_eq, $$, $1, $3, nextQuad()+3 , yylineno);
+		emit(assign, $$, newexpr_constbool(false), NULL, -1 , yylineno);
+		emit(jump,NULL,NULL,NULL,nextQuad()+2, yylineno);
+		emit(assign, $$, newexpr_constbool(true), NULL, -1 , yylineno);
 	}
 	| expr AND expr	   	 { 
 		$$ = newexpr(boolexpr_e);
 		$$->sym = newtemp();
-		emit(and_c, $$, $1, $3, -1 , yylineno);
+		emit(and_c, $$, $1, $3, nextQuad()+3 , yylineno);
+		emit(assign, $$, newexpr_constbool(false), NULL, -1 , yylineno);
+		emit(jump,NULL,NULL,NULL,nextQuad()+2, yylineno);
+		emit(assign, $$, newexpr_constbool(true), NULL, -1 , yylineno);
 	}
 	| expr OR expr		 { 
 		$$ = newexpr(boolexpr_e);
 		$$->sym = newtemp();
-		emit(or_c, $$, $1, $3, -1 , yylineno);
+		emit(or_c, $$, $1, $3, nextQuad()+3 , yylineno);
+		emit(assign, $$, newexpr_constbool(false), NULL, -1 , yylineno);
+		emit(jump,NULL,NULL,NULL,nextQuad()+2, yylineno);
+		emit(assign, $$, newexpr_constbool(true), NULL, -1 , yylineno);
 	}
 	| term 
 	;
 
 term: LEFT_PARENTH expr RIGHT_PARENTH { $$ = $2;}
 	| MINUS expr { 
-		check_arith($expr,"Minus");
+		check_arith($expr,"Minus expr");
 		$$ = newexpr(arithexpr_e);
 		$$->sym = newtemp();
 		emit(uminus, $$, $expr, NULL, -1 , yylineno);
@@ -156,19 +180,27 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { $$ = $2;}
 		emit(not_c, $$, $expr, NULL, -1 , yylineno);
 	}
 	| PLUS_PLUS lvalue { 
-				string var = $lvalue->sym->name;///////////////CHECK IF THIS IS VALID!!!!
+				string var = $lvalue->sym->name;
 				Information* scopeFound = lookupTillGlobalScope(var,true);
 				if(scopeFound==NULL){
-					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else if(scopeFound->scope==-2){
-					printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
-						printf("Error: Can't use increment operator on function! (line %d)\n", yylineno);
+						fprintf(stderr,"Error: Can't use increment operator on function! (line %d)\n", yylineno);
+						exit(-1);
 					}else{
 						//else printf("Prefix increment operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+						check_arith($lvalue, "Plus Plus lvalue");
 						if($lvalue->type == tableitem_e){
-							//complete
+							$$ = emit_iftableitem($lvalue, yylineno);
+							emit(add, $$, newexpr_constnum(1), $$, -1, yylineno);
+							emit(tablesetelem, $$, $lvalue->index, $lvalue, -1, yylineno);
+							
+							//completed :)    anemo check it
 						}else{
 							emit(add, $lvalue, $lvalue, newexpr_constnum(1), -1 , yylineno);
 							$$ = newexpr(arithexpr_e);
@@ -182,18 +214,27 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { $$ = $2;}
 				string var = $lvalue->sym->name;
 				Information* scopeFound = lookupTillGlobalScope(var,true);
 				if(scopeFound==NULL){
-					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else if(scopeFound->scope==-2){
-					printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
-						printf("Error: Can't use increment operator on function! (line %d)\n", yylineno);
+						fprintf(stderr,"Error: Can't use increment operator on function! (line %d)\n", yylineno);
+						exit(-1);
 					} else{
 						//else printf("Suffix increment operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+						check_arith($lvalue, "lvalue Plus Plus");
 						$$ = newexpr(arithexpr_e);
 						$$->sym = newtemp();
 						if($lvalue->type == tableitem_e){
-							//complete
+							expr* val = emit_iftableitem($lvalue, yylineno);
+							emit(assign, $term, NULL, val, -1, yylineno);
+							emit(add, val, newexpr_constnum(1), val, -1, yylineno);
+							emit(tablesetelem, val, $lvalue->index, $lvalue, -1, yylineno);
+							
+							//completed :)    anemo check it
 						}else{
 							emit(assign, $$, $lvalue, NULL, -1 , yylineno);
 							emit(add, $lvalue, $lvalue, newexpr_constnum(1), -1 , yylineno);
@@ -205,16 +246,24 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { $$ = $2;}
 				string var = $lvalue->sym->name;
 				Information* scopeFound = lookupTillGlobalScope(var,true);
 				if(scopeFound==NULL){
-					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else if(scopeFound->scope==-2){
-					printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
-						printf("Error: Can't use decrement operator on function! (line %d)\n", yylineno);
+						fprintf(stderr,"Error: Can't use decrement operator on function! (line %d)\n", yylineno);
+						exit(-1);
 					}else{
 						//else printf("Prefix decrement operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+						check_arith($lvalue, "Minus Minus lvalue");
 						if($lvalue->type == tableitem_e){
-							//complete
+							$$ = emit_iftableitem($lvalue, yylineno);
+							emit(sub, $$, newexpr_constnum(1), $$, -1, yylineno);
+							emit(tablesetelem, $$, $lvalue->index, $lvalue, -1, yylineno);
+
+							//completed :)    anemo check it
 						}else{
 							emit(sub, $lvalue, $lvalue, newexpr_constnum(1), -1 , yylineno);
 							$$ = newexpr(arithexpr_e);
@@ -228,18 +277,28 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { $$ = $2;}
 				string var = $lvalue->sym->name;
 				Information* scopeFound = lookupTillGlobalScope(var,true);
 				if(scopeFound==NULL){
-					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else if(scopeFound->scope==-2){
-					printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
-						printf("Error: Can't use decrement operator on function! (line %d)\n", yylineno);
+						fprintf(stderr,"Error: Can't use decrement operator on function! (line %d)\n", yylineno);
+						exit(-1);
 					} else{
 						//else printf("Suffix decrement operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
+						check_arith($lvalue, "lvalue Minus Minus");
 						$$ = newexpr(arithexpr_e);
 						$$->sym = newtemp();
+
 						if($lvalue->type == tableitem_e){
-							//complete
+							expr* val = emit_iftableitem($lvalue, yylineno);
+							emit(assign, $term, NULL, val, -1, yylineno);
+							emit(sub, val, newexpr_constnum(1), val, -1, yylineno);
+							emit(tablesetelem, val, $lvalue->index, $lvalue, -1, yylineno);
+							
+							//completed :)    anemo check it
 						}else{
 							emit(assign, $$, $lvalue, NULL, -1 , yylineno);
 							emit(sub, $lvalue, $lvalue, newexpr_constnum(1), -1 , yylineno);
@@ -256,12 +315,15 @@ assignexpr: lvalue ASSIGN expr {
 			Information* scopeFound = lookupTillGlobalScope(var,true);
 			//printf("playing with %s (line %d) (scopeFound: %d)\n",var.c_str(),yylineno,scopeFound.first); 
 			if(scopeFound==NULL){
-				printf("Error var not inserted! \n");
+				fprintf(stderr,"Error var not inserted! \n");
+				exit(-1);
 			}else if(scopeFound->scope==-2){
-				printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+				fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+				exit(-1);
 			}else {
 				if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
-					printf("Error: Can not assign value to function! (line %d)\n", yylineno);
+					fprintf(stderr,"Error: Can not assign value to function! (line %d)\n", yylineno);
+					exit(-1);
 				}else{
 					if($lvalue->type == tableitem_e){
 						emit(tablesetelem, $lvalue, $lvalue->index, $expr, -1, yylineno);
@@ -299,7 +361,8 @@ lvalue: ID {
 					insertVariable(var, yylineno);
 					//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
 				}else {
-					printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
+					fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
+					exit(-1);
 				}	
 			}else{
 				if(search->type == USERFUNC || search->type == LIBFUNC){
@@ -312,10 +375,12 @@ lvalue: ID {
 							insertVariable(var, yylineno);
 							//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
 						}else {
-							printf("Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
+							fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
+							exit(-1);
 						}					
 					}else if(search->type==-2){
-						printf("Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+						fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+						exit(-1);
 					}else {
 						//printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
 					}
@@ -332,18 +397,21 @@ lvalue: ID {
 				if(!isSystemFunction(var)){
 					if(shouldInsert) insertVariable(var,yylineno);
 					//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
-				}else printf("Error: %s is a system function. (line %d)\n",var.c_str(),yylineno); 
+				}else{
+					fprintf(stderr,"Error: %s is a system function. (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
+				}
 			}//else printf("We refer to the already existant %s (line %d)\n",var.c_str(),yylineno); 
 			$$ = newexpr(var_e);
 			$$->sym = lookup(var);
 			$$->type = var_e;
 			$$->sym->name = var;
-			//EDOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO an paixtei kana segmentation
 		}
-	  | DOUBLE_COLON ID { //This part is correct 100%
+	  | DOUBLE_COLON ID { 
 			string var = $2;
 			Information* lk = globalLookup(var);
-			if(lk == NULL) printf("Error: Could not find global variable %s (line %d)\n", var.c_str(), yylineno);
+			if(lk == NULL) {fprintf(stderr,"Error: Could not find global variable %s (line %d)\n", var.c_str(), yylineno);
+			exit(-1);}
 			else{
 				$$ = newexpr(var_e);
 				$$->sym = globalLookup(var);
@@ -364,11 +432,15 @@ member: lvalue DOT ID{
 		$$->sym = $lvalue->sym;
 		$$->index = $expr;
 
-	}| call DOT ID
-	  | call LEFT_BRACKET expr RIGHT_BRACKET
+	}| call DOT ID{
+		
+		$member = member_item($call, $ID, yylineno);
+
+	}
+	 | call LEFT_BRACKET expr RIGHT_BRACKET
    	  ;
 
-call: call LEFT_PARENTH elist RIGHT_PARENTH {								//OK
+call: call LEFT_PARENTH elist RIGHT_PARENTH {
 		$<exprval>$ = make_call($<exprval>1, $<exprval>3, yylineno);
 	}
 
@@ -386,7 +458,7 @@ call: call LEFT_PARENTH elist RIGHT_PARENTH {								//OK
 		$<exprval>$ = make_call($<exprval>1, t, yylineno); 
 	}
 
-	| LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH { //OK
+	| LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH {
 		expr* func = newexpr(programfunc_e);
 		func->sym = $funcdef->sym;
 		$<exprval>$ = make_call(func, $<exprval>5, yylineno); 
@@ -420,13 +492,13 @@ objectdef: LEFT_BRACKET elist RIGHT_BRACKET{
 
 indexed: indexedelem{
 	$$ = $1;
-}| indexed COMMA indexedelem{
-	expr* tmp = $1;
-	while(tmp->next!=NULL) tmp = tmp->next;
-	tmp->next = $indexedelem;
-	$$ = $1;
-}
-;
+	}| indexed COMMA indexedelem{
+		expr* tmp = $1;
+		while(tmp->next!=NULL) tmp = tmp->next;
+		tmp->next = $indexedelem;
+		$$ = $1;
+	}
+	;
 
 indexedelem: LEFT_BRACE{shouldInsert = false;} expr COLON{shouldInsert = true;} expr RIGHT_BRACE{
 	$$ = newexpr(mapitem_e);
@@ -460,10 +532,12 @@ funcprefix: FUNCTION ID{
 		string fName = $2; 
 		Information* lk = lookup(fName);
 		if(lk != NULL){
-			printf("Error: %s already declared in this scope (line %d).\n",fName.c_str(),yylineno);
+			fprintf(stderr,"Error: %s already declared in this scope (line %d).\n",fName.c_str(),yylineno);
+			exit(-1);
 		}else{
 			if(isSystemFunction(fName)){
-				printf("Error: %s it is already defined as a lib function. (line %d)\n",fName.c_str(),yylineno);
+				fprintf(stderr,"Error: %s it is already defined as a lib function. (line %d)\n",fName.c_str(),yylineno);
+				exit(-1);
 			} else insertUserFunction(fName, yylineno);
 		}
 		$$ = newexpr(programfunc_e);
@@ -510,10 +584,12 @@ idlist:	ID {
 			string varName = yytext; 
 			Information* lk = lookup(varName);
 			if(lk!=NULL){
-				printf("Error: %s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
+				fprintf(stderr,"Error: %s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
+				exit(-1);
 			}else{
 				if(isSystemFunction(varName)){
-					printf("Error: %s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
+					fprintf(stderr,"Error: %s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
+					exit(-1);
 				} else insertArgument(varName, yylineno);
 			}
 		}
@@ -521,10 +597,12 @@ idlist:	ID {
 			string varName = yytext; 
 			Information* lk = lookup(varName);
 			if(lk!=NULL){
-				printf("Error: %s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
+				fprintf(stderr,"Error: %s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
+				exit(-1);
 			}else{
 				if(isSystemFunction(varName)){
-					printf("Error: %s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
+					fprintf(stderr,"Error: %s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
+					exit(-1);
 				} else insertArgument(varName, yylineno);
 			}
 		} 
@@ -534,7 +612,6 @@ idlist:	ID {
 ifprefix: IF LEFT_PARENTH expr RIGHT_PARENTH{
 		emit(if_eq, $expr, newexpr_constbool(true), NULL, nextQuad()+2, yylineno);
 		$$ = nextQuad();
-		printf("init type: %d\n",nextQuad());
 		emit(jump,NULL, NULL, NULL, -1, yylineno);
 };
 
@@ -544,7 +621,6 @@ elseprefix: ELSE{
 };
 
 ifstmt:	ifprefix stmt {
-			printf("ints: %d %d \n",$<intval>1, nextQuad());
 			patchlabel($<intval>1 ,nextQuad());
 	}
 	|ifprefix stmt elseprefix stmt{
@@ -552,56 +628,72 @@ ifstmt:	ifprefix stmt {
 		patchlabel($elseprefix , nextQuad());
 	};
 
-whilestmt:	WHILE  
-		 {
-			 pushType(0);
-		 }
-		 LEFT_PARENTH expr RIGHT_PARENTH
-		 {
-		 }
-		 stmt
-		 {
-			popType();
-		 } 
-		 ;  	
+whilestart : WHILE
+	{
+		$whilestart = nextQuad();
+		pushType(0);
+		loopEnter();
+	};
 
-	
-forstmt:	FOR
-		{
-			pushType(0);
-		}
-		LEFT_PARENTH elist SEMICOLON expr SEMICOLON elist RIGHT_PARENTH 
-		{
-		}
-		stmt
-		{
-			popType();
-		} 
-		;	 
+whilecond :  LEFT_PARENTH expr RIGHT_PARENTH
+	{
+		emit(if_eq, $expr, newexpr_constbool(1), NULL, nextQuad()+2, yylineno);
+		$whilecond = nextQuad();
+		emit(jump, NULL, NULL, 0, -1, yylineno);
+	};
+
+whilestmt: whilestart whilecond stmt 
+	{
+		emit(jump, NULL, NULL, NULL, $whilestart, yylineno);
+		patchlabel($whilecond, nextQuad());
+		patchBreak(nextQuad());
+		patchCont($whilestart);
+		loopExit();
+		popType();
+	};
+
+N : { $N = nextQuad(); emit(jump, NULL, NULL, 0, -1, yylineno); };
+M : { $M = nextQuad(); };
+
+forprefix: FOR {pushType(0);loopEnter();} LEFT_PARENTH elist SEMICOLON M expr SEMICOLON{
+	$forprefix = (forstruct*) malloc(sizeof(forstruct));
+	$forprefix->test = $M;
+	$forprefix->enter = nextQuad();
+	emit(if_eq, $expr, newexpr_constbool(true), NULL, -1 , yylineno);
+}
+
+forstmt: forprefix N elist RIGHT_PARENTH N stmt N{
+	patchlabel($forprefix->enter, ($5) + 1); // true jump
+	patchlabel($2, nextQuad()); // false jump
+	patchlabel($5, $forprefix->test); // loop jump
+	patchlabel($7, ($2) + 1); // closure jump
+	patchBreak(nextQuad());
+	patchCont(($2)+1);
+	popType();
+	loopExit();
+}
 
 returnstmt:	RETURN SEMICOLON {
 				if(!isInFunction()) {
-					printf("Error: This return is not part of a function. (line %d)\n",yylineno); 
-					exit(0);
+					fprintf(stderr,"Error: This return is not part of a function. (line %d)\n",yylineno); 
+					exit(-1);
 				}
 				emit(ret, NULL, NULL, NULL, -1, yylineno);
 			}
 		  | RETURN{shouldInsert = false;} expr SEMICOLON{
 		   		if(!isInFunction()) {
-		   			printf("Error: This return is not part of a function. (line %d)\n",yylineno); 
-		   			exit(0);
+		   			fprintf(stderr,"Error: This return is not part of a function. (line %d)\n",yylineno); 
+					exit(-1);
 		   		}
 		   		emit(ret, $expr, NULL, NULL, -1, yylineno);
 		   		shouldInsert = true;
 			}
 		  ;	 
+
 %%
 
-/* this will be called if we have syntax errors */
 int yyerror (char* yaccProvidedMessage) {
-	fprintf(stderr, "%s: at line %d, before token: %s\n", yaccProvidedMessage, yylineno, yytext);
-	fprintf(stderr, "INPUT NOT VALID\n");
-	cout << "Error: parse error on line " << yylineno << "!  Message: " << yaccProvidedMessage << endl;
+	fprintf(stderr, "INPUT NOT VALID: %s: at line %d, before token: %s\n", yaccProvidedMessage, yylineno, yytext);
 	return 0;
 }
 
@@ -625,8 +717,8 @@ int main(int argc, char** argv) {
 	initializeSymTable();
 	scopeSpaceIncrease();//Inserts 0,0,0 at cur scope space
 	yyparse(); /* Parse through the input - the function generated by yacc */
-	printEmits();
-	printFullSymTable();
+	printQuads();
+	//printFullSymTable();
 	
 	fclose(yyin);
     return 0;

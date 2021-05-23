@@ -10,12 +10,13 @@ using namespace std;
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wformat="
 
-#define EXPAND_SIZE 1024
-#define CURR_SIZE 	(total*sizeof(quad))
-#define NEW_SIZE 	(EXPAND_SIZE*sizeof(quad)+CURR_SIZE)
 
-//From other file beg
 enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC};
+
+struct forstruct{
+	int enter;
+	int test;
+};
 
 typedef struct Information{
 	enum SymbolType type;
@@ -24,21 +25,13 @@ typedef struct Information{
 	unsigned int offset;
 	unsigned int scope;
 } Information;
+
 Information* lookup(string s);
 void insertVariable(string name, unsigned int line);
-//From other file end
 
-
-unsigned total = 0;
-unsigned int currQuad = 0;
-
-int tempcounter = 0;
+unsigned int total = 0, currQuad = 0, tempcounter = 0, scopeSpaceCounter = 1, quadsCounter = 0;
 stack<vector<int>> scopeSpaces; //vect[0] = programVarOffset, vect[1] = functionLocalOffset, vect[3] = formalArgOffset
-unsigned scopeSpaceCounter = 1;
 
-int quadsCounter = 0;
-
-// na valoume ta and, or , not   !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 enum iopcode {
 	assign, 	add,		sub,
 	mul,		divide,		mod,
@@ -78,16 +71,15 @@ enum expr_t {
 
 
 struct symbol {
-	symbol_t type;                                 //to xoyme hdh
-	char* name;  //dynamic string
-	scopespace_t space; // originating scope scapce
-	unsigned offset; // offset in scope space      //prepei na to kratame san extra pedio 
-	unsigned scope; // scope value                // to xoume hdh
-	unsigned line; //source line of declaration   //yylineno?
+	symbol_t type;
+	char* name;
+	scopespace_t space; 
+	unsigned offset;
+	unsigned scope;
+	unsigned line;
 };
 
 
-// create a vector that is going to store the quad
 struct expr {
 	expr_t			type;
 	Information*	sym;
@@ -101,13 +93,13 @@ struct expr {
 	expr*			next;
 };
 
-struct quad { //maybe typedef struct quad
+struct quad { 
 	iopcode op;
 	expr* result;
 	expr* arg1;
 	expr* arg2;
-	int label; //int
-	int line; //int
+	int label;
+	int line; 
 };
 
 vector<quad*> quads;
@@ -138,7 +130,7 @@ string exprToString(expr* e){
 	if(e->type == programfunc_e) return e->sym->name;
 	if(e->type == boolexpr_e) return e->sym->name;
 	if(e->type == assignexpr_e) return e->sym->name;
-	return ("inv");
+	return "Fail";
 }
 
 string opToString(iopcode op){
@@ -183,16 +175,22 @@ void emit(iopcode op, expr *result, expr *arg1, expr *arg2, int label, int line)
 
 	quads.push_back(q);
 }
-void printEmits(){
+
+void printQuads(){
 	int idx = 1;
 	for(auto q : quads){
-		printf("%-15s %-20s %-20s %-20s %-20s %-20d\n", (to_string(idx++)+":").c_str(), opToString(q->op).c_str(), exprToString(q->result).c_str(), exprToString(q->arg1).c_str(), exprToString(q->arg2).c_str(), q->label);
+		if(q->label == -1)
+			printf("%-15s %-20s %-20s %-20s %-20s\n", (to_string(idx++)+":").c_str(), opToString(q->op).c_str(), exprToString(q->result).c_str(), exprToString(q->arg1).c_str(), exprToString(q->arg2).c_str());
+		else
+			printf("%-15s %-20s %-20s %-20s %-20s %-20d\n", (to_string(idx++)+":").c_str(), opToString(q->op).c_str(), exprToString(q->result).c_str(), exprToString(q->arg1).c_str(), exprToString(q->arg2).c_str(), q->label);
 	}
+	printf("\n\n");
 }
-// Dimiourgoyme kainourio onoma gia tis prosorines metavlhtes
+
 string newtempname() { 
 	return "_t" + to_string(tempcounter++);
 }
+
 void resettemp() { tempcounter = 0; }
 
 Information* newtemp() {
@@ -205,21 +203,6 @@ Information* newtemp() {
 	return sym;
 }
 
-// expr* lvalue_expr(Information* sym) {
-// 	assert(sym);
-// 	expr*  e = (expr*) malloc(sizeof(expr));
-// 	memset(e,0,sizeof(expr));	
-// 	e->next = (expr*) 0;
-// 	e->sym = sym;
- 
-// 	switch(sym->type){
-// 		//case var_s : e->type = var_s) break;
-// 		//case programfunc_s : e->type = programfunc_e : break;
-// 		//case libraryfunc_s : e->type = libraryfunc_e : break;
-// 		default:assert(0);
-// 	}
-// 	return e;
-// }
 
 scopespace_t currScopeSpace(void){
 	if(scopeSpaceCounter == 1) return programVar;
@@ -261,35 +244,8 @@ void exitScopeSpace(){
 	scopeSpaceCounter -= 2;
 }
 
-// FIX THIS FUNCTION LATER !!!!!!!!!!!!!
-void distributetype(int vars, int type) {
-	/*
-	for each v in vars do {   
-		if (v.class = pointervar) {
-			v.size = 4;
-		}else if (v.class = arrayvar){
-			v.size = arraytotal(v.dims)*type.size;
-		}else if (v.class = arraypointervar){
-			v.size = arraytotal(v.dims)*4;
-		}else{
-			v.size = type.size;
-			v.offset = getcurroffset();
-			inccurroffset(v.size);
-		}
-		*/
-}
-
 
 unsigned int nextQuad(){ return quadsCounter+1; }
-
-// FIX THIS LATER
-/*
-void dumparguments() {
-	for (local i = 0, local n = totalarguments(); i < n; ++i) {
-		printf(argument(i));
-		printf("\n"); };
-	}
-}*/
 
 expr* newexpr(expr_t t){
   expr* e = new expr;
@@ -304,7 +260,7 @@ expr* emit_iftableitem(expr* e, int yylineno){
 	else {
 		expr* result = newexpr(var_e);
 		result->sym = newtemp();
-		emit(tablegetelem, e, e->index, result, -1, yylineno);
+		emit(tablegetelem, result, e, e->index, -1, yylineno);
 		return result;
 	}
 }
@@ -315,7 +271,7 @@ expr* newexpr_conststring(string val) {
 	return e;
 }
 
-expr* member_item (expr* e, string name, int yylineno) {
+expr* member_item(expr* e, string name, int yylineno) {
 	e = emit_iftableitem(e, yylineno); // Emit code if r-value use of table item
 	expr* ti = newexpr(tableitem_e); // Make a new expression
 	ti->sym = e->sym;
@@ -333,7 +289,6 @@ expr *make_call(expr *lv, expr* elist, int yylineno) {
       	current = next;
     }
    	expr* head = prev;
-
 	expr *func = emit_iftableitem(lv,yylineno);
 	while (head) {
 		emit(param, head, NULL, NULL, -1,yylineno);
@@ -372,37 +327,6 @@ void make_stmt(stmt_t *s) {
 	s->breakList = s->contList = 0;
 }
 
-int newlist(int i) {
-	quads[i]->label = 0;
-	return i;
-}
-
-int mergelist(int l1, int l2) {
-	if (!l1)
-		return l2;
-	else if (!l2)
-		return l1;
-	else {
-		int i = l1;
-		while (quads[i]->label){
-			i = quads[i]->label;
-		}
-		quads[i]->label = l2;
-		return l1;
-	}
-}
-
-void patchlist(int list, int label) {
-	while (list) {
-		int next = quads[list]->label;
-		quads[list]->label = label;
-		list = next;
-	}
-}
-
-// Use this function to check correct use of
-// of expression in arithmetic
-
 void check_arith(expr* e, string context) {
 	if (e->type == constbool_e ||
 	e->type == conststring_e ||
@@ -416,13 +340,9 @@ void check_arith(expr* e, string context) {
 	}
 }
 
-
-
-//BELOW IS HELPER FILEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEEE
 int scope = 0;
 
 Information* allocInfo(SymbolType type, string name, int line, int offset, int scope){
-	//Information* info = (Information*) malloc(sizeof(Information));
 	Information* info = new Information;
 	info->type = type;
 	info->name = name;
@@ -431,6 +351,7 @@ Information* allocInfo(SymbolType type, string name, int line, int offset, int s
 	info->scope = scope;
 	return info;
 }
+
 typedef struct PrintToken{
 	string value;
 	Information info;
@@ -438,6 +359,36 @@ typedef struct PrintToken{
 
 bool comparator(PrintToken a, PrintToken b){
 	return a.info.line < b.info.line;
+}
+stack<vector<int>> breakLists;
+stack<vector<int>> contLists;
+void loopEnter(){
+	vector<int> a;
+	vector<int> b;
+	breakLists.push(a);
+	contLists.push(b);
+}
+void patchBreak(int label){
+	for(int i : breakLists.top()) {
+		printf("Pached break %d , at %d\n",i,label);
+		patchlabel(i,label);
+	}
+}
+void patchCont(int label){
+	for(int i : contLists.top()) {
+		printf("Pached cont %d , at %d\n",i,label);
+		patchlabel(i,label);
+	}
+}
+void insertBreak(int label){
+	breakLists.top().push_back(label);
+}
+void insertCont(int label){
+	contLists.top().push_back(label);
+}
+void loopExit(){
+	breakLists.pop();
+	contLists.pop();
 }
 
 set<string> systemFunctions;
@@ -517,7 +468,7 @@ Information* lookupTillGlobalScope(string s, bool careAboutFunctionInBetween){
 void insertVariable(string name, unsigned int line){
 	Information* info = allocInfo(scope==0?GLOBAL:LOC, name, line, currScopeOffset(), scope);
 	activeSymTable[scope].insert({name, info});
-	//info.offset = ?;
+
 	Information info2;
 	info2.type = scope==0?GLOBAL:LOC;
 	info2.line = line;
@@ -526,14 +477,12 @@ void insertVariable(string name, unsigned int line){
 	info2.offset = currScopeOffset();
 	fullSymTable[scope].push_back({name, info2});
 	inCurrScopeOffset();
-	//return info;
 }
 
 //Information
 void insertArgument(string name, unsigned int line){
 	Information* info = allocInfo(FORMAL, name, line, currScopeOffset(), scope);
 	activeSymTable[scope].insert({name, info});
-	//info.offset = ?;
 
 	Information info2;
 	info2.type = FORMAL;
@@ -543,14 +492,12 @@ void insertArgument(string name, unsigned int line){
 	info2.offset = currScopeOffset();
 	fullSymTable[scope].push_back({name, info2});
 	inCurrScopeOffset();
-	//return info;
 }
 
 //Information
 void insertUserFunction(string name, unsigned int line){
 	Information* info = allocInfo(USERFUNC, name, line, 0, scope);
 	activeSymTable[scope].insert({name, info});
-	//info.offset = ?;
 
 	Information info2;
 	info2.type = USERFUNC;
@@ -559,7 +506,6 @@ void insertUserFunction(string name, unsigned int line){
 	info2.scope = scope;
 	info2.offset = 0;
 	fullSymTable[scope].push_back({name, info2});
-	//return info;
 }
 
 bool isSystemFunction(string name){
@@ -570,7 +516,6 @@ bool isSystemFunction(string name){
 void globalInsert(string name, enum SymbolType type, unsigned int line){
 	Information* info = allocInfo(type, name, line, 0, 0);
 	activeSymTable[0].insert({name, info});
-	//info.offset = ?;
 	
 	Information info2;
 	info2.type = type;
@@ -616,8 +561,8 @@ void printFullSymTable(){
 			else if(info.type == LOC) label = "[local variable]";
 			else if(info.type == FORMAL) label = "[formal argument]";
 			else if(info.type == USERFUNC) label = "[user function]";
-			else label = "[library function]";	
-			printf("\"%s\" %s (line %d) (scope %d) (offset %d)\n",key.c_str(),label.c_str(),info.line,i,info.offset);
+			else label = "[library function]";
+			printf("\"%s\" %s (line %d) (scope %d)\n",key.c_str(),label.c_str(),info.line,i);
 		}
 	}
 }
