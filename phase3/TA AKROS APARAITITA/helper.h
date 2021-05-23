@@ -185,7 +185,7 @@ void printQuads(){
 	int idx = 1;
 	for(auto q : quads){
 		if(q->label == -1)
-			printf("%-15s %-20s %-20s %-20s %-20s \n", (to_string(idx++)+":").c_str(), opToString(q->op).c_str(), exprToString(q->result).c_str(), exprToString(q->arg1).c_str(), exprToString(q->arg2).c_str());
+			printf("%-15s %-20s %-20s %-20s %-20s\n", (to_string(idx++)+":").c_str(), opToString(q->op).c_str(), exprToString(q->result).c_str(), exprToString(q->arg1).c_str(), exprToString(q->arg2).c_str());
 		else
 			printf("%-15s %-20s %-20s %-20s %-20s %-20d\n", (to_string(idx++)+":").c_str(), opToString(q->op).c_str(), exprToString(q->result).c_str(), exprToString(q->arg1).c_str(), exprToString(q->arg2).c_str(), q->label);
 	}

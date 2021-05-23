@@ -6,6 +6,7 @@
 	extern int yylex(void);
 	extern char* yytext;
 	extern FILE* yyout;
+	int loopcounter = 0;
 	
 	int fID = 1;
 	bool shouldInsert = true;
@@ -30,7 +31,7 @@
 //%type <intval> expr
 %type <stringval> whilestmt forstmt block
 %type <stringval> temp_stmt
-%type <intval> ifprefix elseprefix whilestart whilecond
+%type <intval> ifprefix elseprefix whilestart whilecond N M
 %type <exprval> expr lvalue assignexpr stmt const primary term member indexedelem indexed objectdef elist returnstmt funcdef funcprefix call
 
 %left ASSIGN
@@ -609,7 +610,23 @@ ifstmt:	ifprefix stmt {
 	};
 
 
-whilestart : whilestmt 
+loopstart: 
+	{
+		++loopcounter;
+	};
+
+loopend: 
+	{
+		--loopcounter;
+	};
+
+loopstmt: loopstart stmt loopend 
+	{
+		$<exprval>$ = $stmt;
+	};
+
+
+whilestart : WHILE
 	{
 		$whilestart = nextQuad();
 		pushType(0);
@@ -617,62 +634,23 @@ whilestart : whilestmt
 
 whilecond :  LEFT_PARENTH expr RIGHT_PARENTH
 	{
-		emit(if_eq, $expr, newexpr_constbool(1), nextquad() + 2, -1, yylineno);
-		$whilecond = nextquad();
+		emit(if_eq, $expr, newexpr_constbool(1), NULL, nextQuad()+2, yylineno);
+		$whilecond = nextQuad();
 		emit(jump, NULL, NULL, 0, -1, yylineno);
 	};
 
-whilestmt : whilestart whilecond stmt 
+whilestmt: whilestart whilecond loopstmt 
 	{
-		emit(jump, NULL, NULL, $whilestart, -1, yylineno);
-		patchlabel($whilecond, nextquad());
-		patchlist($stmt.breaklist, nextquad());
-		patchlist($stmt.contlist, $whilestart);
+		emit(jump, NULL, NULL, NULL, $whilestart, yylineno);
+		patchlabel($whilecond, nextQuad());
+		//patchlist($stmt.breaklist, nextQuad());
+		//patchlist($stmt.contlist, $whilestart);
 
 		popType();
 	};
 
 
 /*
-N :  { $N = nextquad(); emit(jump, NULL, NULL, 0, -1, yylineno); }
-M : { $M = nextquad(); }
-
-forprefix : for (elist; M expr;
-{
-	$forprefix.test = $M;
-	$forprefix.enter = nextquad();
-	emit(if_eq, $expr, newexpr_constbool(1), 0 , -1 , yylineno);
-}
-
-for : forprefix N1 elist ) N2 stmt N3 
-{
-	patchlabel($forprefix.enter, $N2 + 1); // true jump
-	patchlabel($N1, nextquad()); // false jump
-	patchlabel($N2, $forprefix.test); // loop jump
-	patchlabel($N3, $N1 + 1); // closure jump
-
-	patchlist($stmt.breaklist, nextquad());
-	patchlist($stmt.contlist, $N1 + 1);
-}
-
-loopstart : ε { ++loopcounter; }
-loopend : ε { --loopcounter; }
-loopstmt : loopstart stmt loopend { $ loopstmt = $stmt; }
-
-whilestmt : while (expr) loopstmt
-forstmt : for (elist; expr; elist) loopstmt
-
-funcblockstart : ε
-{
-	push(loopcounterstack, loopcounter); loopcounter = 0;
-}
-
-funcblockend : ε { loopcounter = pop(loopcounterstack); }
-
-funcdef : function[id](idlist) funcblockstart block funcblockend
-
-*/
-
 	
 forstmt:	FOR
 		{
@@ -686,6 +664,30 @@ forstmt:	FOR
 			popType();
 		} 
 		;	 
+
+forprefix : FOR LEFT_PARENTH elist SEMICOLON M expr SEMICOLON
+{
+	$forprefix.test = $M;
+	$forprefix.enter = nextQuad();
+	emit(if_eq, $expr, newexpr_constbool(1), 0 , -1 , yylineno);
+}
+
+
+FOR : forprefix N1 elist RIGHT_PARENTH N2 stmt N3 
+{
+	//patchlabel($forprefix.enter, $N2 + 1); // true jump
+	patchlabel($N1, nextQuad()); // false jump
+	//patchlabel($N2, $forprefix.test); // loop jump
+	patchlabel($N3, $N1 + 1); // closure jump
+
+	//patchlist($stmt.breaklist, nextQuad());
+	//patchlist($stmt.contlist, $N1 + 1);
+}
+
+*/
+
+
+
 
 returnstmt:	RETURN SEMICOLON {
 				if(!isInFunction()) {
@@ -706,16 +708,27 @@ returnstmt:	RETURN SEMICOLON {
 
 
 /*
+N :  { $N = nextquad(); emit(jump, NULL, NULL, 0, -1, yylineno); }
+M : { $M = nextquad(); }
+
+
+funcblockstart : ε
+{
+	push(loopcounterstack, loopcounter); loopcounter = 0;
+}
+
+funcblockend : ε { loopcounter = pop(loopcounterstack); }
+
+funcdef : function[id](idlist) funcblockstart block funcblockend
+
 
 stmts : stmt { $stmts = $stmt; }
 stmts : stmts1 stmt
 {
 	$stmts.breaklist = mergelist($stmts1.breaklist, $stmt.breaklist);
 	$stmts.contlist = mergelist($stmts1.contlist, $stmt.contlist);
-}
+
 */
-
-
 
 %%
 
