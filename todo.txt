@@ -1,0 +1,29 @@
+-------------sossssss------------
+
+local id    id  ..id
+
+na mhn tiponoume ta scopes
+
+dialexh 11 slide 2
+
+dialexh 10 telaytaio slide
+
+
+Na valoyme check_arith($expr); opou opou den to exoyme valei
+
+Εκφράσεις (4/4)     Βασικές εκφράσεις (2/9)          Βασικές εκφράσεις (3/9)       Βασικές εκφράσεις (4/9)  Βασικές εκφράσεις (5/9)
+
+ta quads na mpainoyn se ena arxeio quads.txt
+
+for
+while
+return
+continue
+break
+backpatching
+
+otan vlepoume error na kanoume exit h telospanton na stamatame to proograma kapos
+
+na vgaloyme oti extra sxolia yaprxoyn
+
+na testaroume me ta test pou hdh exoyme
