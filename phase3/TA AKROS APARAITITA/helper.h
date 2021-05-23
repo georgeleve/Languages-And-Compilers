@@ -181,16 +181,21 @@ void emit(iopcode op, expr *result, expr *arg1, expr *arg2, int label, int line)
 	quads.push_back(q);
 }
 
-void printEmits(){
+void printQuads(){
 	int idx = 1;
 	for(auto q : quads){
-		printf("%-15s %-20s %-20s %-20s %-20s %-20d\n", (to_string(idx++)+":").c_str(), opToString(q->op).c_str(), exprToString(q->result).c_str(), exprToString(q->arg1).c_str(), exprToString(q->arg2).c_str(), q->label);
+		if(q->label == -1)
+			printf("%-15s %-20s %-20s %-20s %-20s \n", (to_string(idx++)+":").c_str(), opToString(q->op).c_str(), exprToString(q->result).c_str(), exprToString(q->arg1).c_str(), exprToString(q->arg2).c_str());
+		else
+			printf("%-15s %-20s %-20s %-20s %-20s %-20d\n", (to_string(idx++)+":").c_str(), opToString(q->op).c_str(), exprToString(q->result).c_str(), exprToString(q->arg1).c_str(), exprToString(q->arg2).c_str(), q->label);
 	}
+	printf("\n\n");
 }
 
 string newtempname() { 
 	return "_t" + to_string(tempcounter++);
 }
+
 void resettemp() { tempcounter = 0; }
 
 Information* newtemp() {
@@ -367,7 +372,6 @@ void check_arith(expr* e, string context) {
 	}
 }
 
-
 int scope = 0;
 
 Information* allocInfo(SymbolType type, string name, int line, int offset, int scope){
@@ -379,6 +383,7 @@ Information* allocInfo(SymbolType type, string name, int line, int offset, int s
 	info->scope = scope;
 	return info;
 }
+
 typedef struct PrintToken{
 	string value;
 	Information info;
@@ -465,7 +470,7 @@ Information* lookupTillGlobalScope(string s, bool careAboutFunctionInBetween){
 void insertVariable(string name, unsigned int line){
 	Information* info = allocInfo(scope==0?GLOBAL:LOC, name, line, currScopeOffset(), scope);
 	activeSymTable[scope].insert({name, info});
-	//info.offset = ?;
+
 	Information info2;
 	info2.type = scope==0?GLOBAL:LOC;
 	info2.line = line;
@@ -474,14 +479,12 @@ void insertVariable(string name, unsigned int line){
 	info2.offset = currScopeOffset();
 	fullSymTable[scope].push_back({name, info2});
 	inCurrScopeOffset();
-	//return info;
 }
 
 //Information
 void insertArgument(string name, unsigned int line){
 	Information* info = allocInfo(FORMAL, name, line, currScopeOffset(), scope);
 	activeSymTable[scope].insert({name, info});
-	//info.offset = ?;
 
 	Information info2;
 	info2.type = FORMAL;
@@ -491,14 +494,12 @@ void insertArgument(string name, unsigned int line){
 	info2.offset = currScopeOffset();
 	fullSymTable[scope].push_back({name, info2});
 	inCurrScopeOffset();
-	//return info;
 }
 
 //Information
 void insertUserFunction(string name, unsigned int line){
 	Information* info = allocInfo(USERFUNC, name, line, 0, scope);
 	activeSymTable[scope].insert({name, info});
-	//info.offset = ?;
 
 	Information info2;
 	info2.type = USERFUNC;
@@ -507,7 +508,6 @@ void insertUserFunction(string name, unsigned int line){
 	info2.scope = scope;
 	info2.offset = 0;
 	fullSymTable[scope].push_back({name, info2});
-	//return info;
 }
 
 bool isSystemFunction(string name){
@@ -518,7 +518,6 @@ bool isSystemFunction(string name){
 void globalInsert(string name, enum SymbolType type, unsigned int line){
 	Information* info = allocInfo(type, name, line, 0, 0);
 	activeSymTable[0].insert({name, info});
-	//info.offset = ?;
 	
 	Information info2;
 	info2.type = type;
@@ -564,8 +563,9 @@ void printFullSymTable(){
 			else if(info.type == LOC) label = "[local variable]";
 			else if(info.type == FORMAL) label = "[formal argument]";
 			else if(info.type == USERFUNC) label = "[user function]";
-			else label = "[library function]";	
-			printf("\"%s\" %s (line %d) (scope %d) (offset %d)\n",key.c_str(),label.c_str(),info.line,i,info.offset);
+			else label = "[library function]";
+			//printf(offset %d, info.offset);  uncomment for debug
+			printf("\"%s\" %s (line %d) (scope %d)\n",key.c_str(),label.c_str(),info.line,i);
 		}
 	}
 }
