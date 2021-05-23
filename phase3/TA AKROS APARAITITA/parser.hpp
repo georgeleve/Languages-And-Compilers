@@ -154,9 +154,10 @@ union YYSTYPE
 	char* stringval;
 	int intval;
 	float floatval;
+	struct forstruct* forval;
 	struct expr* exprval;
 
-#line 160 "parser.hpp"
+#line 161 "parser.hpp"
 
 };
 typedef union YYSTYPE YYSTYPE;

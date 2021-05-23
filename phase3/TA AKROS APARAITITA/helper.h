@@ -10,12 +10,13 @@ using namespace std;
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wformat="
 
-#define EXPAND_SIZE 1024
-#define CURR_SIZE 	(total*sizeof(quad))
-#define NEW_SIZE 	(EXPAND_SIZE*sizeof(quad)+CURR_SIZE)
-
 
 enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC};
+
+struct forstruct{
+	int enter;
+	int test;
+};
 
 typedef struct Information{
 	enum SymbolType type;
@@ -265,7 +266,7 @@ expr* emit_iftableitem(expr* e, int yylineno){
 	else {
 		expr* result = newexpr(var_e);
 		result->sym = newtemp();
-		emit(tablegetelem, e, e->index, result, -1, yylineno);
+		emit(tablegetelem, result, e, e->index, -1, yylineno);
 		return result;
 	}
 }
@@ -332,33 +333,6 @@ void make_stmt(stmt_t *s) {
 	s->breakList = s->contList = 0;
 }
 
-int newlist(int i) {
-	quads[i]->label = 0;
-	return i;
-}
-
-int mergelist(int l1, int l2) {
-	if (!l1)
-		return l2;
-	else if (!l2)
-		return l1;
-	else {
-		int i = l1;
-		while (quads[i]->label){
-			i = quads[i]->label;
-		}
-		quads[i]->label = l2;
-		return l1;
-	}
-}
-
-void patchlist(int list, int label) {
-	while (list) {
-		int next = quads[list]->label;
-		quads[list]->label = label;
-		list = next;
-	}
-}
 void check_arith(expr* e, string context) {
 	if (e->type == constbool_e ||
 	e->type == conststring_e ||
@@ -391,6 +365,36 @@ typedef struct PrintToken{
 
 bool comparator(PrintToken a, PrintToken b){
 	return a.info.line < b.info.line;
+}
+stack<vector<int>> breakLists;
+stack<vector<int>> contLists;
+void loopEnter(){
+	vector<int> a;
+	vector<int> b;
+	breakLists.push(a);
+	contLists.push(b);
+}
+void patchBreak(int label){
+	for(int i : breakLists.top()) {
+		printf("Pached break %d , at %d\n",i,label);
+		patchlabel(i,label);
+	}
+}
+void patchCont(int label){
+	for(int i : contLists.top()) {
+		printf("Pached cont %d , at %d\n",i,label);
+		patchlabel(i,label);
+	}
+}
+void insertBreak(int label){
+	breakLists.top().push_back(label);
+}
+void insertCont(int label){
+	contLists.top().push_back(label);
+}
+void loopExit(){
+	breakLists.pop();
+	contLists.pop();
 }
 
 set<string> systemFunctions;

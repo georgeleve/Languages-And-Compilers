@@ -7,10 +7,10 @@
 	extern char* yytext;
 	extern FILE* yyout;
 	int loopcounter = 0;
-	
 	int fID = 1;
 	bool shouldInsert = true;
 %}
+
 %start program
 
 %union {
