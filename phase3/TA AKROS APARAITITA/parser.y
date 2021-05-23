@@ -30,7 +30,7 @@
 //%type <intval> expr
 %type <stringval> whilestmt forstmt block
 %type <stringval> temp_stmt
-%type <intval> ifprefix elseprefix
+%type <intval> ifprefix elseprefix whilestart whilecond
 %type <exprval> expr lvalue assignexpr stmt const primary term member indexedelem indexed objectdef elist returnstmt funcdef funcprefix call
 
 %left ASSIGN
@@ -58,10 +58,16 @@ stmt: expr SEMICOLON
 	| forstmt 
 	| returnstmt
 	| BREAK SEMICOLON{
-		if(!isLastTypeLoop()) fprintf(stderr,"ERROR: No loop found in this scope. (line %d)\n",yylineno);
+		if(!isLastTypeLoop()) {fprintf(stderr,"ERROR: No loop found in this scope. (line %d)\n",yylineno);exit(-1);}
+		//make_stmt(&$break);
+		//$break.breaklist = newlist(nextquad());
+		emit(jump, NULL, NULL, 0, -1, yylineno);
 	}
 	| CONTINUE SEMICOLON{
-		if(!isLastTypeLoop()) fprintf(stderr,"ERROR: No loop found in this scope. (line %d)\n",yylineno);
+		if(!isLastTypeLoop()) {fprintf(stderr,"ERROR: No loop found in this scope. (line %d)\n",yylineno);exit(-1);}
+		//make_stmt(&$continue);
+		//$continue.contlist = newlist(nextquad());
+		emit(jump, NULL, NULL, 0, -1, yylineno);
 	}
 	| block
 	| funcdef
@@ -160,11 +166,14 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { $$ = $2;}
 				Information* scopeFound = lookupTillGlobalScope(var,true);
 				if(scopeFound==NULL){
 					fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else if(scopeFound->scope==-2){
 					fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						fprintf(stderr,"Error: Can't use increment operator on function! (line %d)\n", yylineno);
+						exit(-1);
 					}else{
 						//else printf("Prefix increment operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
 						check_arith($lvalue, "Plus Plus lvalue");
@@ -188,11 +197,14 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { $$ = $2;}
 				Information* scopeFound = lookupTillGlobalScope(var,true);
 				if(scopeFound==NULL){
 					fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else if(scopeFound->scope==-2){
 					fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						fprintf(stderr,"Error: Can't use increment operator on function! (line %d)\n", yylineno);
+						exit(-1);
 					} else{
 						//else printf("Suffix increment operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
 						check_arith($lvalue, "lvalue Plus Plus");
@@ -217,11 +229,14 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { $$ = $2;}
 				Information* scopeFound = lookupTillGlobalScope(var,true);
 				if(scopeFound==NULL){
 					fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else if(scopeFound->scope==-2){
 					fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						fprintf(stderr,"Error: Can't use decrement operator on function! (line %d)\n", yylineno);
+						exit(-1);
 					}else{
 						//else printf("Prefix decrement operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
 						check_arith($lvalue, "Minus Minus lvalue");
@@ -245,11 +260,14 @@ term: LEFT_PARENTH expr RIGHT_PARENTH { $$ = $2;}
 				Information* scopeFound = lookupTillGlobalScope(var,true);
 				if(scopeFound==NULL){
 					fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else if(scopeFound->scope==-2){
 					fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
 				}else {
 					if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 						fprintf(stderr,"Error: Can't use decrement operator on function! (line %d)\n", yylineno);
+						exit(-1);
 					} else{
 						//else printf("Suffix decrement operator at %s (line %d) at scope %d\n",var.c_str(), yylineno, scopeFound);
 						check_arith($lvalue, "lvalue Minus Minus");
@@ -280,11 +298,14 @@ assignexpr: lvalue ASSIGN expr {
 			//printf("playing with %s (line %d) (scopeFound: %d)\n",var.c_str(),yylineno,scopeFound.first); 
 			if(scopeFound==NULL){
 				fprintf(stderr,"Error var not inserted! \n");
+				exit(-1);
 			}else if(scopeFound->scope==-2){
 				fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+				exit(-1);
 			}else {
 				if(scopeFound->type == USERFUNC || scopeFound->type == LIBFUNC){
 					fprintf(stderr,"Error: Can not assign value to function! (line %d)\n", yylineno);
+					exit(-1);
 				}else{
 					if($lvalue->type == tableitem_e){
 						emit(tablesetelem, $lvalue, $lvalue->index, $expr, -1, yylineno);
@@ -323,6 +344,7 @@ lvalue: ID {
 					//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
 				}else {
 					fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
+					exit(-1);
 				}	
 			}else{
 				if(search->type == USERFUNC || search->type == LIBFUNC){
@@ -336,9 +358,11 @@ lvalue: ID {
 							//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
 						}else {
 							fprintf(stderr,"Error: %s was not found! (line %d)\n",var.c_str(),yylineno);
+							exit(-1);
 						}					
 					}else if(search->type==-2){
 						fprintf(stderr,"Error: %s is not accessible! (line %d)\n",var.c_str(),yylineno); 
+						exit(-1);
 					}else {
 						//printf("We refer to the already existant %s (line %d) at scope %d\n",var.c_str(), yylineno, scope);
 					}
@@ -355,7 +379,10 @@ lvalue: ID {
 				if(!isSystemFunction(var)){
 					if(shouldInsert) insertVariable(var,yylineno);
 					//printf("%s inserted! (line %d)\n",var.c_str(),yylineno); 
-				}else fprintf(stderr,"Error: %s is a system function. (line %d)\n",var.c_str(),yylineno); 
+				}else{
+					fprintf(stderr,"Error: %s is a system function. (line %d)\n",var.c_str(),yylineno); 
+					exit(-1);
+				}
 			}//else printf("We refer to the already existant %s (line %d)\n",var.c_str(),yylineno); 
 			$$ = newexpr(var_e);
 			$$->sym = lookup(var);
@@ -365,7 +392,8 @@ lvalue: ID {
 	  | DOUBLE_COLON ID { 
 			string var = $2;
 			Information* lk = globalLookup(var);
-			if(lk == NULL) fprintf(stderr,"Error: Could not find global variable %s (line %d)\n", var.c_str(), yylineno);
+			if(lk == NULL) {fprintf(stderr,"Error: Could not find global variable %s (line %d)\n", var.c_str(), yylineno);
+			exit(-1);}
 			else{
 				$$ = newexpr(var_e);
 				$$->sym = globalLookup(var);
@@ -483,9 +511,11 @@ funcprefix: FUNCTION ID{
 		Information* lk = lookup(fName);
 		if(lk != NULL){
 			fprintf(stderr,"Error: %s already declared in this scope (line %d).\n",fName.c_str(),yylineno);
+			exit(-1);
 		}else{
 			if(isSystemFunction(fName)){
 				fprintf(stderr,"Error: %s it is already defined as a lib function. (line %d)\n",fName.c_str(),yylineno);
+				exit(-1);
 			} else insertUserFunction(fName, yylineno);
 		}
 		$$ = newexpr(programfunc_e);
@@ -533,9 +563,11 @@ idlist:	ID {
 			Information* lk = lookup(varName);
 			if(lk!=NULL){
 				fprintf(stderr,"Error: %s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
+				exit(-1);
 			}else{
 				if(isSystemFunction(varName)){
 					fprintf(stderr,"Error: %s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
+					exit(-1);
 				} else insertArgument(varName, yylineno);
 			}
 		}
@@ -544,9 +576,11 @@ idlist:	ID {
 			Information* lk = lookup(varName);
 			if(lk!=NULL){
 				fprintf(stderr,"Error: %s already declared in this scope (line %d).\n",varName.c_str(),yylineno);
+				exit(-1);
 			}else{
 				if(isSystemFunction(varName)){
 					fprintf(stderr,"Error: %s can not be a function argument, it is a lib function. (line %d)\n",varName.c_str(),yylineno);
+					exit(-1);
 				} else insertArgument(varName, yylineno);
 			}
 		} 
@@ -574,18 +608,70 @@ ifstmt:	ifprefix stmt {
 		patchlabel($elseprefix , nextQuad());
 	};
 
-whilestmt:	WHILE  
-		 {
-			 pushType(0);
-		 }
-		 LEFT_PARENTH expr RIGHT_PARENTH
-		 {
-		 }
-		 stmt
-		 {
-			popType();
-		 } 
-		 ;  	
+
+whilestart : whilestmt 
+	{
+		$whilestart = nextQuad();
+		pushType(0);
+	};
+
+whilecond :  LEFT_PARENTH expr RIGHT_PARENTH
+	{
+		emit(if_eq, $expr, newexpr_constbool(1), nextquad() + 2, -1, yylineno);
+		$whilecond = nextquad();
+		emit(jump, NULL, NULL, 0, -1, yylineno);
+	};
+
+whilestmt : whilestart whilecond stmt 
+	{
+		emit(jump, NULL, NULL, $whilestart, -1, yylineno);
+		patchlabel($whilecond, nextquad());
+		patchlist($stmt.breaklist, nextquad());
+		patchlist($stmt.contlist, $whilestart);
+
+		popType();
+	};
+
+
+/*
+N :  { $N = nextquad(); emit(jump, NULL, NULL, 0, -1, yylineno); }
+M : { $M = nextquad(); }
+
+forprefix : for (elist; M expr;
+{
+	$forprefix.test = $M;
+	$forprefix.enter = nextquad();
+	emit(if_eq, $expr, newexpr_constbool(1), 0 , -1 , yylineno);
+}
+
+for : forprefix N1 elist ) N2 stmt N3 
+{
+	patchlabel($forprefix.enter, $N2 + 1); // true jump
+	patchlabel($N1, nextquad()); // false jump
+	patchlabel($N2, $forprefix.test); // loop jump
+	patchlabel($N3, $N1 + 1); // closure jump
+
+	patchlist($stmt.breaklist, nextquad());
+	patchlist($stmt.contlist, $N1 + 1);
+}
+
+loopstart : ε { ++loopcounter; }
+loopend : ε { --loopcounter; }
+loopstmt : loopstart stmt loopend { $ loopstmt = $stmt; }
+
+whilestmt : while (expr) loopstmt
+forstmt : for (elist; expr; elist) loopstmt
+
+funcblockstart : ε
+{
+	push(loopcounterstack, loopcounter); loopcounter = 0;
+}
+
+funcblockend : ε { loopcounter = pop(loopcounterstack); }
+
+funcdef : function[id](idlist) funcblockstart block funcblockend
+
+*/
 
 	
 forstmt:	FOR
@@ -604,17 +690,33 @@ forstmt:	FOR
 returnstmt:	RETURN SEMICOLON {
 				if(!isInFunction()) {
 					fprintf(stderr,"Error: This return is not part of a function. (line %d)\n",yylineno); 
+					exit(-1);
 				}
 				emit(ret, NULL, NULL, NULL, -1, yylineno);
 			}
 		  | RETURN{shouldInsert = false;} expr SEMICOLON{
 		   		if(!isInFunction()) {
 		   			fprintf(stderr,"Error: This return is not part of a function. (line %d)\n",yylineno); 
+					exit(-1);
 		   		}
 		   		emit(ret, $expr, NULL, NULL, -1, yylineno);
 		   		shouldInsert = true;
 			}
 		  ;	 
+
+
+/*
+
+stmts : stmt { $stmts = $stmt; }
+stmts : stmts1 stmt
+{
+	$stmts.breaklist = mergelist($stmts1.breaklist, $stmt.breaklist);
+	$stmts.contlist = mergelist($stmts1.contlist, $stmt.contlist);
+}
+*/
+
+
+
 %%
 
 /* this will be called if we have syntax errors */
