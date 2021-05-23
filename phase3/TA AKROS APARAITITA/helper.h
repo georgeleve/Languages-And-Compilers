@@ -29,14 +29,8 @@ typedef struct Information{
 Information* lookup(string s);
 void insertVariable(string name, unsigned int line);
 
-unsigned total = 0;
-unsigned int currQuad = 0;
-
-int tempcounter = 0;
+unsigned int total = 0, currQuad = 0, tempcounter = 0, scopeSpaceCounter = 1, quadsCounter = 0;
 stack<vector<int>> scopeSpaces; //vect[0] = programVarOffset, vect[1] = functionLocalOffset, vect[3] = formalArgOffset
-unsigned scopeSpaceCounter = 1;
-
-int quadsCounter = 0;
 
 enum iopcode {
 	assign, 	add,		sub,
@@ -568,7 +562,6 @@ void printFullSymTable(){
 			else if(info.type == FORMAL) label = "[formal argument]";
 			else if(info.type == USERFUNC) label = "[user function]";
 			else label = "[library function]";
-			//printf(offset %d, info.offset);  uncomment for debug
 			printf("\"%s\" %s (line %d) (scope %d)\n",key.c_str(),label.c_str(),info.line,i);
 		}
 	}
