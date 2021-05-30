@@ -571,30 +571,55 @@ string typeStrings[]={
 
 
 
-// leipei h dialexh 43, 44, 45
-//na ta symplhroso
-
 void execute_newtable(instruction* instr){
 
+	avm_memcall* lv = avm_translate_operand(&instr->result, (avm_memcall*) 0);
 
+	avm_memcellclear(lv);
 
-
+	lv->type = table_m;
+	lv->data.tableVal = avm_tablenew();
+	avm_tableincrefcounter(lv->data.tableVal);
 }
 
-avm_memcell* avm_tablegetelem(...);
+avm_memcell* avm_tablegetelem(avm_table* table, avm_memcell* index);
 
-void avm_tablesetelem(...);
+void avm_tablesetelem(avm_table* table, avm_memcell* index, avm_memcell* content);
 
 
 void execute_tablegetelem(instruction* instr){
+	avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*) 0);	
+	avm_memcell* t = avm_translate_operand(&instr->arg1, (avm_memcell*) 0);
+	avm_memcell* i = avm_translate_operand(&instr->arg2, &ax);
 
+	assert(lv && (&stack[0] <= lv && &stack[top] > lv || lv == &retval));
+	assert(t && &stack[0] <= t && &stack[top] > t);
+	assert(i);
 
+	avm_memcellclear(lv);
+	lv->type = nil_m;
 
+	if(t->type != table_m){
+		avm_error("Illegal use of type %s as table!", typeStrings[t->type]);
+	}else{
+		string ts = avm_tostring(t);
+		string is = avm_tostring(i);
+		avm_warning("%s[%s] not found!", ts, is);
+		free(ts);
+		free(is);
+	}
 }
 
 void execute_tablesetelem(instruction* instr){
+	avm_memcell* lv = avm_translate_operand(&instr->result, (avm_memcell*) 0);
+	avm_memcell* i = avm_translate_operand(&instr->arg1, &ax);
+	avm_memcell* c = avm_translate_operand(&instr->arg2, &bx);
 
+	assert(t && &stack[0] <= t && &stack[top] > t);
+	assert(i && c);
 
-
-
+	if(t->type != table_m)
+		avm_error("Illegal use of type %s as table!", typeString[t->type]);
+	else
+		avm_tablesetelem(t->data.tableVal, i, c);
 }
