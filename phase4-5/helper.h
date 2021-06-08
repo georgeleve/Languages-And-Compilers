@@ -30,6 +30,7 @@ void insertVariable(string name, unsigned int line);
 
 unsigned int total = 0, currQuad = 0, tempcounter = 0, scopeSpaceCounter = 1, quadsCounter = 0;
 stack<vector<int>> scopeSpaces; //vect[0] = programVarOffset, vect[1] = functionLocalOffset, vect[3] = formalArgOffset
+stack<int> funcPatchList; //Patch list for function jumps
 
 enum iopcode {
 	assign, 	add,		sub,
@@ -314,6 +315,13 @@ void patchlabel(int quadNo, int label) {
 	quads[quadNo-1]->label = label;
 }
 
+void functionJumpPatch(int label){
+	int jumpLabel = funcPatchList.top();funcPatchList.pop();
+	patchlabel(jumpLabel,label);
+}
+void functionJumpStore(int label){
+	funcPatchList.push(label);
+}
 expr* newexpr_constbool(bool val) {
 	expr* e = newexpr(constbool_e);
 	e->boolConst = val;
