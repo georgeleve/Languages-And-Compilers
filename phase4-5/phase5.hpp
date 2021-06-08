@@ -68,7 +68,6 @@ void make_operand (expr* e, vmarg* arg) {
 }
 
 
-
 struct instruction {
     vmopcode opcode;
     vmarg result;

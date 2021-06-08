@@ -10,7 +10,6 @@ using namespace std;
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wformat="
 
-
 enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC};
 
 struct forstruct{
