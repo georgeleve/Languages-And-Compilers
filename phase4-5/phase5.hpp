@@ -1,10 +1,19 @@
 #include <string>
 #include <iostream>
+#include <assert.h>
+#include <stdio.h>
 
 unsigned consts_newstring(string s);
 unsigned consts_newnumber(double n);
 unsigned libfuncs_newused(string s);
 struct vmarg { vmarg_t type; unsigned val; }
+
+unsigned char executionFinished = 0;
+unsigned pc = 0;
+unsigned currLine = 0;
+unsigned codeSize = 0;
+instruction* code = (instruction*) 0;
+#define AVM_ENDING_PC codeSize
 
 
 void make_operand (expr* e, vmarg* arg) {
@@ -100,7 +109,6 @@ void patch_incomplete_jumps() {
     }*/
 }
 
-
 extern void generate_ADD 					(quad *quad);
 extern void generate_SUB 					(quad *quad);
 extern void generate_MUL 					(quad *quad);
@@ -159,7 +167,7 @@ generator_func_t generators [] = {
 
 void generate (void) {
     for(unsigned i = 0; i < total; ++i)
-        (*generators[quads[i].op]) (quads + i)
+        (*generators[quads[i].op]) (quads + i);
 }
 
 
@@ -169,7 +177,7 @@ struct avm_memcell {
    avm_memcell_t type;
    union {
       double numVal;
-      //int intVal;
+      int intVal;
       string strVal; //may use string
       unsigned char boolVal;
       struct avm_table *tableVal;
@@ -256,16 +264,8 @@ execute_func_t executeFuncs[] = {
     execute_newtable,
     execute_tablegetelem,
     execute_tablesetelem,
-    execute_nop,
+    execute_nop
 };
-
-
-unsigned char executionFinished = 0;
-unsigned pc = 0;
-unsigned currLine = 0;
-unsigned codeSize = 0;
-instruction* code = (instruction*) 0;
-#define AVM_ENDING_PC codeSize
 
 void execute_cycle(void){
     if(executionFinished) return;
@@ -287,7 +287,6 @@ void execute_cycle(void){
         if(pc == oldPC) ++pc;
    }
 }
-
 
 void avm_callsaveenviroment(void){
 	avm_push_envvalue(totalActuals);
@@ -502,7 +501,7 @@ tobool_func_t toboolFuncs[] = {
 };
 
 unsigned char avm_tobool(avm_memcell* m){
-	assert(m->type >=0 && m->type <undef_m);
+	assert(m->type >=0 && m->type < undef_m);
 	return (*toboolFuncs[m->type])(m);
 }
 
@@ -621,4 +620,207 @@ void execute_tablesetelem(instruction* instr){
 		avm_error("Illegal use of type %s as table!", typeString[t->type]);
 	else
 		avm_tablesetelem(t->data.tableVal, i, c);
+}
+
+
+void generate (op, quad *quad) {
+	instruction t;
+	t.opcode = op;
+	make_operand(quad.arg1, &t.arg1);
+	make_operand(quad.arg2, &t.arg2);
+	make_operand(quad.result, &t.result);
+	quad.taddress = nextinstructionlabel();
+	emitInstr(t);
+}
+void generate_ADD (quad *quad) { generate(add, quad); }
+void generate_SUB (quad *quad) { generate(sub, quad); }
+void generate_MUL (quad *quad) { generate(mul, quad); }
+void generate_DIV (quad *quad) { generate(div, quad); }
+void generate_MOD (quad *quad) { generate(mod, quad); }
+
+
+void generate_NEWTABLE (quad *quad) { generate(newtable, quad); }
+void generate_TABLEGETELM (quad *quad) { generate(tablegetelem, quad); }
+void generate_TABLESETELEM (quad *quad) { generate(tablesetelem, quad); }
+void generate_ASSIGN (quad *quad) { generate(assign, quad); }
+void generate_NOP () { instruction t; t.opcode=nop; emitInstr(t); } 
+
+void generate_relational (op, quad *quad) {
+	instruction t;
+	t.opcode = op;
+	make_operand(quad.arg1, &t.arg1);
+	make_operand(quad.arg2, &t.arg2);
+	t.result.type = label_a;
+	if quad.label jump target < currprocessedquad() then
+		t.result.value = quads[quad.label].taddress;
+	else
+	add_incomplete_jump(nextinstructionlabel(), quad.label);
+	quad.taddress = nextinstructionlabel();
+	emitInstr(t);
+}
+
+void generate_JUMP (quad *quad) { generate_relational(jump, quad); }
+void generate_IF_EQ (quad *quad) { generate_relational(jeq, quad); }
+void generate_IF_NOTEQ(quad *quad) { generate_relational(jne, quad); }
+void generate_IF_GREATER (quad *quad) { generate_relational(jgt, quad); }
+void generate_IF_GREATEREQ(quad *quad) { generate_relational(jge, quad); }
+void generate_IF_LESS (quad *quad) { generate_relational(jlt, quad); }
+void generate_IF_LESSEQ (quad *quad) { generate_relational(jle, quad); }
+
+void generate_NOT (quad *quad) {
+	quad.taddress = nextinstructionlabel();
+	instruction t;
+	t.opcode = jeq;
+	make_operand(quad.arg1, &t.arg1);
+	make_booloperand(&t.arg2, false);
+	t.result.type = label_a;
+	t.result.value = nextinstructionlabel()+3;
+	emit(t);
+	t.opcode = assign;
+	make_booloperand(&t.arg1, false);
+	reset_operand(&t.arg2);
+	make_operand(quad.result, &t.result);
+	emit(t);
+	t.opcode = jump;
+	reset_operand (&t.arg1);
+	reset_operand(&t.arg2);
+	t.result.type = label_a;
+	t.result.value = nextinstructionlabel()+2;
+	emit(t);
+	t.opcode = assign;
+	make_booloperand(&t.arg1, true);
+	reset_operand(&t.arg2);
+	make_operand(quad.result, &t.result);
+	emit(t);
+}
+
+void generate_OR (quad *quad) {
+	quad.taddress = nextinstructionlabel();
+	instruction t;
+	t.opcode = jeq;
+	make_operand(quad.arg1, &t.arg1);
+	make_booloperand(&t.arg2, true);
+	t.result.type = label_a;
+	t.result.value = nextinstructionlabel()+4;
+	emit(t);
+	make_operand(quad.arg2, &t.arg1);
+	t.result.value = nextinstructionlabel()+3;
+	emit(t);
+	t.opcode = assign;
+	make_booloperand(&t.arg1, false);
+	reset_operand(&t.arg2);
+	make_operand(quad.result, &t.result);
+	emit(t);
+	t.opcode = jump;
+	reset_operand (&t.arg1);
+	reset_operand(&t.arg2);
+	t.result.type = label_a;
+	t.result.value = nextinstructionlabel()+2;
+	emit(t);
+	t.opcode = assign;
+	make_booloperand(&t.arg1, true);
+	reset_operand(&t.arg2);
+	make_operand(quad.result, &t.result);
+	emit(t);
+} 
+
+// Kapos etsi alla mporei na thelei kai allages
+void generate_AND (quad *quad) {
+	quad.taddress = nextinstructionlabel();
+	instruction t;
+	t.opcode = jeq;
+	make_operand(quad.arg1, &t.arg1);
+	make_booloperand(&t.arg2, true);
+	t.result.type = label_a;
+	t.result.value = nextinstructionlabel()+4;
+	emit(t);
+	make_operand(quad.arg2, &t.arg1);
+	t.result.value = nextinstructionlabel()+3;
+	emit(t);
+	t.opcode = assign;
+	make_booloperand(&t.arg1, false);
+	reset_operand(&t.arg2);
+	make_operand(quad.result, &t.result);
+	emit(t);
+	t.opcode = jump;
+	reset_operand (&t.arg1);
+	reset_operand(&t.arg2);
+	t.result.type = label_a;
+	t.result.value = nextinstructionlabel()+2;
+	emit(t);
+	t.opcode = assign;
+	make_booloperand(&t.arg1, true);
+	reset_operand(&t.arg2);
+	make_operand(quad.result, &t.result);
+	emit(t);
+}
+
+void generate_PARAM(quad *quad) {
+	quad.taddress = nextinstructionlabel();
+	instruction t;
+	t.opcode = pusharg;
+	make_operand(quad.arg1, &t.arg1);
+	emit(t);
+}
+
+void generate_CALL(quad *quad) {
+	quad.taddress = nextinstructionlabel();
+	instruction t;
+	t.opcode = callfunc;
+	make_operand(quad.arg1, &t.arg1);
+	emit(t);
+}
+
+void generate_GETRETVAL(quad *quad) {
+	quad.taddress = nextinstructionlabel();
+	instruction t;
+	t.opcode = assign;
+	make_operand(quad.result, &t.result);
+	make_retvaloperand(&t.arg1);
+	emit(t);
+}
+
+void generate_FUNCSTART(quad *quad) { 
+	f = quad->result->sym;
+	f->value.funcVal->taddress = nextinstructionlabel();
+	quad->taddress = nextinstructionlabel();
+
+	userfunctions.add(f->id, f->taddress, f->totallocals);
+	push(funcstack, f);
+
+	instruction t;
+	t.opcode = enterfunc;
+	make_operand(quad->result, &t.result);
+	emitInstr(t);
+}
+
+void generate_RETURN(quad *quad) { 
+	quad->taddress = nextinstructionlabel();
+	instruction t;σ
+	t.opcode = assign_v;
+
+	make_retvalοperand(&t.result);
+	make_operand(quad->arg1, &t.arg1);
+	emitInstr(t);
+
+	f = top(funcstack);
+	assert(f->returnList, nextinstructionlabel());
+
+	t.opcode = jump_v;
+	reset_operand(&t.arg1);
+	reset_operand(&t.arg2);
+	t.result.type = label_a;
+	emitInstr(t);
+}
+
+void generate_FUNCEND(quad *quad) {
+ 	f = pop(funcstack);
+ 	backpatch(f.returnList, nextinstructionlabel());
+
+ 	quad->taddress = nextinstructionlabel();
+ 	instruction t;
+ 	t.opcode = funcexit_v;
+		
+ 	make_operand(quadInput->result, &t.result);
+ 	emitInstr(t);
 }
