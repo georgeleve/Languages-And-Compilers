@@ -3,18 +3,83 @@
 #include <assert.h>
 #include <stdio.h>
 
+#define AVM_ENDING_PC codeSize
+#define AVM_STACKSIZE 4096
+#define AVM_WIPEOUT(m) memset(&(m), 0, sizeof(m))
+#define AVM_TABLE_HASHSIZE 211
+#define AVM_STACKENV_SIZE 4
+#define AVM_MAX_INSTRUCTIONS (unsigned) nop_v
+
+typedef void (*execute_func_t) (instruction*);
+
+extern void execute_assign (instruction*);
+extern void execute_add (instruction*);
+extern void execute_sub (instruction*);
+extern void execute_mul (instruction*);
+extern void execute_div (instruction*);
+extern void execute_mod (instruction*);
+extern void execute_unimus (instruction*);
+extern void execute_and (instruction*);
+extern void execute_or (instruction*);
+extern void execute_not (instruction*);
+extern void execute_jeq (instruction*);
+extern void execute_jne (instruction*);
+extern void execute_jle (instruction*);
+extern void execute_jge (instruction*);
+extern void execute_jlt (instruction*);
+extern void execute_jgt (instruction*);
+extern void execute_call (instruction*);
+extern void execute_pusharg (instruction*);
+extern void execute_funcenter (instruction*);
+extern void execute_funcexit (instruction*);
+extern void execute_newtable (instruction*);
+extern void execute_tablegetelem (instruction*);
+extern void execute_tablesetelem (instruction*);
+extern void execute_nop (instruction*);
+
+avm_memcell ax, bx, cx;
+avm_memcell retval;
+unsigned top, topsp;
+
+double consts_getnumber(unsigned index);
+string consts_getstring(unsigned index);
+string libfuncs_getused(unsigned index);
+
 unsigned consts_newstring(string s);
 unsigned consts_newnumber(double n);
 unsigned libfuncs_newused(string s);
-struct vmarg { vmarg_t type; unsigned val; }
+unsigned userfuncs_newfuncs(symbol* sym);
 
 unsigned char executionFinished = 0;
 unsigned pc = 0;
 unsigned currLine = 0;
 unsigned codeSize = 0;
 instruction* code = (instruction*) 0;
-#define AVM_ENDING_PC codeSize
 
+
+avm_memcell stack[AVM_STACKSIZE];
+
+struct vmarg { vmarg_t type; unsigned val; }
+
+void avmbinaryfile() {
+	return magicnumber() && arrays() && code() ;
+}
+
+bool magicnumber() {
+	return match(UNSIGNED) && currtoken.intVal == MAGICNUMBER;
+}
+
+bool arrays() {
+	return strings() && numbers() && userfunctions() && libfunctions();
+}
+
+bool strings() {
+	unsigned n;
+	if ( !match(UNSIGNED) )
+		return false;
+	else
+		for (n = currtoken.intVal; n; --n) string();
+}
 
 void make_operand (expr* e, vmarg* arg) {
     /*
@@ -65,6 +130,7 @@ void make_operand (expr* e, vmarg* arg) {
 		case programfunc_e: {
 								arg->type = userfunc_a;
 								arg->val = e->sym->taddress; //INSERTER_USERFUNC(e->sym->value.funcVal->taddress, e->sym->value.funcVal->totallocals,e->sym->value.funcVal->totalargs, (char*) e->sym->value.funcVal->name);
+								arg->val = userfuncs_newfuncs(e->sym);
 								break;
 							}
 		case libraryfunc_e:	{
@@ -76,6 +142,48 @@ void make_operand (expr* e, vmarg* arg) {
 	}
 }
 
+void make_numberoperand(vmarg* arg, double val){
+	arg->val = consts_newnumber(val);
+	arg->type = number_a;
+}
+
+void make_booloperand(vmarg* arg, unsigned val){
+	arg->val = val;
+	arg->type = bool_a;
+}
+
+void retvaloperand(vmarg* arg){
+	arg->type = retval_a;
+}
+
+
+enum vmopcode {
+	assign_v, 	add_v,		sub_v,
+	mul_v,		divide_v,		mod_v,
+	uminus_v,			if_eq_v,		if_not_eq_v,
+	if_lesseq_v,	if_greatereq_v,	if_less_v,
+	if_greater_v,	call_v,		param_v,
+	ret_v,		getretval_v,	funcstart_v,
+	funcend_v,	jump_v,		tablecreate_v,
+	tablegetelem_v,	tablesetelem_v, and_v, or_v, not_v, nop_v
+};
+
+
+enum vmarg_t {
+	label_a = 0,
+	global_a = 1,
+	formal_a = 2,
+	local_a = 3,
+	number_a = 4,
+	string_a = 5,
+	bool_a = 6,
+	nil_a = 7,
+	userfunc_a = 8,
+	libfunc_a = 9,
+	retval_a = 10
+}
+
+
 
 struct instruction {
     vmopcode opcode;
@@ -84,6 +192,22 @@ struct instruction {
     vmarg arg2;
     unsigned srcLine; // we may use unsigned int
 };
+
+struct userfunc {
+	unsigned address;
+	unsigned localSize;
+	string id;
+};
+
+double *numConst;
+unsigned totalNumConsts;
+char** stringConst;
+unsigned totalStringConsts;
+char** namedLibfuncs;
+unsigned totalNamedLibfuncs;
+userfunc* userFuncs;
+unsigned totalUserFuncs;
+
 
 
 
@@ -197,6 +321,72 @@ enum avm_memcell_t {
 	undef_m		= 7
 };
 
+static void avm_initstack(void){
+	for(int i = 0; i < AVM_STACKSIZE; i++) {
+		AVM_WIPEOUT(stack[i]);
+		stack[i].type = undef_m;
+	}
+}
+
+
+avm_table* avm_tablenew(void);
+void avm_tabledestroy(avm_table* t);
+avm_memcell* avm_tablegetelem(avm_memcell* key);
+void avm_tablesetelem(avm_memcell* key, avm_memcell* value);
+
+struct avm_table_bucket {
+	unsigned refCounter;
+	avm_table_bucket* strIndexed[AVM_TABLE_HASHSIZE];
+	avm_table_bucket* numIndexed[AVM_TABLE_HASHSIZE];
+	unsigned total;
+};
+
+avm_tableincrefcounter(avm_table* t) { ++t->refCounter; }
+
+void avm_tabledecrefcounter (avm_table* t){
+	assert(t->refCounter > 0);
+	if(!--t->refCounter)
+		avm_tabledestroy(t);
+}
+
+void avm_tablebucketsinit(avm_table_bucket** p){
+	for(int i = 0; i < AVM_TABLE_HASHSIZE; ++i)
+		p[i] = (avm_table_bucket*) 0;
+}
+
+avm_table* avm_tablenew(void){
+	avm_table* t = (avm_table*) malloc(sizeof(avm_table));
+	AVM_WIPEOUT(*t);
+
+	t->refCounter = t->total = 0;
+	avm_tablebucketsinit(t->numIndexed);
+	avm_tablebucketsinit(t->strIndexed);
+
+	return t;
+}
+
+void avm_memcellclear(avm_memcell* m);
+
+void avm_tablebucketsdestroy(avm_table_bucket** p){
+	for (int i = 0; i < AVM_TABLE_HASHSIZE; ++i, ++p){
+		for(avm_table_bucket *b = p; b;){
+			avm_table_bucket* del = b;
+			b = b->next;
+			avm_memcellclear(&del->key);
+			avm_memcellclear(&del->value);
+			free(del);
+		}
+		p[i] = (avm_table_bucket*) 0;
+	}
+}
+
+void avm_tabledestroy(avm_table* t){
+	avm_tablebucketsdestroy(t->strIndexed);
+	avm_tablebucketsdestroy(t->numIndexed);
+	free(t);
+}
+
+
 
 avm_memcell* avm_translate_operand (vmarg* arg, avm_memcell* reg) {
     switch (arg->type){
@@ -283,8 +473,9 @@ void execute_cycle(void){
         if(instr->srcLine)
             currLine = instr -> srcLine;
         unsigned int oldPC = pc; 
-        (*executeFuncs[instr->opcode])(instr);
-        if(pc == oldPC) ++pc;
+        (*executeFuncs[instr->opcode]) (instr);
+        if(pc == oldPC)
+			++pc;
    }
 }
 
@@ -316,6 +507,28 @@ void execute_funcexit(instruction *unused){
 avm_assign(&stack[top], arg);
 ++totalActuals;                   // pusharg
 avm_dec_top();
+
+
+memclear_func_t memclearFuns[] = {
+	0, //number
+	memclear_string,
+	0, //bool
+	memclear_table,
+	0, //userfunc
+	0, //libfunc
+	0, //nil
+	0 //undef
+};
+
+avm_memcellclear (avm_memcell* m){
+	if(m->type != undef_m) {
+		memclear_func_t f = memclearFuncs[m->type];
+		if (f)
+			(*f)(m);
+		m->type = undef_m;
+	}
+}
+
 
 
 
@@ -622,8 +835,7 @@ void execute_tablesetelem(instruction* instr){
 		avm_tablesetelem(t->data.tableVal, i, c);
 }
 
-
-void generate (op, quad *quad) {
+void generate(vmopcode op, quad *quad) {
 	instruction t;
 	t.opcode = op;
 	make_operand(quad.arg1, &t.arg1);
@@ -645,16 +857,17 @@ void generate_TABLESETELEM (quad *quad) { generate(tablesetelem, quad); }
 void generate_ASSIGN (quad *quad) { generate(assign, quad); }
 void generate_NOP () { instruction t; t.opcode=nop; emitInstr(t); } 
 
-void generate_relational (op, quad *quad) {
+void generate_relational(op, quad *quad) {
 	instruction t;
 	t.opcode = op;
 	make_operand(quad.arg1, &t.arg1);
 	make_operand(quad.arg2, &t.arg2);
 	t.result.type = label_a;
-	if quad.label jump target < currprocessedquad() then
+	if (quad.label jump target < currprocessedquad()) {
 		t.result.value = quads[quad.label].taddress;
-	else
-	add_incomplete_jump(nextinstructionlabel(), quad.label);
+	}else {
+		add_incomplete_jump(nextinstructionlabel(), quad.label);
+	}
 	quad.taddress = nextinstructionlabel();
 	emitInstr(t);
 }
@@ -670,23 +883,27 @@ void generate_IF_LESSEQ (quad *quad) { generate_relational(jle, quad); }
 void generate_NOT (quad *quad) {
 	quad.taddress = nextinstructionlabel();
 	instruction t;
+
 	t.opcode = jeq;
 	make_operand(quad.arg1, &t.arg1);
 	make_booloperand(&t.arg2, false);
 	t.result.type = label_a;
 	t.result.value = nextinstructionlabel()+3;
 	emit(t);
+
 	t.opcode = assign;
 	make_booloperand(&t.arg1, false);
 	reset_operand(&t.arg2);
 	make_operand(quad.result, &t.result);
 	emit(t);
+
 	t.opcode = jump;
 	reset_operand (&t.arg1);
 	reset_operand(&t.arg2);
 	t.result.type = label_a;
 	t.result.value = nextinstructionlabel()+2;
 	emit(t);
+
 	t.opcode = assign;
 	make_booloperand(&t.arg1, true);
 	reset_operand(&t.arg2);
@@ -697,26 +914,32 @@ void generate_NOT (quad *quad) {
 void generate_OR (quad *quad) {
 	quad.taddress = nextinstructionlabel();
 	instruction t;
+
 	t.opcode = jeq;
 	make_operand(quad.arg1, &t.arg1);
 	make_booloperand(&t.arg2, true);
 	t.result.type = label_a;
 	t.result.value = nextinstructionlabel()+4;
 	emit(t);
+
 	make_operand(quad.arg2, &t.arg1);
-	t.result.value = nextinstructionlabel()+3;
+	t.result.value = 
+	nextinstructionlabel()+3;
 	emit(t);
+
 	t.opcode = assign;
 	make_booloperand(&t.arg1, false);
 	reset_operand(&t.arg2);
 	make_operand(quad.result, &t.result);
 	emit(t);
+
 	t.opcode = jump;
 	reset_operand (&t.arg1);
 	reset_operand(&t.arg2);
 	t.result.type = label_a;
 	t.result.value = nextinstructionlabel()+2;
 	emit(t);
+
 	t.opcode = assign;
 	make_booloperand(&t.arg1, true);
 	reset_operand(&t.arg2);
@@ -724,7 +947,7 @@ void generate_OR (quad *quad) {
 	emit(t);
 } 
 
-// Kapos etsi alla mporei na thelei kai allages
+// Kapos etsi einai alla mporei na thelei kai allages
 void generate_AND (quad *quad) {
 	quad.taddress = nextinstructionlabel();
 	instruction t;
@@ -734,20 +957,24 @@ void generate_AND (quad *quad) {
 	t.result.type = label_a;
 	t.result.value = nextinstructionlabel()+4;
 	emit(t);
+	
 	make_operand(quad.arg2, &t.arg1);
 	t.result.value = nextinstructionlabel()+3;
 	emit(t);
+
 	t.opcode = assign;
 	make_booloperand(&t.arg1, false);
 	reset_operand(&t.arg2);
 	make_operand(quad.result, &t.result);
 	emit(t);
+	
 	t.opcode = jump;
 	reset_operand (&t.arg1);
 	reset_operand(&t.arg2);
 	t.result.type = label_a;
 	t.result.value = nextinstructionlabel()+2;
 	emit(t);
+
 	t.opcode = assign;
 	make_booloperand(&t.arg1, true);
 	reset_operand(&t.arg2);
