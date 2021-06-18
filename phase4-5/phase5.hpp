@@ -529,6 +529,162 @@ avm_memcellclear (avm_memcell* m){
 	}
 }
 
+typedef void (*memclear_func_t) (avm_memcell*);
+
+void memclear_string(avm_memcell* m){
+	assert(m->data.strVal);
+	free(m->data.strVal);
+}
+
+void memclear_table(avm_memcell* m){
+	assert(m->data.tableVal);
+	avm_tabledecrefcounter(m->data.tableVal);
+}
+
+
+extern void avm_warning(string format, ...);
+extern void avm_assign(avm_memcell* lv, avm_memcell* rv);
+
+
+
+void execute_assign (instruction *instr){
+
+	avm_memcell *lv = avm_translate_operand(&instr->result, (avm_memcell *) 0);
+	avm_memcell *rv = avm_translate_operand(&instr->arg1, &ax);
+
+	assert(lv && (&stack[AVM_STACKSIZE-1] >= lv && lv > &stack[top] || lv==&retval ));
+	assert(rv);	
+	
+	avm_assign(lv, rv);
+}
+
+
+void avm_assign(avm_memcell* lv, avm_memcell* rv){
+	
+	if(lv == rv)
+		return;
+
+	if (lv->type == table_m && rv->type == table_m && lv->data.tableVal == rv.data.tableVal) 
+		return;
+	
+	if(rv->type == undef_m ||rv->type ==  nil_m)
+		avm_warning("assigning from 'undef' content!");
+	
+	avm_memcellclear(lv);
+	
+	memcpy(lv, rv, sizeof(avm_memcell));
+	
+	if(lv -> type == string_m)
+		lv->data.strVal = strdup(rv->data.strVal);
+
+	else if(lv->type == number_m)
+		lv->data.numVal = rv->data.numVal;
+	
+	else if(lv->type = bool_m)
+		lv->data.boolVal = rv->data.boolVal;
+	
+	else if(lv->type == userfunc_m)
+		lv->data.funcVal = rv->data.funcVal;
+	
+	else if(lv->type == table_m)
+		lv->data.tableVal = rv->data.tableVal;
+	
+	else if(lv->type == libfunc_m)
+		lv->data.libfuncVal = rv->data.libfuncVal;
+	
+}
+
+
+extern void avm_error(string format, ...);
+extern string avm_tostring(avm_memcell*);
+extern void avm_calllibfunc(string funcName);
+extern void avm_callsaveenviroment(void);
+
+void execute_call(instruction *instr){
+
+	avm_memcell* func = avm_translate_operand(instr->result, &ax);
+	assert(func);
+	avm_callsaveenviroment();
+
+	switch(func->type){
+
+		case userfunc_m: {
+			pc = func->data.funcVal;
+			assert(pc < AVM_ENDING_PC);
+			assert(code[pc].opcode == funcenter_v);
+			break;
+		}
+		
+		case string_m: avm_calllibfunc(func -> data.strVal);  break;
+		
+		case libfunc_m: avm_calllibfunc(func -> data.libfuncVal); break;
+			
+		default: {
+			string s = all_tostring(func);
+			avm_error("call: cannot bind to function!");
+			free(s);
+			//executionFinished = 1;
+		}
+	}
+}
+
+unsigned totalActuals = 0;
+
+void avm_dec_top(void){
+	if(!top){
+		avm_error("stack overflow");
+		//executionFinished = 1;
+	}
+	else
+		--top;
+}
+
+void avm_push_envvalue(unsigned int val){
+	stack[top].type = number_m;
+	stack[top].data.numVal = val;
+	avm_dec_top();
+}
+
+void avm_callsaveenviroment(void){
+	avm_push_envvalue(totalActuals);
+	avm_push_envvalue(pc + 1);
+	avm_push_envvalue(top + totalActuals + 2);
+	avm_push_envvalue(topsp);
+}
+
+
+
+extern userfunc* avm_getfuncinfo(unsigned address);
+
+void execute_funcenter(instruction *instr){
+	avm_memcell *func = avm_translate_operand(instr->result, &ax);
+	assert(func);
+	assert(pc == func -> data.funcVal);
+	
+	totalActuals = 0;
+	userfunc *funcInfo = avm_getfuncinfo(pc);
+	topsp = top;
+	top = top - funcInfo->localSize;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
