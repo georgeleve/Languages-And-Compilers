@@ -56,6 +56,7 @@ unsigned currLine = 0;
 unsigned codeSize = 0;
 instruction* code = (instruction*) 0;
 
+typedef unsigned char (*tobool_func_t) (avm_memcell*);
 
 avm_memcell stack[AVM_STACKSIZE];
 
@@ -671,24 +672,105 @@ void execute_funcenter(instruction *instr){
 
 
 
+unsigned avm_get_envalue(unsigned i) {
+    assert(stack[i].type = number_m);
+    unsigned val = (unsigned) stack[i].data.numVal;
+    assert(stack[i].data.numVal == ((double) val));
+    return val;
+}
+
+void execute_funcexit (instruction * unused) {
+    unsigned oldTop = top;
+    top = avm_get_envalue(topsp + AVM_SAVEDTOP_OFFSET);
+    pc = avm_get_envalue(topsp + AVM_SAVEDPC_OFFSET);
+    topsp = (avm_get_envalue(topsp + AVM_SAVEDTOPSP_OFFSET));
+
+    while(++oldTop <= top)
+        avm_memcellclear(&stack[oldTop]);
+}
+
+typedef void (*library_func_t) (void) ;
+library_func_t avm_getlibraryfunc (char* id);
+
+void avm_callibfunc (char* id) {
+    library_func_t f = avm_getlibraryfunc(id);
+    if (!f) {
+        avm_error("unsupported lib func '%s' called!",id);
+        executionFinished = 1;
+    }
+    else {
+        topsp = top;
+        totalActuals = 0;
+        (*f) ();
+        if(!executionFinished)
+            execute_funcexit((instruction*) 0);
+    }
+}
+
+unsigned avm_totalactuals(void) {
+    return avm_get_envalue(topsp + AVM_NUMACTUALS_OFFSET);
+}
+
+avm_memcell* avm_getactual (unsigned i) {
+    assert(i < avm_totalactuals());
+    return &stack[topsp + AVM_STACKENV_SIZE + 1 + i];
+}
+
+void libfunc_print (void) {
+    unsigned n = avm_totalactuals();
+    for(int i = 0; i < n; ++i) {
+        string = avm_tostring(avm_getactual(i));
+        puts(s);
+        free(s);
+    }
+}
+
+void avm_registerlibfunc (string id, library_func_t addr);
+
+void execute_pusharg (instruction *instr) {
+    avm_memcell * arg = avm_translate_operand(&instr->arg1, &ax);
+    assert(arg);
+    avm_assign(&stack[top],arg);
+    ++totalActuals;
+    avm_dec_top();
+}
+
+typedef string (*tostring_func_t) (avm_memcell*);
+
+extern string number_tostring (avm_memcell*);
+extern string string_tostring (avm_memcell*);
+extern string bool_tostring (avm_memcell*);
+extern string table_tostring (avm_memcell*);
+extern string userfunc_tostring (avm_memcell*);
+extern string libfunc_tostring (avm_memcell*);
+extern string nil_tostring (avm_memcell*);
+extern string undef_tostring (avm_memcell*);
+
+tostring_func_t tostringFuncs[] = (
+    number_tostring,
+    string_tostring,
+    bool_tostring,
+    table_tostring,
+    userfunc_tostring,
+    libfunc_tostring,
+    nil_tostring,
+    undef_tostring
+);
+
+string avm_tostring(avm_memcell *m) {
+    assert(m->type >=0 && m->type = undef_m);
+    return (*tostringFuncs[m->type] (m));
+}
 
 
 
 
+void avm_initialize(void){
+	avm_initstack();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+	avm_registerlibfunc("print", libfunc_print);
+	avm_registerlibfunc("typeof", libfunc_typeof);
+}
 
 typedef void(*library_func_t) (void);
 library_func_t avm_getlibraryfunc(string id); // typical hashing
@@ -831,7 +913,7 @@ unsigned char number_tobool (avm_memcell* m) {
 }
 
 unsigned char string_tobool (avm_memcell* m) {	
-	return m->data.strVal[0] !=0; 
+	return m->data.strVal[0] !=0;
 }
 
 unsigned char bool_tobool (avm_memcell* m) {
