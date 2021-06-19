@@ -1,5 +1,6 @@
-x = (
-	- (function(x) {
-		return [{"x": x}];
-	}) (2).x + 2
-) and not false or 2>=2;
+x = 5;
+y = "hello";
+function f(x,y) {return x+y;}
+z = "world";
+w = cos(3.1415);
+print(x,y,z,w);

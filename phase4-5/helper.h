@@ -2,27 +2,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "array_management.h"
+#include <cstdio>
+#include <fstream>
+#include <iostream>
 
 
 #pragma GCC diagnostic ignored "-Wenum-compare"
 #pragma GCC diagnostic ignored "-Wwrite-strings"
 #pragma GCC diagnostic ignored "-Wformat="
 
-
-enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC};
-
-struct forstruct{
-	int enter;
-	int test;
-};
-
-typedef struct Information{
-	enum SymbolType type;
-	string name;
-	unsigned int line;
-	unsigned int offset;
-	unsigned int scope;
-} Information;
 
 Information* lookup(string s);
 void insertVariable(string name, unsigned int line);
@@ -31,89 +19,10 @@ unsigned int total = 0, currQuad = 0, tempcounter = 0, scopeSpaceCounter = 1, qu
 stack<vector<int>> scopeSpaces; //vect[0] = programVarOffset, vect[1] = functionLocalOffset, vect[3] = formalArgOffset
 stack<int> funcPatchList; //Patch list for function jumps
 
-enum iopcode {
-	assign, 	add,		sub,
-	mul,		divide,		mod,
-	uminus,			if_eq,		if_not_eq,
-	if_lesseq,	if_greatereq,	if_less,
-	if_greater,	call,		param,
-	ret,		getretval,	funcstart,
-	funcend,	jump,		tablecreate,
-	tablegetelem,	tablesetelem, and_c, or_c, not_c
-};
 
-enum scopespace_t {
-	programVar,
-	functionLocal,
-	formalArg
-};
-
-enum symbol_t { 
-	var_s, programfunc_s, libraryfunc_s
-};
-
-enum expr_t {
-	var_e,
-	tableitem_e,
-	mapitem_e,
-	programfunc_e,
-	libraryfunc_e,
-	arithexpr_e,
-	boolexpr_e,
-	assignexpr_e,
-	newtable_e,
-	constnum_e,
-	constbool_e,
-	conststring_e,
-	nil_e
-};
-
-
-struct symbol {
-	symbol_t type;
-	char* name;
-	scopespace_t space; 
-	unsigned offset;
-	unsigned scope;
-	unsigned line;
-};
-
-
-struct expr {
-	expr_t			type;
-	Information*	sym;
-	expr*			index;
-	expr*			mapKey;
-	expr*			mapValue;
-	int 			iaddress;
-	double 			numConst;
-	string			strConst;
-	bool			boolConst;
-	expr*			next;
-};
-
-struct quad { 
-	iopcode op;
-	expr* result;
-	expr* arg1;
-	expr* arg2;
-	int label;
-	int line; 
-	int iaddress;
-};
 
 vector<quad*> quads;
 
-
-struct stmt_t {
-	int breakList, contList;
-};
-
-struct call {
-	expr* elist;
-	unsigned char method;
-	char* name;
-};
 
 
 string exprToString(expr* e){
@@ -353,6 +262,7 @@ Information* allocInfo(SymbolType type, string name, int line, int offset, int s
 	info->name = name;
 	info->line = line;
 	info->offset = offset;
+	info->scopeSpace = currScopeSpace();
 	info->scope = scope;
 	return info;
 }
@@ -594,7 +504,7 @@ void make_booloperand 				(vmarg* arg, unsigned int val);
 void make_retvaloperand 			(vmarg* arg);
 
 void add_incomplete_jump			(unsigned int instrNo, unsigned int iaddress);
-void patchInstrLabel				(unsigned int instrNo, unsigned int iaddress);
+void patchInstrLabel				(int instrNo, int iaddress);
 void patchIncompleteJumps			(unsigned int totalQuads);
 
 void make_booloperand 				(vmarg *arg, unsigned int logical);
@@ -603,6 +513,8 @@ void make_retvaloperand 			(vmarg *arg);
 
 void generate						(vmopcode op, quad *quad);
 void generate_ADD 					(quad *quad);
+void generate_AND 					(quad *quad);
+void generate_UMINUS 				(quad *quad);
 void generate_SUB 					(quad *quad);
 void generate_MUL 					(quad *quad);
 void generate_GETRETVAL 			(quad *quad);
@@ -617,7 +529,7 @@ void generate_DIV 					(quad *quad);
 void generate_MOD 					(quad *quad);
 void generate_NEWTABLE 				(quad *quad);
 void generate_TABLEGETELM 			(quad *quad);
-void generate_TABLESETELEM			(quad *quad);
+void generate_TABLESETELM			(quad *quad);
 void generate_ASSIGN 				(quad *quad);
 void generate_NOP 					(quad *quad);
 
@@ -643,69 +555,97 @@ unsigned ij_total = 0;
 
 //Implementations below
 generator_func_t generators [] = {
-    generate_ADD,
-    generate_SUB,
-    generate_MUL,
-    generate_DIV,
-    generate_MOD,
-    generate_NEWTABLE,
-    generate_TABLEGETELM,
-    generate_TABLESETELEM,
-    generate_ASSIGN,
-    generate_NOP,
-    generate_JUMP,
-    generate_IF_EQ,
-    generate_IF_NOTEQ,
-    generate_IF_GREATER,
-    generate_IF_GREATEREQ,
-    generate_IF_LESS,
-    generate_IF_LESSEQ,
-    generate_NOT,
-    generate_OR,
-    generate_PARAM,
-    generate_CALL,
-    generate_GETRETVAL,
-    generate_FUNCSTART,
-    generate_RETURN,
-    generate_FUNCEND
+	generate_ASSIGN ,
+	generate_ADD ,
+    generate_SUB ,
+	generate_MUL ,
+	generate_DIV ,
+	generate_MOD ,
+	generate_UMINUS ,
+	generate_AND,
+	generate_OR ,
+	generate_NOT ,
+	generate_IF_EQ ,
+	generate_IF_NOTEQ ,	
+	generate_IF_LESSEQ ,
+	generate_IF_GREATEREQ ,
+	generate_IF_LESS ,
+	generate_IF_GREATER ,
+	generate_CALL ,
+	generate_PARAM ,
+	generate_RETURN ,
+	generate_GETRETVAL ,
+	generate_FUNCSTART ,
+	generate_FUNCEND ,
+	generate_JUMP ,
+	generate_NEWTABLE ,
+	generate_TABLEGETELM ,
+    generate_TABLESETELM ,
+    generate_NOP
 }; 
+
+void patchInstrLabel(int instruction, int to){
+	instructions[instruction]->result->val = to;
+}
 int currprocessedquad = 0;
+void printInstruction(instruction* i, int idx){
+	string code = vmOpCodeToString(i->opcode);
+	string type1 = (i->result==NULL)?"NULL":vmargToString(i->result->type)+" ("+to_string(i->result->val)+")";
+	string type2 = (i->arg1==NULL)?"NULL":vmargToString(i->arg1->type)+" ("+to_string(i->arg1->val)+")";
+	string type3 = (i->arg2==NULL)?"NULL":vmargToString(i->arg2->type)+" ("+to_string(i->arg2->val)+")";
+	printf("%-15s %-20s %-20s %-20s %-20s\n",(to_string(idx)+":").c_str(), code.c_str(),type1.c_str(),type2.c_str(),type3.c_str());
+}
 void generate(void) {
-    for(unsigned i = 0; i < total; ++i){
+	
+    for(unsigned i = 0; i < quads.size(); ++i){
 		currprocessedquad = i;
         (*generators[quads[i]->op]) (quads[i]);
 	}
+	
+
+	printf("\nNumbers!!!!!!!\n");
+	for(int i = 0; i<numberArray.size(); i++) printf("%d: %lf\n",i,numberArray[i]);
+	
+	printf("\nStrings!!!!!!!\n");
+	for(int i = 0; i<stringArray.size(); i++) printf("%d: %s\n",i,stringArray[i].c_str());
+	
+	printf("\nLib Funcs!!!!!!!\n");
+	for(int i = 0; i<libFuncArray.size(); i++) printf("%d: %s\n",i,libFuncArray[i].c_str());
+	
+
+	printf("\nUserFuncs Funcs!!!!!!!\n");
+	for(int i = 0; i<userFuncArray.size(); i++) printf("%d: %d %d %s\n",i,userFuncArray[i]->address,userFuncArray[i]->localSize, userFuncArray[i]->id.c_str());
+	
+	printf("INSTRUCTIONS!!!!!!!\n");
+	int idx = 1;
+	for(auto i : instructions){
+		printInstruction(i,idx++);
+	}
 }
 
+
 void make_operand (expr* e, vmarg* arg) {
-    /*
 	if(e == NULL){
 		arg->val = -1;
-		arg->type = -1;
+		//t->arg2->type = -1;
 		return;
-	}*/
+	}
     //All those below use a variable for storage
 	switch(e->type){
 		case var_e:
 		case tableitem_e:
 		case arithexpr_e:
 		case boolexpr_e:
-		//case assignexpr_e:
+		case assignexpr_e:
 		case newtable_e:    {
                                // assert(e->sym);
                                 arg->val = e->sym->offset;
-								if(e->sym->type == GLOBAL) arg->type = global_a;
-								else if(e->sym->type == USERFUNC) arg->type = local_a;
-								else if(e->sym->type == FORMAL) arg->type = local_a;
-								else assert(0);
-								/*
-                                switch(e->sym->space){            
+                                switch(e->sym->scopeSpace){            
                                     case programVar:	arg->type = global_a;   break;
                                     case functionLocal:	arg->type = local_a;    break;
                                     case formalArg:		arg->type = formal_a;   break;
                                     default: assert(0);
                                 }
-								*/
                                 break;
 		                    }
         // Constants
@@ -720,8 +660,8 @@ void make_operand (expr* e, vmarg* arg) {
 								arg->type = string_a;	break;
 						 	}
 		case constnum_e:	{
-									
 								arg->val = insert_number(e->numConst); //INSERTER_NUM(e->numConst);
+								//printf("NNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNUMBER IS: %lf\n",e->numConst);
 								arg->type = number_a;   break;
 							}
 
@@ -730,14 +670,17 @@ void make_operand (expr* e, vmarg* arg) {
 							}
         //functions
 		case programfunc_e: {
+								printf("mphke se programfunc");
 								arg->type = userfunc_a;
+								arg->val = e->iaddress;
 								//METHODOS STROUNTHOKAMILOU!!!
 								
-								//arg->val = e->sym->iaddress; //INSERTER_USERFUNC(e->sym->value.funcVal->iaddress, ///e->sym->value.funcVal->totallocals,e->sym->value.funcVal->totalargs, (char*) //e->sym->value.funcVal->name);
-								arg->val = insert_userFunc(-1,-1,e->sym->name);
+								//INSERTER_USERFUNC(e->sym->value.funcVal->iaddress, ///e->sym->value.funcVal->totallocals,e->sym->value.funcVal->totalargs, (char*) //e->sym->value.funcVal->name);
+								//arg->val = insert_userFunc(-1,-1,e->sym->name);
 								break;
 							}
 		case libraryfunc_e:	{
+								printf("mphke se librayfunc");
 								arg->type = libfunc_a;
 								arg->val = insert_libFunc(e->sym->name); //INSERTER_LIBFUNC((char*) e->sym->value.funcVal->name);
 								break;
@@ -750,7 +693,7 @@ void reset_operand(vmarg* a){
 }
 
 int nextinstructionlabel(){
-	return nextInstructionIdx++;
+	return nextInstructionIdx;
 }
 void make_numberoperand(vmarg* arg, double val){
 	//arg->val = consts_newnumber(val);
@@ -775,6 +718,7 @@ void emitInstruction(instruction* t){
 	tmp->result = t->result;
 	tmp->srcLine = t-> srcLine; 
 	instructions.push_back(tmp);
+	nextInstructionIdx++;
 }
 
 void generate(vmopcode op, quad* quad) {
@@ -799,7 +743,7 @@ void generate_MOD (quad *quad) { generate(mod_v, quad); }
 
 void generate_NEWTABLE (quad *quad) { generate(newtable_v, quad); }
 void generate_TABLEGETELM (quad *quad) { generate(tablegetelem_v, quad); }
-void generate_TABLESETELEM (quad *quad) { generate(tablesetelem_v, quad); }
+void generate_TABLESETELM (quad *quad) { generate(tablesetelem_v, quad); }
 void generate_ASSIGN (quad *quad) { generate(assign_v, quad); }
 void generate_NOP (quad* weDontUseThisAtAllButIfWeDontPutItItGetsScrewed) { 
 	instruction* t = new instruction;
@@ -850,10 +794,29 @@ void generate_IF_GREATEREQ(quad *quad) { generate_relational(jge_v, quad); }
 void generate_IF_LESS (quad *quad) { generate_relational(jlt_v, quad); }
 void generate_IF_LESSEQ (quad *quad) { generate_relational(jle_v, quad); }
 
+void generate_UMINUS(quad *quad){
+	quad->iaddress = nextinstructionlabel();
+	instruction *t = new instruction;
+	t->arg1 = new vmarg;
+	t->arg2 = new vmarg;
+	t->result = new vmarg;
+
+	t->opcode = mul_v;
+	make_operand(quad->arg1, t->arg1);
+	t->arg2->val = insert_number(-1);
+	t->arg2->type = number_a;
+	make_operand(quad->result, t->result);
+	
+	emitInstruction(t);
+}
+
 void generate_NOT (quad *quad) {
 	quad->iaddress = nextinstructionlabel();
 	instruction *t = new instruction;
-
+	t->result = new vmarg;
+	t->arg1 = new vmarg;
+	t->arg2 = new vmarg;
+	
 	t->opcode = jeq_v;
 	make_operand(quad->arg1, t->arg1);
 	make_booloperand(t->arg2, false);
@@ -884,7 +847,9 @@ void generate_NOT (quad *quad) {
 void generate_OR (quad *quad) {
 	quad->iaddress = nextinstructionlabel();
 	instruction *t = new instruction;
-
+	t->result = new vmarg;
+	t->arg1 = new vmarg;
+	t->arg2 = new vmarg;
 	t->opcode = jeq_v;
 	make_operand(quad->arg1, t->arg1);
 	make_booloperand(t->arg2, true);
@@ -920,6 +885,10 @@ void generate_OR (quad *quad) {
 void generate_AND (quad *quad) {
 	quad->iaddress = nextinstructionlabel();
 	instruction *t = new instruction;
+	t->result = new vmarg;
+	t->arg1 = new vmarg;
+	t->arg2 = new vmarg;
+	
 	t->opcode = jeq_v;
 	make_operand(quad->arg1, t->arg1);
 	make_booloperand(t->arg2, true);
@@ -954,14 +923,16 @@ void generate_AND (quad *quad) {
 void generate_PARAM(quad *quad) {
 	quad->iaddress = nextinstructionlabel();
 	instruction *t = new instruction;
+	t->result = new vmarg;
 	t->opcode = pusharg_v;
-	make_operand(quad->arg1, t->arg1);
+	make_operand(quad->result, t->result);
 	emitInstruction(t);
 }
 
 void generate_CALL(quad *quad) {
 	quad->iaddress = nextinstructionlabel();
 	instruction *t = new instruction;
+	t->arg1 = new vmarg;
 	t->opcode = call_v;
 	make_operand(quad->arg1, t->arg1);
 	emitInstruction(t);
@@ -970,58 +941,64 @@ void generate_CALL(quad *quad) {
 void generate_GETRETVAL(quad *quad) {
 	quad->iaddress = nextinstructionlabel();
 	instruction *t = new instruction;
+	t->result = new vmarg;
+	t->arg1 = new vmarg;
 	t->opcode = assign_v;
 	make_operand(quad->result, t->result);
 	t->arg1->type = retval_a;
 	emitInstruction(t);
 }
 void generate_FUNCSTART(quad *quad) { 
-/*
 	Information* f = quad->result->sym;
 	quad->iaddress = nextinstructionlabel();
 	
-	insert_userFunc(-1,-1,f->name);
-	push(funcstack, f);
-
+	insert_userFunc(quad->result->iaddress,-1,f->name);
+	vector<int> a;
+	funcStack.push({f,a});
+	
 	instruction *t = new instruction;
-	t->opcode = enterfunc_v;
+	t->result = new vmarg;
+	t->opcode = funcenter_v;
 	make_operand(quad->result, t->result);
 	emitInstruction(t);
-	*/
 }
 
 void generate_RETURN(quad *quad) { 
-/*
 	quad->iaddress = nextinstructionlabel();
 	instruction *t = new instruction;
+	t->result = new vmarg;
+	t->arg1 = new vmarg;
+	
 	t->opcode = assign_v;
 	
-	t->result = retval_a;
+	t->result->type = retval_a;
 	make_operand(quad->arg1, t->arg1);
 	emitInstruction(t);
 
-	f = top(funcstack);
+	funcStack.top().second.push_back(nextinstructionlabel());
 
 	t->opcode = jump_v;
 	reset_operand(t->arg1);
 	reset_operand(t->arg2);
 	t->result->type = label_a;
 	emitInstruction(t);
-	*/
 }
 
 void generate_FUNCEND(quad *quad) {
-	/*
- 	f = pop(funcstack);
- 	backpatch(f.returnList, nextinstructionlabel());
+ 	pair<Information*,vector<int>> x = funcStack.top(); funcStack.pop();
+	//backpatching
+	for(int i : x.second) {
+		patchInstrLabel(i,nextinstructionlabel());
+		printf("BACKPACEDDD!!!!!!!!!!!!!!!!!!!!!!!!!: %d %d\n",i,nextinstructionlabel());
+	}
 
  	quad->iaddress = nextinstructionlabel();
  	instruction *t = new instruction;
+	t->result = new vmarg;
  	t->opcode = funcexit_v;
-		
- 	make_operand(quadInput->result, t->result);
+ 	make_operand(quad->result, t->result);
  	emitInstruction(t);
-	*/
+	printf("HERE DAAA\n");
 }
 
 void patch_incomplete_jumps() {

@@ -1,12 +1,6 @@
 #include <bits/stdc++.h>
-#include "structs.h"
+#include "binaryManager.h"
 using namespace std;
-
-typedef struct userFuncInfo{
-	int address;
-	int localSize;
-	string id;
-}userFunc;
 
 vector<double> numberArray;
 vector<string> stringArray;
@@ -14,6 +8,9 @@ vector<string> libFuncArray;
 vector<userFunc*> userFuncArray;
 
 vector<instruction*> instructions;
+
+
+stack<pair<Information*,vector<int>>> funcStack; //pair of function information and return list
 
 
 int insert_number(double val){

@@ -446,10 +446,12 @@ call: call LEFT_PARENTH elist RIGHT_PARENTH {
 
 	| lvalue LEFT_PARENTH elist RIGHT_PARENTH {
 		$lvalue = emit_iftableitem($lvalue,yylineno);
+		if(isSystemFunction($lvalue->sym->name)) $lvalue->type = libraryfunc_e;
 		$<exprval>$ = make_call($lvalue, $elist, yylineno); 
 	}
 
 	| lvalue DOT_DOT ID LEFT_PARENTH elist RIGHT_PARENTH {
+		if(isSystemFunction($lvalue->sym->name)) $lvalue->type = libraryfunc_e;
 		$lvalue = emit_iftableitem($lvalue,yylineno);
 		expr* t = $lvalue;
 		$lvalue = emit_iftableitem(member_item(t,$ID,yylineno),yylineno);
@@ -564,6 +566,7 @@ funcprefix: FUNCTION ID{
 const:	INTEGER{
 			$$ = newexpr(constnum_e);
 			$$->numConst = $1;
+
 		} 
 	 | FLOAT{
 			$$ = newexpr(constnum_e);
@@ -703,6 +706,14 @@ int yyerror (char* yaccProvidedMessage) {
 	return 0;
 }
 
+void printInstructionDA(instruction* i, int idx){
+	string code = vmOpCodeToString(i->opcode);
+	string type1 = (i->result==NULL)?"NULL":vmargToString(i->result->type)+" ("+to_string(i->result->val)+")";
+	string type2 = (i->arg1==NULL)?"NULL":vmargToString(i->arg1->type)+" ("+to_string(i->arg1->val)+")";
+	string type3 = (i->arg2==NULL)?"NULL":vmargToString(i->arg2->type)+" ("+to_string(i->arg2->val)+")";
+	printf("%-15s %-20s %-20s %-20s %-20s\n",(to_string(idx)+":").c_str(), code.c_str(),type1.c_str(),type2.c_str(),type3.c_str());
+}
+
 int main(int argc, char** argv) {
     if(argc<2 || argc>3){
         fprintf(stderr, "Invalid arguments! Usage: ./calc input.txt (output.txt)\n");
@@ -726,6 +737,8 @@ int main(int argc, char** argv) {
 	printQuads();
 	//printFullSymTable();
 	
+	generate();
+	storeAll(numberArray, stringArray, libFuncArray, userFuncArray, instructions);
 	fclose(yyin);
     return 0;
 }
