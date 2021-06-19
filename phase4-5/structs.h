@@ -25,6 +25,7 @@ typedef struct Information{
 	string name;
 	unsigned int line;
 	unsigned int offset;
+	int taddress;
 	scopespace_t scopeSpace;
 	unsigned int scope;
 } Information;
@@ -68,7 +69,6 @@ struct expr {
 	expr*			index;
 	expr*			mapKey;
 	expr*			mapValue;
-	int 			iaddress;
 	double 			numConst;
 	string			strConst;
 	bool			boolConst;
@@ -82,7 +82,7 @@ struct quad {
 	expr* arg2;
 	int label;
 	int line; 
-	int iaddress;
+	int taddress;
 };
 struct stmt_t {
 	int breakList, contList;
@@ -148,7 +148,8 @@ string vmargToString(vmarg_t o){
 	if(o==userfunc_a) return "userfunc_a";
 	if(o==libfunc_a) return "libfunc_a";
 	if(o==retval_a) return "retval_a";
-	return "NULL";
+	//return "NULL";
+	return "";
 }
 
 vmarg_t stringToVmarg(string o){
@@ -200,7 +201,8 @@ string vmOpCodeToString(vmopcode o){
 	if(o==jgt_v) return "jgt_v";
 	if(o==pusharg_v) return "pusharg_v";
 	if(o==newtable_v) return "newtable_v";
-	return "NULL";
+	//return "NULL";
+	return "";
 }
 
 vmopcode stringToVmOpCode(string o){

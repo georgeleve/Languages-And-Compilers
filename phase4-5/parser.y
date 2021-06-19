@@ -447,11 +447,13 @@ call: call LEFT_PARENTH elist RIGHT_PARENTH {
 	| lvalue LEFT_PARENTH elist RIGHT_PARENTH {
 		$lvalue = emit_iftableitem($lvalue,yylineno);
 		if(isSystemFunction($lvalue->sym->name)) $lvalue->type = libraryfunc_e;
+		else $lvalue->type = programfunc_e;
 		$<exprval>$ = make_call($lvalue, $elist, yylineno); 
 	}
 
 	| lvalue DOT_DOT ID LEFT_PARENTH elist RIGHT_PARENTH {
 		if(isSystemFunction($lvalue->sym->name)) $lvalue->type = libraryfunc_e;
+		else $lvalue->type = programfunc_e;
 		$lvalue = emit_iftableitem($lvalue,yylineno);
 		expr* t = $lvalue;
 		$lvalue = emit_iftableitem(member_item(t,$ID,yylineno),yylineno);
@@ -463,6 +465,7 @@ call: call LEFT_PARENTH elist RIGHT_PARENTH {
 	| LEFT_PARENTH funcdef RIGHT_PARENTH LEFT_PARENTH elist RIGHT_PARENTH {
 		expr* func = newexpr(programfunc_e);
 		func->sym = $funcdef->sym;
+		func->type = programfunc_e;
 		$<exprval>$ = make_call(func, $<exprval>5, yylineno); 
 	}
 	;
@@ -548,7 +551,7 @@ funcprefix: FUNCTION ID{
 		
 		$$ = newexpr(programfunc_e);
 		$$->sym = lookup(fName);
-		$$->iaddress = nextQuad();
+		//$$->iaddress = nextQuad();
 		emit(funcstart, $$, NULL, NULL , -1 ,yylineno);
 }| FUNCTION {
 		functionJumpStore(nextQuad()); /*Jump before function definition*/
@@ -558,7 +561,7 @@ funcprefix: FUNCTION ID{
 		insertUserFunction(fName, yylineno);
 		$$ = newexpr(programfunc_e);
 		$$->sym = lookup(fName);
-		$$->iaddress = nextQuad();
+		//$$->iaddress = nextQuad();
 		emit(funcstart, $$, NULL, NULL , -1 ,yylineno);
 };
 
@@ -704,14 +707,6 @@ returnstmt:	RETURN SEMICOLON {
 int yyerror (char* yaccProvidedMessage) {
 	fprintf(stderr, "INPUT NOT VALID: %s: at line %d, before token: %s\n", yaccProvidedMessage, yylineno, yytext);
 	return 0;
-}
-
-void printInstructionDA(instruction* i, int idx){
-	string code = vmOpCodeToString(i->opcode);
-	string type1 = (i->result==NULL)?"NULL":vmargToString(i->result->type)+" ("+to_string(i->result->val)+")";
-	string type2 = (i->arg1==NULL)?"NULL":vmargToString(i->arg1->type)+" ("+to_string(i->arg1->val)+")";
-	string type3 = (i->arg2==NULL)?"NULL":vmargToString(i->arg2->type)+" ("+to_string(i->arg2->val)+")";
-	printf("%-15s %-20s %-20s %-20s %-20s\n",(to_string(idx)+":").c_str(), code.c_str(),type1.c_str(),type2.c_str(),type3.c_str());
 }
 
 int main(int argc, char** argv) {

@@ -54,16 +54,6 @@ void storeAll(vector<double> numberArray, vector<string> stringArray, vector<str
   	file.close();
 }
 
-
-
-
-
-
-
-
-//LOAD FUNCTIONS
-
-
 void loadNumbers(ifstream& file, vector<double>& vec){
 	int len;
 	file >> len;

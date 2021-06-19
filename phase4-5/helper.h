@@ -86,7 +86,7 @@ void emit(iopcode op, expr *result, expr *arg1, expr *arg2, int label, int line)
 }
 
 void printQuads(){
-	int idx = 1;
+	int idx = 0;
 	for(auto q : quads){
 		if(q->label == -1)
 			printf("%-15s %-20s %-20s %-20s %-20s\n", (to_string(idx++)+":").c_str(), opToString(q->op).c_str(), exprToString(q->result).c_str(), exprToString(q->arg1).c_str(), exprToString(q->arg2).c_str());
@@ -115,8 +115,8 @@ Information* newtemp() {
 
 scopespace_t currScopeSpace(void){
 	if(scopeSpaceCounter == 1) return programVar;
-	else if(scopeSpaceCounter % 2 == 0) return functionLocal;
-	else return formalArg;
+	else if(scopeSpaceCounter % 2 == 0) return formalArg;
+	else return functionLocal;
 }
 
 unsigned int currScopeOffset(){
@@ -154,7 +154,7 @@ void exitScopeSpace(){
 }
 
 
-unsigned int nextQuad(){ return quadsCounter+1; }
+unsigned int nextQuad(){ return quadsCounter; }
 
 expr* newexpr(expr_t t){
   expr* e = new expr;
@@ -221,7 +221,7 @@ bool istempname(string s) { return s[0] == '_'; }
 bool istempexpr(expr *e) { return e->sym && istempname(e->sym->name); }
 
 void patchlabel(int quadNo, int label) {
-	quads[quadNo-1]->label = label;
+	quads[quadNo]->label = label;
 }
 
 void functionJumpPatch(int label){
@@ -308,7 +308,6 @@ void loopExit(){
 
 set<string> systemFunctions;
 vector<map<string,Information*>> activeSymTable;
-vector<vector<PrintToken>> fullSymTable;
 stack<int> lastType; //Top of stack is 0 if the latest thing we found between a function and a loop is a function
 
 void pushType(int type){ // 0 is loop 1 is function
@@ -340,10 +339,6 @@ void increaseScope(){
 	scope++;
 	map<string, Information*> tp;
 	activeSymTable.push_back(tp);
-	if(fullSymTable.size()<=scope){
-		vector<PrintToken> tp2;
-		fullSymTable.push_back(tp2);
-	}
 }
 
 void decreaseScope(){
@@ -383,44 +378,18 @@ Information* lookupTillGlobalScope(string s, bool careAboutFunctionInBetween){
 void insertVariable(string name, unsigned int line){
 	Information* info = allocInfo(scope==0?GLOBAL:LOC, name, line, currScopeOffset(), scope);
 	activeSymTable[scope].insert({name, info});
-
-	Information info2;
-	info2.type = scope==0?GLOBAL:LOC;
-	info2.line = line;
-	info2.name = name;
-	info2.scope = scope;
-	info2.offset = currScopeOffset();
-	fullSymTable[scope].push_back({name, info2});
-	inCurrScopeOffset();
 }
 
 //Information
 void insertArgument(string name, unsigned int line){
 	Information* info = allocInfo(FORMAL, name, line, currScopeOffset(), scope);
 	activeSymTable[scope].insert({name, info});
-
-	Information info2;
-	info2.type = FORMAL;
-	info2.line = line;
-	info2.name = name;
-	info2.scope = scope;
-	info2.offset = currScopeOffset();
-	fullSymTable[scope].push_back({name, info2});
-	inCurrScopeOffset();
 }
 
 //Information
 void insertUserFunction(string name, unsigned int line){
 	Information* info = allocInfo(USERFUNC, name, line, 0, scope);
 	activeSymTable[scope].insert({name, info});
-
-	Information info2;
-	info2.type = USERFUNC;
-	info2.line = line;
-	info2.name = name;
-	info2.scope = scope;
-	info2.offset = 0;
-	fullSymTable[scope].push_back({name, info2});
 }
 
 bool isSystemFunction(string name){
@@ -431,22 +400,12 @@ bool isSystemFunction(string name){
 void globalInsert(string name, enum SymbolType type, unsigned int line){
 	Information* info = allocInfo(type, name, line, 0, 0);
 	activeSymTable[0].insert({name, info});
-	
-	Information info2;
-	info2.type = type;
-	info2.line = line;
-	info2.name = name;
-	info2.scope = scope;
-	fullSymTable[0].push_back({name, info2});
-	
 	if(type == LIBFUNC) systemFunctions.insert(name);
 }
 
 void initializeSymTable(){
 	map<string,Information*> tp;
 	activeSymTable.push_back(tp);
-	vector<PrintToken> tp2;
-	fullSymTable.push_back(tp2);
 	
 	globalInsert("print", LIBFUNC, 0);
 	globalInsert("input", LIBFUNC, 0);
@@ -463,35 +422,13 @@ void initializeSymTable(){
 }
 
 
-void printFullSymTable(){
-	for(int i = 0; i<fullSymTable.size(); i++){
-		printf("------------   Scope #%d   ------------\n",i);
-		vector<PrintToken> a;
-		for(auto v : fullSymTable[i]){
-			string key = v.value;
-			Information info = v.info;
-			enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC };
-			string label = "";
-			if(info.type == GLOBAL) label = "[global variable]";
-			else if(info.type == LOC) label = "[local variable]";
-			else if(info.type == FORMAL) label = "[formal argument]";
-			else if(info.type == USERFUNC) label = "[user function]";
-			else label = "[library function]";
-			printf("\"%s\" %s (line %d) (scope %d)\n",key.c_str(),label.c_str(),info.line,i);
-		}
-	}
-}
-
 /*
-
-
 ███╗░░░███╗███████╗░██████╗░░█████╗░  ░█████╗░██████╗░░█████╗░██████╗░  ██████╗░███████╗██╗░░░░░░█████╗░░██╗░░░░░░░██╗
 ████╗░████║██╔════╝██╔════╝░██╔══██╗  ██╔══██╗██╔══██╗██╔══██╗██╔══██╗  ██╔══██╗██╔════╝██║░░░░░██╔══██╗░██║░░██╗░░██║
 ██╔████╔██║█████╗░░██║░░██╗░███████║  ██║░░╚═╝██████╔╝███████║██████╔╝  ██████╦╝█████╗░░██║░░░░░██║░░██║░╚██╗████╗██╔╝
 ██║╚██╔╝██║██╔══╝░░██║░░╚██╗██╔══██║  ██║░░██╗██╔══██╗██╔══██║██╔═══╝░  ██╔══██╗██╔══╝░░██║░░░░░██║░░██║░░████╔═████║░
 ██║░╚═╝░██║███████╗╚██████╔╝██║░░██║  ╚█████╔╝██║░░██║██║░░██║██║░░░░░  ██████╦╝███████╗███████╗╚█████╔╝░░╚██╔╝░╚██╔╝░
 ╚═╝░░░░░╚═╝╚══════╝░╚═════╝░╚═╝░░╚═╝  ░╚════╝░╚═╝░░╚═╝╚═╝░░╚═╝╚═╝░░░░░  ╚═════╝░╚══════╝╚══════╝░╚════╝░░░░╚═╝░░░╚═╝░░
-
 */
 
 
@@ -505,11 +442,9 @@ void make_retvaloperand 			(vmarg* arg);
 
 void add_incomplete_jump			(unsigned int instrNo, unsigned int iaddress);
 void patchInstrLabel				(int instrNo, int iaddress);
-void patchIncompleteJumps			(unsigned int totalQuads);
+void patchIncompleteJumps			();
 
 void make_booloperand 				(vmarg *arg, unsigned int logical);
-void reset_operand 					(vmarg *arg);
-void make_retvaloperand 			(vmarg *arg);
 
 void generate						(vmopcode op, quad *quad);
 void generate_ADD 					(quad *quad);
@@ -590,18 +525,17 @@ void patchInstrLabel(int instruction, int to){
 int currprocessedquad = 0;
 void printInstruction(instruction* i, int idx){
 	string code = vmOpCodeToString(i->opcode);
-	string type1 = (i->result==NULL)?"NULL":vmargToString(i->result->type)+" ("+to_string(i->result->val)+")";
-	string type2 = (i->arg1==NULL)?"NULL":vmargToString(i->arg1->type)+" ("+to_string(i->arg1->val)+")";
-	string type3 = (i->arg2==NULL)?"NULL":vmargToString(i->arg2->type)+" ("+to_string(i->arg2->val)+")";
+	string type1 = (i->result==NULL)?"":vmargToString(i->result->type)+" ("+to_string(i->result->val)+")";
+	string type2 = (i->arg1==NULL)?"":vmargToString(i->arg1->type)+" ("+to_string(i->arg1->val)+")";
+	string type3 = (i->arg2==NULL)?"":vmargToString(i->arg2->type)+" ("+to_string(i->arg2->val)+")";
 	printf("%-15s %-20s %-20s %-20s %-20s\n",(to_string(idx)+":").c_str(), code.c_str(),type1.c_str(),type2.c_str(),type3.c_str());
 }
 void generate(void) {
-	
     for(unsigned i = 0; i < quads.size(); ++i){
 		currprocessedquad = i;
         (*generators[quads[i]->op]) (quads[i]);
 	}
-	
+	patchIncompleteJumps();
 
 	printf("\nNumbers!!!!!!!\n");
 	for(int i = 0; i<numberArray.size(); i++) printf("%d: %lf\n",i,numberArray[i]);
@@ -617,7 +551,7 @@ void generate(void) {
 	for(int i = 0; i<userFuncArray.size(); i++) printf("%d: %d %d %s\n",i,userFuncArray[i]->address,userFuncArray[i]->localSize, userFuncArray[i]->id.c_str());
 	
 	printf("INSTRUCTIONS!!!!!!!\n");
-	int idx = 1;
+	int idx = 0;
 	for(auto i : instructions){
 		printInstruction(i,idx++);
 	}
@@ -670,9 +604,8 @@ void make_operand (expr* e, vmarg* arg) {
 							}
         //functions
 		case programfunc_e: {
-								printf("mphke se programfunc");
 								arg->type = userfunc_a;
-								arg->val = e->iaddress;
+								arg->val = insert_userFunc(e->sym->taddress,-1,e->sym->name);
 								//METHODOS STROUNTHOKAMILOU!!!
 								
 								//INSERTER_USERFUNC(e->sym->value.funcVal->iaddress, ///e->sym->value.funcVal->totallocals,e->sym->value.funcVal->totalargs, (char*) //e->sym->value.funcVal->name);
@@ -680,16 +613,12 @@ void make_operand (expr* e, vmarg* arg) {
 								break;
 							}
 		case libraryfunc_e:	{
-								printf("mphke se librayfunc");
 								arg->type = libfunc_a;
 								arg->val = insert_libFunc(e->sym->name); //INSERTER_LIBFUNC((char*) e->sym->value.funcVal->name);
 								break;
 							}
 		default :   assert(0);
 	}
-}
-void reset_operand(vmarg* a){
-	a = NULL;
 }
 
 int nextinstructionlabel(){
@@ -712,27 +641,58 @@ void retvaloperand(vmarg* arg){
 
 void emitInstruction(instruction* t){
 	instruction *tmp = new instruction;
+	tmp->result = NULL;
+	tmp->arg1 = NULL;
+	tmp->arg2 = NULL;
+	
+	
 	tmp->opcode = t->opcode;
-	tmp->arg1 = t->arg1;
-	tmp->arg2 = t->arg2;
-	tmp->result = t->result;
-	tmp->srcLine = t-> srcLine; 
+	
+	if(t->arg1!=NULL){
+		tmp->arg1 = new vmarg;
+		tmp->arg1->type = t->arg1->type;
+		tmp->arg1->val = t->arg1->val;
+	}else tmp->arg1 = NULL;
+	
+	if(t->arg2!=NULL){
+		tmp->arg2 = new vmarg;
+		tmp->arg2->type = t->arg2->type;
+		tmp->arg2->val = t->arg2->val;
+	}else tmp->arg2 = NULL;
+	
+	if(t->result!=NULL){
+		tmp->result = new vmarg;
+		tmp->result->type = t->result->type;
+		tmp->result->val = t->result->val;
+	}else tmp->result = NULL;
+	tmp->srcLine = t->srcLine; 
 	instructions.push_back(tmp);
 	nextInstructionIdx++;
 }
 
 void generate(vmopcode op, quad* quad) {
 	instruction *t = new instruction;
-	t->arg1 = new vmarg;
-	t->arg2 = new vmarg;
-	t->result = new vmarg;
 	t->opcode = op;
-	make_operand(quad->arg1, t->arg1);
-	make_operand(quad->arg2, t->arg2);
-	make_operand(quad->result, t->result);
-	quad->result->iaddress = nextinstructionlabel();
+	
+	if(quad->arg1 != NULL) {
+		t->arg1 = new vmarg;
+		make_operand(quad->arg1, t->arg1);
+	}else t->arg1 = NULL;
+	
+	if(quad->arg2 != NULL){
+		t->arg2 = new vmarg;
+		make_operand(quad->arg2, t->arg2);
+	}else t->arg2 = NULL;
+	
+	if(quad->result != NULL) {
+		t->result = new vmarg;
+		make_operand(quad->result, t->result);
+	}else t->result = NULL;
+	
+	quad->taddress = nextinstructionlabel();
 	emitInstruction(t);
 }
+
 
 void generate_ADD (quad *quad) { generate(add_v, quad); }
 void generate_SUB (quad *quad) { generate(sub_v, quad); }
@@ -750,22 +710,11 @@ void generate_NOP (quad* weDontUseThisAtAllButIfWeDontPutItItGetsScrewed) {
 	t->opcode=nop_v; 
 	emitInstruction(t); 
 } 
-
+vector<pair<int,int>> incompleteJumps;
 void add_incomplete_jump(int instrAddress, int instructionNo){
-	/*
-    incJump *tmp = malloc( sizeof( incJump ) );
-    tmp->instrAddress = instrAddress;
-    tmp->instrNo = instrNo;
-
-    if( incJumpH == NULL ){
-        tmp->next = NULL;
-    }else{
-        tmp->next = incJumpH;
-    }
-
-    incJumpH = tmp;
-
-    return;*/ //FIIIXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+	//incompleteJumps.push_back({instrAddress,instructionNo});
+	
+	incompleteJumps.push_back({instructionNo,instrAddress});
 }
 
 void generate_relational(vmopcode op, quad* quad) {
@@ -774,15 +723,26 @@ void generate_relational(vmopcode op, quad* quad) {
 	t->arg2 = new vmarg;
 	t->result = new vmarg;
 	t->opcode = op;
-	make_operand(quad->arg1, t->arg1);
-	make_operand(quad->arg2, t->arg2);
+	
+	t->srcLine = nextinstructionlabel();
+	
+	if(quad->arg1 != NULL) {
+		t->arg1 = new vmarg;
+		make_operand(quad->arg1, t->arg1);
+	}else t->arg1 = NULL;
+	
+	if(quad->arg2 != NULL){
+		t->arg2 = new vmarg;
+		make_operand(quad->arg2, t->arg2);
+	}else t->arg2 = NULL;
+	
 	t->result->type = label_a;
 	if (quad->label < currprocessedquad) {
-		t->result->val = quads[quad->label]->iaddress;
+		t->result->val = quads[quad->label]->taddress;
 	}else {
 		add_incomplete_jump(nextinstructionlabel(), quad->label);
 	}
-	quad->iaddress = nextinstructionlabel();
+	quad->taddress = nextinstructionlabel();
 	emitInstruction(t);
 }
 
@@ -795,7 +755,7 @@ void generate_IF_LESS (quad *quad) { generate_relational(jlt_v, quad); }
 void generate_IF_LESSEQ (quad *quad) { generate_relational(jle_v, quad); }
 
 void generate_UMINUS(quad *quad){
-	quad->iaddress = nextinstructionlabel();
+	quad->taddress = nextinstructionlabel();
 	instruction *t = new instruction;
 	t->arg1 = new vmarg;
 	t->arg2 = new vmarg;
@@ -811,7 +771,7 @@ void generate_UMINUS(quad *quad){
 }
 
 void generate_NOT (quad *quad) {
-	quad->iaddress = nextinstructionlabel();
+	quad->taddress = nextinstructionlabel();
 	instruction *t = new instruction;
 	t->result = new vmarg;
 	t->arg1 = new vmarg;
@@ -826,102 +786,119 @@ void generate_NOT (quad *quad) {
 
 	t->opcode = assign_v;
 	make_booloperand(t->arg1, false);
-	reset_operand(t->arg2);
+	t->arg2 = NULL;
 	make_operand(quad->result, t->result);
 	emitInstruction(t);
 
 	t->opcode = jump_v;
-	reset_operand (t->arg1);
-	reset_operand(t->arg2);
+	t->arg1 = NULL;
+	t->arg2 = NULL;
 	t->result->type = label_a;
 	t->result->val = nextinstructionlabel()+2;
 	emitInstruction(t);
 
 	t->opcode = assign_v;
 	make_booloperand(t->arg1, true);
-	reset_operand(t->arg2);
+	t->arg2 = NULL;
 	make_operand(quad->result, t->result);
 	emitInstruction(t);
 }
 
 void generate_OR (quad *quad) {
-	quad->iaddress = nextinstructionlabel();
+	quad->taddress = nextinstructionlabel();
 	instruction *t = new instruction;
 	t->result = new vmarg;
 	t->arg1 = new vmarg;
 	t->arg2 = new vmarg;
+	
+	
 	t->opcode = jeq_v;
 	make_operand(quad->arg1, t->arg1);
 	make_booloperand(t->arg2, true);
 	t->result->type = label_a;
 	t->result->val = nextinstructionlabel()+4;
 	emitInstruction(t);
-
+	
+	
+	
 	make_operand(quad->arg2, t->arg1);
 	t->result->val = nextinstructionlabel()+3;
 	emitInstruction(t);
 
 	t->opcode = assign_v;
 	make_booloperand(t->arg1, false);
-	reset_operand(t->arg2);
+	t->arg2 = NULL;
 	make_operand(quad->result, t->result);
 	emitInstruction(t);
-
+	
+	
+	
 	t->opcode = jump_v;
-	reset_operand (t->arg1);
-	reset_operand(t->arg2);
+	t->arg1 = NULL;
+	t->arg2 = NULL;
 	t->result->type = label_a;
 	t->result->val = nextinstructionlabel()+2;
 	emitInstruction(t);
-
+	
+	
+	
 	t->opcode = assign_v;
+	t->arg1 = new vmarg;
 	make_booloperand(t->arg1, true);
-	reset_operand(t->arg2);
+	t->arg2 = NULL;
 	make_operand(quad->result, t->result);
 	emitInstruction(t);
 } 
 
 // Kapos etsi einai alla mporei na thelei kai allages
 void generate_AND (quad *quad) {
-	quad->iaddress = nextinstructionlabel();
+	quad->taddress = nextinstructionlabel();
 	instruction *t = new instruction;
 	t->result = new vmarg;
 	t->arg1 = new vmarg;
 	t->arg2 = new vmarg;
 	
+	
 	t->opcode = jeq_v;
 	make_operand(quad->arg1, t->arg1);
-	make_booloperand(t->arg2, true);
+	make_booloperand(t->arg2, false);
 	t->result->type = label_a;
 	t->result->val = nextinstructionlabel()+4;
 	emitInstruction(t);
+	
+	
 	
 	make_operand(quad->arg2, t->arg1);
 	t->result->val = nextinstructionlabel()+3;
 	emitInstruction(t);
 
 	t->opcode = assign_v;
-	make_booloperand(t->arg1, false);
-	reset_operand(t->arg2);
+	make_booloperand(t->arg1, true);
+	t->arg2 = NULL;
 	make_operand(quad->result, t->result);
 	emitInstruction(t);
 	
+	
+	
 	t->opcode = jump_v;
-	reset_operand (t->arg1);
-	reset_operand(t->arg2);
+	t->arg1 = NULL;
+	t->arg2 = NULL;
 	t->result->type = label_a;
 	t->result->val = nextinstructionlabel()+2;
 	emitInstruction(t);
-
+	
+	
+	
 	t->opcode = assign_v;
-	make_booloperand(t->arg1, true);
-	reset_operand(t->arg2);
+	t->arg1 = new vmarg;
+	make_booloperand(t->arg1, false);
+	t->arg2 = NULL;
 	make_operand(quad->result, t->result);
 	emitInstruction(t);
 }
 
 void generate_PARAM(quad *quad) {
-	quad->iaddress = nextinstructionlabel();
+	quad->taddress = nextinstructionlabel();
 	instruction *t = new instruction;
 	t->result = new vmarg;
 	t->opcode = pusharg_v;
@@ -930,7 +907,7 @@ void generate_PARAM(quad *quad) {
 }
 
 void generate_CALL(quad *quad) {
-	quad->iaddress = nextinstructionlabel();
+	quad->taddress = nextinstructionlabel();
 	instruction *t = new instruction;
 	t->arg1 = new vmarg;
 	t->opcode = call_v;
@@ -939,7 +916,7 @@ void generate_CALL(quad *quad) {
 }
 
 void generate_GETRETVAL(quad *quad) {
-	quad->iaddress = nextinstructionlabel();
+	quad->taddress = nextinstructionlabel();
 	instruction *t = new instruction;
 	t->result = new vmarg;
 	t->arg1 = new vmarg;
@@ -950,36 +927,36 @@ void generate_GETRETVAL(quad *quad) {
 }
 void generate_FUNCSTART(quad *quad) { 
 	Information* f = quad->result->sym;
-	quad->iaddress = nextinstructionlabel();
 	
-	insert_userFunc(quad->result->iaddress,-1,f->name);
+	quad->taddress = nextinstructionlabel();
+	f->taddress = nextinstructionlabel();
+	
 	vector<int> a;
 	funcStack.push({f,a});
 	
 	instruction *t = new instruction;
 	t->result = new vmarg;
 	t->opcode = funcenter_v;
+	//t.srcLine = nextinstructionlabel();
 	make_operand(quad->result, t->result);
 	emitInstruction(t);
 }
 
 void generate_RETURN(quad *quad) { 
-	quad->iaddress = nextinstructionlabel();
+	quad->taddress = nextinstructionlabel();
 	instruction *t = new instruction;
 	t->result = new vmarg;
 	t->arg1 = new vmarg;
-	
 	t->opcode = assign_v;
-	
 	t->result->type = retval_a;
-	make_operand(quad->arg1, t->arg1);
+	make_operand(quad->result, t->arg1);
 	emitInstruction(t);
-
+	
+	
 	funcStack.top().second.push_back(nextinstructionlabel());
-
 	t->opcode = jump_v;
-	reset_operand(t->arg1);
-	reset_operand(t->arg2);
+	t->arg1 = NULL;
+	t->arg2 = NULL;
 	t->result->type = label_a;
 	emitInstruction(t);
 }
@@ -992,21 +969,62 @@ void generate_FUNCEND(quad *quad) {
 		printf("BACKPACEDDD!!!!!!!!!!!!!!!!!!!!!!!!!: %d %d\n",i,nextinstructionlabel());
 	}
 
- 	quad->iaddress = nextinstructionlabel();
+ 	quad->taddress = nextinstructionlabel();
  	instruction *t = new instruction;
 	t->result = new vmarg;
  	t->opcode = funcexit_v;
  	make_operand(quad->result, t->result);
  	emitInstruction(t);
-	printf("HERE DAAA\n");
 }
 
-void patch_incomplete_jumps() {
-    /*
-    for each incomplete jump x do {
-    if x.iaddress = intermediate code size then
-    instructions[x.instrNo].result = target code size;
-    else
-    instructions[x.instrNo].result = quads[x.iaddress].iaddress;
-    }*/
+
+void patchIncompleteJumps() {
+	for(pair<int,int> i : incompleteJumps){
+		printf("HAHAHHAHAHHAHAHAHHAHAHHAHAHHAHAAAH DICKS %d %d sz: %d\n",i.first,i.second,quads.size());
+		if(i.first == quads.size()){
+			
+		printf("HAAAA111\n");
+			patchInstrLabel(i.second,nextinstructionlabel());
+		}else{
+			printf("HAAAA222\n");
+			patchInstrLabel(i.second,quads[i.first]->taddress);
+		}
+	}
 }
+/*
+vector<pair<int,int>> incompleteJumps;
+void add_incomplete_jump(int instrAddress, int instructionNo){
+	//incompleteJumps.push_back({instrAddress,instructionNo});
+	
+	incompleteJumps.push_back({instructionNo,instrAddress});
+}
+
+void generate_relational(vmopcode op, quad* quad) {
+	instruction *t = new instruction;
+	t->arg1 = new vmarg;
+	t->arg2 = new vmarg;
+	t->result = new vmarg;
+	t->opcode = op;
+	
+	t->srcLine = nextinstructionlabel();
+	
+	if(quad->arg1 != NULL) {
+		t->arg1 = new vmarg;
+		make_operand(quad->arg1, t->arg1);
+	}else t->arg1 = NULL;
+	
+	if(quad->arg2 != NULL){
+		t->arg2 = new vmarg;
+		make_operand(quad->arg2, t->arg2);
+	}else t->arg2 = NULL;
+	
+	t->result->type = label_a;
+	if (quad->label < currprocessedquad) {
+		t->result->val = quads[quad->label]->taddress;
+	}else {
+		add_incomplete_jump(nextinstructionlabel(), quad->label);
+	}
+	quad->taddress = nextinstructionlabel();
+	emitInstruction(t);
+}
+*/
