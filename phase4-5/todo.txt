@@ -1,0 +1,35 @@
+stack
+garbage collector  (isos ?)
+avm
+
+prosoxh sthn execute call me thn malakia
+
+
+avm_calllibfunc
+avm_getlibfunc()             na thn ftiaxoume
+
+avm_tablesetelem()     		na thn ftiaxoume
+
+einai o telikos kodikas sostos?
+
+src line  isos na xreiastei kapote
+
+diafores taddress me iaddress
+
+struct instruction {
+	vmopcode opcode;	
+	vmarg result;
+	vmarg arg1;
+	vmarg arg2;
+	unsigned srcLine;
+};
+
+na kanoume ta bonus
+3 bonus synolika
+
+--------------------------------------- na kanoyme turnin
+
+
+
+
+
