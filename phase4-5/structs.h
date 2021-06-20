@@ -1,6 +1,11 @@
 #include <bits/stdc++.h>
 using namespace std;
 
+#define execute_add execute_arithmetic
+#define execute_sub execute_arithmetic
+#define execute_mul execute_arithmetic
+#define execute_div execute_arithmetic
+#define execute_mod execute_arithmetic
 
 enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC};
 
@@ -240,4 +245,66 @@ vmopcode stringToVmOpCode(string o){
 	if(o=="pusharg_v") return pusharg_v;
 	if(o=="newtable_v") return newtable_v;
 	return NULL_v;
+}
+
+
+//mega crap below vol.2
+
+
+enum avm_memcell_t {
+	number_m	= 0,
+	string_m	= 1,
+	bool_m		= 2,
+	table_m		= 3,
+	userfunc_m	= 4,
+	libfunc_m	= 5,
+	nil_m		= 6,
+	undef_m		= 7
+};
+
+typedef struct avm_Memcell {
+   avm_memcell_t type;
+   union {
+      double numVal;
+      int intVal;
+      char* strVal; //may use string
+      bool boolVal;
+      struct avm_table *tableVal;
+      unsigned int funcVal;
+      char* libfuncVal;   
+   }data;
+}avm_memcell;
+
+
+
+typedef void (*library_func_t) (void) ;
+
+
+library_func_t avm_getlibraryfunc(char* id){
+	//if(strcmp("print", id) == 0) return libfunc_print;
+	/*
+	if(strcmp("input", id) == 0) return libfunc_input;		
+	if(strcmp("objectmemberkeys", id) == 0) return libfunc_objectmemberkeys;		
+	if(strcmp("objecttotalmembers", id) == 0) return libfunc_objecttotalmembers;		
+	if(strcmp("objectcopy", id) == 0) return libfunc_objectcopy;		
+	if(strcmp("totalarguments", id) == 0) return libfunc_totalarguments;		
+	if(strcmp("argument", id) == 0) return libfunc_argument;		
+	if(strcmp("typeof", id) == 0) return libfunc_typeof;		
+	if(strcmp("strtonum", id) == 0) return libfunc_strtonum;		
+	if(strcmp("sqrt", id) == 0)return libfunc_sqrt;		
+	if(strcmp("cos", id) == 0) return libfunc_cos;		
+	if(strcmp("sin", id) == 0) return libfunc_sin;		
+	*/
+	return 0;
+}
+
+void libfunc_print() {
+	/*
+    unsigned n = avm_totalactuals();
+    for(int i = 0; i < n; ++i) {
+        string = avm_tostring(avm_getactual(i));
+        puts(s);
+        free(s);
+    }
+	*/
 }

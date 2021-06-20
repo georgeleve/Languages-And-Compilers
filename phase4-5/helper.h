@@ -537,20 +537,19 @@ void generate(void) {
 	}
 	patchIncompleteJumps();
 
-	printf("\nNumbers!!!!!!!\n");
+	printf("\nSTRINGS ARRAY\n");
+	for(int i = 0; i<stringArray.size(); i++) printf("%d: %s\n",i,stringArray[i].c_str());
+
+	printf("\nNUMBERS ARRAY\n");
 	for(int i = 0; i<numberArray.size(); i++) printf("%d: %lf\n",i,numberArray[i]);
 	
-	printf("\nStrings!!!!!!!\n");
-	for(int i = 0; i<stringArray.size(); i++) printf("%d: %s\n",i,stringArray[i].c_str());
-	
-	printf("\nLib Funcs!!!!!!!\n");
-	for(int i = 0; i<libFuncArray.size(); i++) printf("%d: %s\n",i,libFuncArray[i].c_str());
-	
-
-	printf("\nUserFuncs Funcs!!!!!!!\n");
+	printf("\nUSER FUNCTIONS ARRAY\n");
 	for(int i = 0; i<userFuncArray.size(); i++) printf("%d: %d %d %s\n",i,userFuncArray[i]->address,userFuncArray[i]->localSize, userFuncArray[i]->id.c_str());
 	
-	printf("INSTRUCTIONS!!!!!!!\n");
+	printf("\nLIB FUNCTIONS ARRAY\n");
+	for(int i = 0; i<libFuncArray.size(); i++) printf("%d: %s\n",i,libFuncArray[i].c_str());	
+
+	printf("\nINSTRUCTIONS ARRAY\n");
 	int idx = 0;
 	for(auto i : instructions){
 		printInstruction(i,idx++);
@@ -966,7 +965,6 @@ void generate_FUNCEND(quad *quad) {
 	//backpatching
 	for(int i : x.second) {
 		patchInstrLabel(i,nextinstructionlabel());
-		printf("BACKPACEDDD!!!!!!!!!!!!!!!!!!!!!!!!!: %d %d\n",i,nextinstructionlabel());
 	}
 
  	quad->taddress = nextinstructionlabel();
@@ -980,13 +978,9 @@ void generate_FUNCEND(quad *quad) {
 
 void patchIncompleteJumps() {
 	for(pair<int,int> i : incompleteJumps){
-		printf("HAHAHHAHAHHAHAHAHHAHAHHAHAHHAHAAAH DICKS %d %d sz: %d\n",i.first,i.second,quads.size());
 		if(i.first == quads.size()){
-			
-		printf("HAAAA111\n");
 			patchInstrLabel(i.second,nextinstructionlabel());
 		}else{
-			printf("HAAAA222\n");
 			patchInstrLabel(i.second,quads[i.first]->taddress);
 		}
 	}

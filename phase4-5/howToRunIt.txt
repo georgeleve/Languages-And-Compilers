@@ -1,0 +1,21 @@
+Gia na paraxhtei to binary file  "binary.abc" mexri thn phase4:
+
+make && calc ./input.txt
+
+kai 
+
+make clean 
+
+gia na katharisei
+
+
+
+
+
+Gia na diavasei to virtual machine to binary file ekteloume thn entolh:
+clear && g++ -g -o exe avm.cpp && ./exe
+
+
+
+TURNIN COMMAND
+turnin submit4_5@hy340 phase4-5

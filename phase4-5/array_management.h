@@ -1,6 +1,4 @@
-#include <bits/stdc++.h>
 #include "binaryManager.h"
-using namespace std;
 
 vector<double> numberArray;
 vector<string> stringArray;
@@ -9,9 +7,7 @@ vector<userFunc*> userFuncArray;
 
 vector<instruction*> instructions;
 
-
 stack<pair<Information*,vector<int>>> funcStack; //pair of function information and return list
-
 
 int insert_number(double val){
 	numberArray.push_back(val);

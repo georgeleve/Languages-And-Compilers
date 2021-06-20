@@ -1,6 +1,4 @@
-#include <bits/stdc++.h>
 #include "structs.h"
-using namespace std;
 
 void storeNumbers(ofstream& file, vector<double> vec){
 	file << vec.size() << endl;
@@ -107,7 +105,7 @@ vmarg* loadVmarg(ifstream& file){
 void loadInstructions(ifstream& file, vector<instruction*>& vec){
 	int len;
 	file >> len;
-	printf("Here! total of: %d\n",len);
+	//printf("Here! total of: %d\n",len);
 	for(int i = 0; i<len; i++) {
 		instruction* ins = new instruction;
 		string op;
@@ -134,5 +132,7 @@ void loadAll(vector<double>& numberArray, vector<string>& stringArray, vector<st
   	loadUserFuncs(file, userFuncArray);
   	loadInstructions(file, instructions);
   	file.close();
+	
+	printf("\nNumberArray, StringArray, LibFuncArray, UserFuncArray and Instructions successfully loaded\n\n\n");
 }
 
