@@ -11,7 +11,7 @@ stack<pair<Information*,vector<int>>> funcStack; //pair of function information 
 
 int insert_number(double val){
 	numberArray.push_back(val);
-	return numberArray.size()-1;
+	return numberArray.size()-1; 
 }
 
 int insert_string(string val){

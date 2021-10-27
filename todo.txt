@@ -1,3 +1,5 @@
+BUGS:
+
 na kanoyme epanaxrhsimopoihsh metavlhton (pote kanoume)
 
 na kanoyme to double se int 
@@ -19,16 +21,11 @@ tablegetelem kai tablesetelem    pername sosta tis parametrous??????
 
 Na arxisoyme thn 4-5 fash apo noris
 
-
-
 dialexh 11 slide 2
 
 dialexh 10 telaytaio slide
 
 backpatching??
-
-na testaroume me ta test pou hdh exoyme
-
 ---------------------------------------------------------------------
 
 

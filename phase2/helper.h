@@ -8,7 +8,7 @@ int scope = 0;
 
 enum SymbolType { GLOBAL, LOC, FORMAL, USERFUNC, LIBFUNC};
 
-typedef struct Information{
+typedef struct Information{ 
 	enum SymbolType type;
 	unsigned int line;
 } Information;
