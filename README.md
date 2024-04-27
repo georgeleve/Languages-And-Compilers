@@ -1,5 +1,4 @@
-# Languages & Compilers
-https://www.csd.uoc.gr/~hy340/
+# [Languages & Compilers](https://www.csd.uoc.gr/CSD/index.jsp?content=courses_catalog&openmenu=demoAcc3&lang=en&course=22)  
 
 Created a compiler for Alpha programming language from scratch in C++.  
 
